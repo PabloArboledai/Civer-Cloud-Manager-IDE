@@ -1,5 +1,4 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import * as Sentry from '@sentry/electron/renderer';
 import { IPC_CHANNELS } from './constants';
 
 import path from 'path';
@@ -35,8 +34,13 @@ try {
 if (sentryEnabled && process.env.NODE_ENV === 'production') {
   // Defer Sentry init to avoid blocking main thread during startup (white screen fix)
   setTimeout(() => {
-    // console.log('[Preload] Initializing Sentry (Deferred)');
-    Sentry.init({});
+    import('@sentry/electron/renderer')
+      .then((Sentry) => {
+        Sentry.init({});
+      })
+      .catch(() => {
+        // Ignore optional monitoring bootstrap failures in preload.
+      });
   }, 2000);
 }
 window.addEventListener('message', (event) => {

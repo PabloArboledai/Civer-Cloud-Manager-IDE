@@ -20,10 +20,10 @@ function getQuickConfig() {
 }
 
 if (getQuickConfig()) {
-  // Lazy-load Sentry so startup never hard-fails when the Electron main bundle
-  // resolves optional monitoring code before the app is fully initialized.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const Sentry = require('@sentry/electron/main') as typeof import('@sentry/electron/main');
+  // Resolve Sentry at runtime to keep the optional monitoring bundle out of the
+  // critical startup path unless error reporting is actually enabled.
+  const lazyRequire = eval('require') as NodeJS.Require;
+  const Sentry = lazyRequire('@sentry/electron/main') as typeof import('@sentry/electron/main');
 
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
