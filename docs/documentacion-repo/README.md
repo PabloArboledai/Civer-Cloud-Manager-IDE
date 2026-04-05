@@ -1,78 +1,83 @@
 # Documentacion canonica del repo
 
-Esta carpeta es la referencia canonica de funcionamiento interno de `AntigravityManager`.
+Resumen: esta carpeta es la referencia principal para entender como funciona Antigravity Manager a nivel de arquitectura, stack, flujos, autenticacion, tokens, almacenamiento, proxy interno, llamadas externas, observabilidad, build y riesgos. Esta guia esta pensada para humanos y para otros agentes que necesiten incorporarse rapido al proyecto sin volver a recorrer todo el codigo desde cero.
 
-Objetivo:
-- explicar como arranca y opera la app
-- documentar el stack, almacenamiento, auth, tokens, cuotas, switching, proxy y CLI
-- dejar un mapa reutilizable para humanos y agentes
-- registrar hallazgos tecnicos y riesgos reales encontrados en el codigo
+## Que es este repo
 
-Alcance de esta investigacion:
-- inspeccion estatica de codigo y configuracion del repo en el workspace actual
-- no se ejecuto `node` ni `npm` porque no estan disponibles en el `PATH` de esta maquina
-- la fecha de lectura de esta documentacion es `2026-04-05`
+Antigravity Manager es una aplicacion de escritorio en Electron que hace cuatro cosas grandes:
 
-Mapa de lectura recomendado:
-- `docs/documentacion-repo/arquitectura.md`
+- Administra cuentas cloud de Google usadas por Antigravity.
+- Lee y escribe el estado local del IDE Antigravity para cambiar credenciales activas.
+- Expone un proxy HTTP local compatible con APIs tipo OpenAI, Anthropic y Gemini.
+- Mantiene un sistema de monitoreo, auto-switch y perfiles de identidad de dispositivo.
+
+No es una aplicacion web tradicional con backend remoto propio. La mayor parte del sistema vive localmente en el proceso principal de Electron, en el renderer React y en un servidor NestJS embebido dentro de la propia app.
+
+## Como leer esta documentacion
+
+- Empieza por `docs/documentacion-repo/stack-y-dependencias.md` si quieres una foto rapida del stack.
+- Sigue por `docs/documentacion-repo/arquitectura.md` y `docs/documentacion-repo/flujo-ejecucion.md` si quieres entender el recorrido end-to-end.
+- Lee `docs/documentacion-repo/autenticacion-y-tokens.md` y `docs/documentacion-repo/almacenamiento-y-datos.md` si necesitas tocar auth, cuotas, DB o cifrado.
+- Ve a `docs/documentacion-repo/proxy-gateway.md` si vas a trabajar en el proxy local.
+- Consulta `docs/documentacion-repo/riesgos-y-hallazgos.md` antes de tocar seguridad o comportamiento critico.
+
+## Mapa de archivos canonicos
+
 - `docs/documentacion-repo/stack-y-dependencias.md`
+  Panorama de runtime, librerias, scripts y tooling.
+- `docs/documentacion-repo/arquitectura.md`
+  Capas del sistema y relacion entre main, preload, renderer, IPC y servidor NestJS.
 - `docs/documentacion-repo/flujo-ejecucion.md`
-- `docs/documentacion-repo/ipc-orpc-y-api-interna.md`
-- `docs/documentacion-repo/autenticacion-y-tokens.md`
-- `docs/documentacion-repo/almacenamiento-y-datos.md`
-- `docs/documentacion-repo/dispositivo-identidad.md`
-- `docs/documentacion-repo/switching-y-monitoreo.md`
-- `docs/documentacion-repo/proxy-gateway.md`
-- `docs/documentacion-repo/saldos-y-modelos.md`
-- `docs/documentacion-repo/llamadas-externas.md`
-- `docs/documentacion-repo/procesos-y-tray.md`
+  Flujos principales de arranque, login, importacion, switching y proxy.
+- `docs/documentacion-repo/ipc-y-orpc.md`
+  Superficie ORPC/IPC y eventos raw entre renderer y main.
 - `docs/documentacion-repo/ui-rutas.md`
+  Rutas, componentes y hooks visibles en la UI.
+- `docs/documentacion-repo/autenticacion-y-tokens.md`
+  OAuth, tokens, cuotas, identificacion de tokens y escritura al IDE.
+- `docs/documentacion-repo/almacenamiento-y-datos.md`
+  Archivos, DBs, claves de SQLite, cifrado y persistencia.
+- `docs/documentacion-repo/dispositivo-identidad.md`
+  Sistema de huella de dispositivo e identidad persistente.
+- `docs/documentacion-repo/switching-y-monitoreo.md`
+  Monitor de cuotas, auto-switch, guardas, metricas y flujos de cambio.
+- `docs/documentacion-repo/proxy-gateway.md`
+  Proxy local NestJS, API key, model mapping y scheduling.
+- `docs/documentacion-repo/llamadas-externas.md`
+  Inventario de endpoints y salidas a red.
 - `docs/documentacion-repo/configuracion.md`
-- `docs/documentacion-repo/seguridad.md`
+  `gui_config.json`, opciones de proxy y observaciones sobre settings.
 - `docs/documentacion-repo/observabilidad.md`
+  Logs, Sentry, packet logging y trazas de debug.
 - `docs/documentacion-repo/cli.md`
-- `docs/documentacion-repo/build-test-release.md`
-- `docs/documentacion-repo/automatizacion-y-backup.md`
-- `docs/documentacion-repo/hallazgos-y-riesgos.md`
+  CLI Python paralelo al producto Electron.
+- `docs/documentacion-repo/build-test-y-release.md`
+  Build, empaquetado, CI, release y publicacion.
+- `docs/documentacion-repo/seguridad.md`
+  Postura de seguridad observada en codigo.
+- `docs/documentacion-repo/riesgos-y-hallazgos.md`
+  Hallazgos accionables, ambiguedades y riesgos concretos.
 
-Lectura rapida del sistema:
+Nota:
 
-```plaintext
-Renderer React
-  -> ORPC sobre MessagePort
-Electron Main
-  -> CloudAccountRepo + SQLite local + archivos JSON
-  -> control del IDE Antigravity
-  -> AuthServer local OAuth
-  -> CloudMonitorService + tray + auto start
-  -> servidor NestJS embebido
-NestJS Proxy
-  -> TokenManagerService
-  -> GeminiClient / Google internal APIs / Gemini public API
-CLI Python
-  -> lee la misma DB local y puede inyectar tokens al IDE
-```
+- Si ves otros archivos no listados arriba dentro de esta carpeta, tratalos como borradores o material heredado. La lista anterior es la referencia canonica mantenida por esta investigacion.
 
-Preguntas que responde esta carpeta:
-- donde vive cada dato y quien lo escribe
-- como se autentican las cuentas y como se refrescan
-- como se inyectan tokens en el IDE y como cambia el formato segun version
-- como decide el proxy que cuenta usar
-- que endpoints externos toca el sistema
-- que piezas son estables y cuales tienen deuda o riesgo
+## Conclusiones rapidas
 
-Hallazgos mas importantes:
-- el CLI Python y la app TS no usan la misma unidad temporal para `expiry_timestamp`
-- el flujo OAuth usa `localhost:8888` fijo y no envia `state`
-- `gateway.generateKey` guarda la nueva API key en disco pero no refresca el `serverConfig` en memoria
-- el menu del tray marca otra cuenta como activa pero no ejecuta el switch real en el IDE
-- el proxy queda abierto si `api_key` esta vacia
+- El nucleo real del producto esta en `src/main.ts`, `src/ipc/database/cloudHandler.ts`, `src/services/GoogleAPIService.ts`, `src/server/modules/proxy/*` y `src/ipc/device/handler.ts`.
+- La autenticacion principal es Google OAuth; no hay un sistema clasico de usuarios propios del producto.
+- Los "saldos" que maneja el repo son cuotas por modelo y disponibilidad de cuenta, no balances financieros.
+- El repo tiene buenas piezas de cifrado y masking, pero tambien varios riesgos practicos que conviene conocer antes de ampliar el sistema.
 
-Referencias base:
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\package.json`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\main.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\router.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\database\cloudHandler.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\services\GoogleAPIService.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\modules\proxy\proxy.service.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\cli\core.py`
+## Referencias de codigo base
+
+- `src/main.ts`
+- `src/preload.ts`
+- `src/renderer.ts`
+- `src/App.tsx`
+- `src/ipc/router.ts`
+- `src/ipc/database/cloudHandler.ts`
+- `src/services/GoogleAPIService.ts`
+- `src/server/main.ts`
+- `src/server/modules/proxy/token-manager.service.ts`
+- `src/ipc/device/handler.ts`
