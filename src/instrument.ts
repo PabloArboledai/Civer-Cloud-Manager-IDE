@@ -1,5 +1,4 @@
 import { app } from 'electron';
-import * as Sentry from '@sentry/electron/main';
 import path from 'path';
 import fs from 'fs';
 import { getAppDataDir } from './utils/paths';
@@ -21,6 +20,11 @@ function getQuickConfig() {
 }
 
 if (getQuickConfig()) {
+  // Lazy-load Sentry so startup never hard-fails when the Electron main bundle
+  // resolves optional monitoring code before the app is fully initialized.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const Sentry = require('@sentry/electron/main') as typeof import('@sentry/electron/main');
+
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     release: `antigravity-manager@${app.getVersion()}`,
