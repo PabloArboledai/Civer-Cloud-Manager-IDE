@@ -16,12 +16,28 @@ import { logger } from '../utils/logger';
 // Log middleware setup
 const logMiddleware = os.middleware(async (opts: any) => {
   const { next, path, meta } = opts;
-  const requestPath = path || meta?.path || 'unknown';
+  const requestPathValue = path || meta?.path || 'unknown';
+  const requestPath = Array.isArray(requestPathValue)
+    ? requestPathValue.join('.')
+    : String(requestPathValue);
+  const startedAt = Date.now();
+
+  logger.debugEvent('orpc', requestPath, 'request-start', {
+    input: opts.input,
+  });
 
   try {
     const result = await next({});
+    logger.debugEvent('orpc', requestPath, 'request-success', {
+      durationMs: Date.now() - startedAt,
+      output: result,
+    });
     return result;
   } catch (err) {
+    logger.debugEvent('orpc', requestPath, 'request-error', {
+      durationMs: Date.now() - startedAt,
+      error: err,
+    });
     logger.error(`[ORPC] Error in handler for ${JSON.stringify(requestPath)}:`, err);
     throw err;
   }

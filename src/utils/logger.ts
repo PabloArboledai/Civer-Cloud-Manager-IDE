@@ -2,7 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
+import { createDebugEvent, formatDebugEvent } from './debug';
 import { getAgentDir } from './paths';
+import { sanitizeObject } from './sensitiveDataMasking';
 
 export type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 
@@ -31,8 +33,9 @@ type SentryReporter = (payload: {
  * when logging objects like axios errors that contain socket references
  */
 function safeStringify(obj: unknown): string {
+  const sanitized = sanitizeObject(obj);
   const seen = new WeakSet();
-  return JSON.stringify(obj, (key, value) => {
+  return JSON.stringify(sanitized, (key, value) => {
     // Handle Error objects specially
     if (value instanceof Error) {
       return {
@@ -190,6 +193,11 @@ class Logger {
 
   debug(message: string, ...args: unknown[]) {
     this.log('debug', message, ...args);
+  }
+
+  debugEvent(scope: string, source: string, action: string, detail?: unknown) {
+    const event = createDebugEvent(scope, source, action, detail);
+    this.debug(formatDebugEvent(event), event.detail);
   }
 }
 

@@ -1,12 +1,45 @@
 import { IPC_CHANNELS } from '@/constants';
+import { emitRendererDebug } from '@/utils/rendererDebug';
+
+interface PendingRequest {
+  resolve: (value: unknown) => void;
+  reject: (error: unknown) => void;
+  methodPath: string;
+  startedAt: number;
+}
+
+interface IpcDebugState {
+  pendingRequests: number;
+  requestCount: number;
+  responseCount: number;
+  errorCount: number;
+  timeoutCount: number;
+  lastRequestId: string | null;
+  lastRequestPath: string | null;
+  lastRequestAt: string | null;
+  lastResponseAt: string | null;
+}
+
+const ipcDebugState: IpcDebugState = {
+  pendingRequests: 0,
+  requestCount: 0,
+  responseCount: 0,
+  errorCount: 0,
+  timeoutCount: 0,
+  lastRequestId: null,
+  lastRequestPath: null,
+  lastRequestAt: null,
+  lastResponseAt: null,
+};
+
+function updatePendingRequestCount(pendingRequests: Map<string, PendingRequest>) {
+  ipcDebugState.pendingRequests = pendingRequests.size;
+}
 
 // Custom IPC Client that correctly builds method paths
 function createIPCClient(port: MessagePort) {
   let requestId = 0;
-  const pendingRequests = new Map<
-    string,
-    { resolve: (v: any) => void; reject: (e: any) => void }
-  >();
+  const pendingRequests = new Map<string, PendingRequest>();
 
   port.onmessage = (event) => {
     try {
@@ -16,9 +49,22 @@ function createIPCClient(port: MessagePort) {
       const pending = pendingRequests.get(id);
       if (pending) {
         pendingRequests.delete(id);
+        updatePendingRequestCount(pendingRequests);
+        ipcDebugState.responseCount += 1;
+        ipcDebugState.lastResponseAt = new Date().toISOString();
+
+        const durationMs = Date.now() - pending.startedAt;
+
         if (data.e || data.error) {
           const errorMsg = data.e?.m || data.error?.message || JSON.stringify(data.e || data.error);
           console.error('[IPCClient] Error response:', errorMsg);
+          ipcDebugState.errorCount += 1;
+          emitRendererDebug('ipc', 'response-error', {
+            id,
+            methodPath: pending.methodPath,
+            durationMs,
+            error: data.e || data.error,
+          });
           pending.reject(new Error(errorMsg));
         } else {
           // ORPC response format: { i, p: { b: { json: value }, s?: statusCode } }
@@ -31,6 +77,13 @@ function createIPCClient(port: MessagePort) {
             const errorData = payload.b?.json;
             const errorMsg = errorData?.message || errorData?.code || 'Server error';
             console.error('[IPCClient] Server error:', errorData);
+            ipcDebugState.errorCount += 1;
+            emitRendererDebug('ipc', 'server-error', {
+              id,
+              methodPath: pending.methodPath,
+              durationMs,
+              error: errorData,
+            });
             pending.reject(new Error(errorMsg));
             return;
           }
@@ -45,6 +98,12 @@ function createIPCClient(port: MessagePort) {
             result = data.result;
           }
 
+          emitRendererDebug('ipc', 'response-success', {
+            id,
+            methodPath: pending.methodPath,
+            durationMs,
+            result,
+          });
           pending.resolve(result);
         }
       } else {
@@ -60,7 +119,24 @@ function createIPCClient(port: MessagePort) {
     const methodPath = path.join('/');
 
     return new Promise((resolve, reject) => {
-      pendingRequests.set(id, { resolve, reject });
+      pendingRequests.set(id, {
+        resolve,
+        reject,
+        methodPath,
+        startedAt: Date.now(),
+      });
+      updatePendingRequestCount(pendingRequests);
+
+      ipcDebugState.requestCount += 1;
+      ipcDebugState.lastRequestId = id;
+      ipcDebugState.lastRequestPath = methodPath;
+      ipcDebugState.lastRequestAt = new Date().toISOString();
+
+      emitRendererDebug('ipc', 'request-start', {
+        id,
+        methodPath,
+        input,
+      });
 
       // ORPC MessagePort protocol format
       const payload = {
@@ -76,6 +152,14 @@ function createIPCClient(port: MessagePort) {
       setTimeout(() => {
         if (pendingRequests.has(id)) {
           pendingRequests.delete(id);
+          updatePendingRequestCount(pendingRequests);
+          ipcDebugState.timeoutCount += 1;
+          ipcDebugState.errorCount += 1;
+          emitRendererDebug('ipc', 'request-timeout', {
+            id,
+            methodPath,
+            timeoutMs: 60000,
+          });
           reject(new Error(`Request /${methodPath} timed out`));
         }
       }, 60000);
@@ -134,3 +218,7 @@ class IPCManager {
 
 export const ipc = new IPCManager();
 ipc.initialize();
+
+export function getIpcDebugSnapshot(): IpcDebugState {
+  return { ...ipcDebugState };
+}

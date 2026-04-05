@@ -57,4 +57,7 @@ contextBridge.exposeInMainWorld('electron', {
   changeLanguage: (lang: string) => {
     ipcRenderer.send(IPC_CHANNELS.CHANGE_LANGUAGE, lang);
   },
+  debugLog: (payload: unknown) => {
+    ipcRenderer.send(IPC_CHANNELS.DEBUG_LOG, payload);
+  },
 });

@@ -10,6 +10,7 @@ declare global {
       SENTRY_ENABLED: boolean;
       onGoogleAuthCode: (callback: (code: string) => void) => () => void;
       changeLanguage: (lang: string) => void;
+      debugLog: (payload: unknown) => void;
     };
   }
 }

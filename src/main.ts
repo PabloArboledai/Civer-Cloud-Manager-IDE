@@ -9,6 +9,7 @@ import { ipcMain } from 'electron/main';
 import { ipcContext } from '@/ipc/context';
 import { IPC_CHANNELS } from './constants';
 import { updateElectronApp, UpdateSourceType } from 'update-electron-app';
+import { createDebugEvent, DEBUG_HEARTBEAT_INTERVAL_MS, formatDebugEvent } from './utils/debug';
 import { logger } from './utils/logger';
 import {
   getExpectedInstallRoot,
@@ -49,6 +50,10 @@ ipcMain.on(IPC_CHANNELS.CHANGE_LANGUAGE, (event, lang) => {
   setTrayLanguage(lang);
 });
 
+ipcMain.on(IPC_CHANNELS.DEBUG_LOG, (_event, payload) => {
+  logIncomingDebugEvent(payload);
+});
+
 app.disableHardwareAcceleration();
 
 if (squirrelStartup) {
@@ -66,6 +71,69 @@ let isQuitting = false;
 let startupConfig: AppConfig | null = null;
 let shouldStartHidden = false;
 let hasShownInstallNotice = false;
+let mainHeartbeatInterval: ReturnType<typeof setInterval> | null = null;
+
+function logIncomingDebugEvent(payload: unknown) {
+  if (!payload || typeof payload !== 'object') {
+    logger.debugEvent('renderer', 'unknown', 'payload-received', { payload });
+    return;
+  }
+
+  const candidate = payload as Partial<{
+    scope: string;
+    source: string;
+    action: string;
+    detail: unknown;
+  }>;
+
+  const event = createDebugEvent(
+    typeof candidate.scope === 'string' ? candidate.scope : 'renderer',
+    typeof candidate.source === 'string' ? candidate.source : 'unknown',
+    typeof candidate.action === 'string' ? candidate.action : 'event',
+    candidate.detail,
+  );
+
+  logger.debug(formatDebugEvent(event), event.detail);
+}
+
+function startMainDebugHeartbeat() {
+  if (!inDevelopment || mainHeartbeatInterval) {
+    return;
+  }
+
+  mainHeartbeatInterval = setInterval(() => {
+    const memoryUsage = process.memoryUsage();
+
+    logger.debugEvent('main', 'process', 'heartbeat', {
+      isQuitting,
+      appFocused: app.isFocused(),
+      windowCount: BrowserWindow.getAllWindows().length,
+      mainWindow: globalMainWindow
+        ? {
+            visible: globalMainWindow.isVisible(),
+            focused: globalMainWindow.isFocused(),
+            minimized: globalMainWindow.isMinimized(),
+            destroyed: globalMainWindow.isDestroyed(),
+          }
+        : null,
+      memory: {
+        rss: memoryUsage.rss,
+        heapUsed: memoryUsage.heapUsed,
+        heapTotal: memoryUsage.heapTotal,
+        external: memoryUsage.external,
+      },
+    });
+  }, DEBUG_HEARTBEAT_INTERVAL_MS);
+}
+
+function stopMainDebugHeartbeat() {
+  if (!mainHeartbeatInterval) {
+    return;
+  }
+
+  clearInterval(mainHeartbeatInterval);
+  mainHeartbeatInterval = null;
+}
 
 function isRunningFromExpectedInstallDir() {
   return isRunningFromExpectedInstallDirUtil({
@@ -291,6 +359,7 @@ app.on('before-quit', () => {
 
 app.on('will-quit', (event) => {
   logger.info('App will quit event triggered');
+  stopMainDebugHeartbeat();
   try {
     destroyTray();
   } catch (err) {
@@ -388,6 +457,7 @@ app
   .then(async () => {
     logger.info('Step: createWindow');
     await createWindow({ startHidden: shouldStartHidden });
+    startMainDebugHeartbeat();
   })
   .then(() => {
     logger.info('Step: installExtensions (SKIPPED)');

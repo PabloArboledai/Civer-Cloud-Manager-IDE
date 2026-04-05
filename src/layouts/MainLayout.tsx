@@ -17,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ErrorBoundary } from 'react-error-boundary';
 import { useToast } from '@/components/ui/use-toast';
 import { getLocalizedErrorMessage } from '@/utils/errorMessages';
+import { emitRendererDebug } from '@/utils/rendererDebug';
 
 export const MainLayout: React.FC = () => {
   const location = useLocation();
@@ -33,6 +34,19 @@ export const MainLayout: React.FC = () => {
   // Persist state changes
   useEffect(() => {
     localStorage.setItem('sidebar-collapsed', JSON.stringify(isCollapsed));
+  }, [isCollapsed]);
+
+  useEffect(() => {
+    emitRendererDebug('navigation', 'route-change', {
+      pathname: location.pathname,
+      search: location.searchStr,
+    });
+  }, [location.pathname, location.searchStr]);
+
+  useEffect(() => {
+    emitRendererDebug('layout', 'sidebar-state-change', {
+      isCollapsed,
+    });
   }, [isCollapsed]);
 
   const navItems = [
