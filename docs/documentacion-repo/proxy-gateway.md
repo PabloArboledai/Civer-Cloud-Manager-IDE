@@ -1,116 +1,168 @@
 # Proxy y gateway interno
 
-Resumen:
-- el proxy local es un NestJS embebido con Fastify
-- se expone como API compatible con OpenAI, Anthropic y Gemini
-- la eleccion de cuenta/token la hace `TokenManagerService`
-- la traduccion de protocolos y respuestas la hace `ProxyService` junto con los mappers `lib/antigravity`
+Resumen: el repo embebe un servidor NestJS/Fastify que actua como proxy local compatible con varias superficies API. El proxy no autentica contra una cuenta propia del servidor; reutiliza el pool de cuentas Google guardado por el manager y selecciona la mejor credencial disponible para cada request.
 
-Arranque:
-- `bootstrapNestServer(config.proxy)` en `src/server/main.ts`
-- guarda una copia de la config en `serverConfig`
-- escucha por defecto en `0.0.0.0:<port>`
+## Arranque del servidor
 
-Autenticacion del proxy:
+`src/server/main.ts`:
+
+- crea Nest con `FastifyAdapter`
+- habilita CORS
+- escucha en `0.0.0.0`
+- devuelve estado con `running`, `port`, `base_url` y `active_accounts`
+
+El arranque puede venir de:
+
+- `src/main.ts` al iniciar la app si la config lo indica
+- `gateway.start` via ORPC
+
+## Control desde IPC
+
+`src/ipc/gateway/handlers.ts` permite:
+
+- iniciar gateway
+- detener gateway
+- consultar estado
+- generar nueva API key
+
+La API key generada sigue el patron:
+
+- `sk-<uuid sin guiones>`
+
+## Modulo y piezas internas
+
+En `src/server/modules/proxy/` destacan:
+
+- `proxy.module.ts`
+- `proxy.controller.ts`
+- `gemini.controller.ts`
+- `proxy.service.ts`
+- `token-manager.service.ts`
+- `rate-limit-tracker.ts`
+- `proxy.guard.ts`
+- `clients/gemini.client.ts`
+
+## Autenticacion del proxy
+
+El guard acepta:
+
 - `Authorization: Bearer <api_key>`
 - `x-api-key`
 - `x-goog-api-key`
-- si `api_key` no esta configurada:
-  `ProxyGuard` permite el acceso y el proxy queda abierto
 
-Endpoints `v1`:
+Si no existe `config.proxy.api_key`, `ProxyGuard` deja pasar la request.
+
+Esto significa:
+
+- el proxy puede operar en modo protegido
+- o quedar totalmente abierto si la clave esta vacia
+
+## Superficies HTTP expuestas
+
+`ProxyController`:
+
 - `GET /v1/models`
 - `POST /v1/chat/completions`
 - `POST /v1/completions`
 - `POST /v1/responses`
+- `POST /v1/messages`
 - `POST /v1/images/generations`
 - `POST /v1/images/edits`
 - `POST /v1/audio/transcriptions`
-- `POST /v1/messages`
 
-Endpoints `v1beta`:
+`GeminiController`:
+
 - `GET /v1beta/models`
 - `GET /v1beta/models/:model`
-- `POST /v1beta/models/:model:generateContent`
-- `POST /v1beta/models/:model:streamGenerateContent`
+- `POST /v1beta/models/:modelAction`
 - `POST /v1beta/models/:model/countTokens`
 
-Capas internas:
+## Scheduling y seleccion de cuenta
 
-```plaintext
-Controller
-  -> ProxyService
-     -> TokenManagerService
-     -> ModelMapping / RequestMapper / ResponseMapper / StreamingMapper
-     -> GeminiClient
-```
+`TokenManagerService`:
 
-Compatibilidad de protocolos:
-- OpenAI:
-  `chat/completions`, `completions`, `responses`, imagenes, transcripcion.
-- Anthropic:
-  `messages` con soporte de tools, thinking y streaming.
-- Gemini:
-  `generateContent`, `streamGenerateContent`, `countTokens`, lista de modelos.
+- carga cuentas cloud desde `CloudAccountRepo`
+- mantiene cache en memoria
+- refresca tokens vencidos o por vencer
+- resuelve `project_id`
+- soporta sticky sessions con TTL de 10 minutos
+- lleva cooldowns por cuenta/modelo
+- usa `RateLimitTracker`
 
-Seleccion de cuenta en `TokenManagerService`:
-- cachea cuentas cloud en memoria al iniciar el modulo
-- mantiene `tokens`, `accountCooldowns` y `sessionBindings`
-- soporta modos:
-  `cache-first`
-  `balance`
-  `performance-first`
-- soporta `preferred_account_id`
-- soporta sticky session por `sessionKey` durante 10 minutos
-- resuelve `project_id` y lo persiste si logra obtenerlo
-- refresca access token si esta cerca de expirar
+Modos de scheduling:
 
-Manejo de limites:
-- `RateLimitTracker` clasifica `quota_exhausted`, `rate_limit_exceeded`, `model_capacity_exhausted`, `server_error`
-- se usan cooldowns por cuenta y bloqueos mas precisos por modelo cuando se puede deducir `resetTime`
+- `cache-first`
+- `balance`
+- `performance-first`
 
-Parity y rollout:
-- flags:
-  `parity_enabled`
-  `parity_shadow_enabled`
-  `parity_kill_switch`
-- mantiene contadores de shadow mismatch y error rate
-- puede auto bloquear la ruta parity si supera umbrales no-go
+Tambien soporta:
 
-Mapeo de modelos:
-- `ModelMapping.resolveModelRoute()` aplica prioridad:
-  forwarding dinamico
-  custom exact mapping
-  family mapping OpenAI
-  family mapping Anthropic
-  fallback builtin
-- tambien genera variantes dinamicas para `gemini-3-pro-image`
+- parity scheduling
+- parity shadow compare
+- no-go thresholds por mismatch/error rate
 
-Mappers de request y response:
-- `ClaudeRequestMapper` convierte requests estilo Claude/OpenAI a `GeminiInternalRequest`
-- puede inyectar `googleSearch`, herramientas, thinking config, image config y system instruction
-- `ClaudeResponseMapper` y `ClaudeStreamingMapper` convierten la respuesta Gemini a formato Claude y luego OpenAI donde haga falta
+## Cuotas, rate limits y fallback de proyecto
 
-Upstream:
-- `GeminiClient` usa:
-  `generativelanguage.googleapis.com/v1beta`
-  `cloudcode-pa.googleapis.com/v1internal`
-  `daily-cloudcode-pa.googleapis.com/v1internal`
-- tiene failover entre endpoints internos y timeout configurable por `request_timeout`
+El proxy usa las cuotas cloud para decidir que cuenta servir.
 
-Observaciones y riesgos:
-- `gateway.generateKey()` no refresca el `serverConfig` en memoria.
-- `ProxyGuard` entra en modo abierto si la API key esta vacia.
-- `serverConfig` es un singleton global en memoria, no una fuente reactiva.
+Detalles importantes:
 
-Referencias:
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\main.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\server-config.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\modules\proxy\proxy.guard.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\modules\proxy\proxy.controller.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\modules\proxy\gemini.controller.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\modules\proxy\proxy.service.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\modules\proxy\token-manager.service.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\modules\proxy\clients\gemini.client.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\lib\antigravity\ModelMapping.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\lib\antigravity\ClaudeRequestMapper.ts`
+- bloqueos por cuota y `Retry-After`
+- lockouts precisos por modelo cuando es posible
+- fallback de `project_id` a `silver-orbit-5m7qc` si no se resuelve uno valido
+
+Ese fallback es una observacion importante porque introduce comportamiento implicito cuando la cuenta no trae proyecto usable.
+
+## Model mapping y compatibilidad de protocolos
+
+`src/lib/antigravity/ModelMapping.ts` y archivos vecinos:
+
+- mapean nombres tipo GPT/Claude/Gemini a modelos internos
+- aceptan `custom_mapping`
+- aceptan `anthropic_mapping`
+- aplican forwarding rules dinamicas provenientes de cuotas/modelos deprecados
+
+El proxy actua como capa de traduccion entre:
+
+- clientes OpenAI
+- clientes Anthropic
+- endpoints Gemini/Cloud Code subyacentes
+
+## Streaming y normalizacion
+
+`proxy.service.ts` implementa:
+
+- streaming SSE
+- synthetic streaming cuando hace falta
+- traduccion de tool calls
+- soporte de imagen/audio
+- adaptacion de request/response a los contratos esperados por el cliente
+
+## Salida HTTP real
+
+`GeminiClient` habla con:
+
+- `generativelanguage.googleapis.com`
+- `cloudcode-pa.googleapis.com`
+- `daily-cloudcode-pa.googleapis.com`
+
+Ademas puede:
+
+- hacer failover entre endpoints internos
+- usar `upstream_proxy_url` por cuenta o por config global
+
+## Referencias de codigo
+
+- `src/server/main.ts`
+- `src/server/server-config.ts`
+- `src/ipc/gateway/handlers.ts`
+- `src/ipc/gateway/router.ts`
+- `src/server/modules/proxy/proxy.module.ts`
+- `src/server/modules/proxy/proxy.controller.ts`
+- `src/server/modules/proxy/gemini.controller.ts`
+- `src/server/modules/proxy/proxy.guard.ts`
+- `src/server/modules/proxy/proxy.service.ts`
+- `src/server/modules/proxy/token-manager.service.ts`
+- `src/server/modules/proxy/rate-limit-tracker.ts`
+- `src/server/modules/proxy/clients/gemini.client.ts`
+- `src/lib/antigravity/ModelMapping.ts`

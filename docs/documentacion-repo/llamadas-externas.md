@@ -1,66 +1,97 @@
 # Llamadas externas
 
-Resumen:
-- el repo habla sobre todo con servicios Google
-- tambien toca endpoints publicos de versionado y GitHub para automatizacion
-- ademas expone listeners y servicios locales en la propia maquina
+Resumen: el repo hace llamadas salientes principalmente a Google. Ademas consulta endpoints publicos para actualizacion/versionado y puede reportar errores a Sentry si la config y las variables de entorno lo permiten.
 
-Google OAuth y perfil:
+## OAuth y perfil de usuario
+
+Endpoints:
+
 - `https://accounts.google.com/o/oauth2/v2/auth`
 - `https://oauth2.googleapis.com/token`
 - `https://www.googleapis.com/oauth2/v2/userinfo`
 
-Google Cloud Code interno:
-- `https://cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels`
+Uso:
+
+- abrir autorizacion en navegador externo
+- intercambiar `code` por tokens
+- refrescar `access_token`
+- identificar email/nombre/avatar
+
+## APIs internas de Google/Cloud Code
+
+Endpoints observados:
+
 - `https://cloudcode-pa.googleapis.com/v1internal:loadCodeAssist`
-- `https://cloudcode-pa.googleapis.com/v1internal`
+- `https://cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels`
 - `https://daily-cloudcode-pa.googleapis.com/v1internal`
 
-Gemini publico:
+Uso:
+
+- resolver `project_id`
+- conocer quota/model availability
+- descubrir forwarding rules de modelos deprecados
+- obtener tier de suscripcion
+
+## Gemini / Generative Language
+
+Endpoint observado:
+
 - `https://generativelanguage.googleapis.com/v1beta`
 
-Versionado / user agent discovery:
+Uso:
+
+- servir requests del proxy en formato Gemini
+- responder a traducciones desde OpenAI/Anthropic compatibles
+
+## Actualizaciones y metadatos de version
+
+Se observan endpoints publicos consultados para user-agent/version y auto-update:
+
 - `https://antigravity-auto-updater-974169037036.us-central1.run.app`
 - `https://antigravity.google/changelog`
 
-GitHub para auto backup:
-- `https://api.github.com/user`
-- `https://api.github.com/repos/:owner/:repo`
-- `https://api.github.com/user/repos`
+Ademas `update-electron-app` se integra con el repo `Draculabo/AntigravityManager`.
 
-Superficie local expuesta por la app:
-- OAuth callback:
-  `http://localhost:8888/oauth-callback`
-- proxy/gateway:
-  `http://localhost:<port>` o `http://<ip-lan>:<port>`
-- listen del proxy:
-  `0.0.0.0`
+## Telemetria opcional
 
-Headers e identidad de request:
-- Google OAuth usa `application/x-www-form-urlencoded`.
-- `GoogleAPIService` y `GeminiClient` adjuntan `Authorization: Bearer`.
-- para APIs internas se construye `User-Agent` estilo Antigravity.
-- el `project_id` cuando existe se manda en payload del request interno.
+Sentry puede activarse si:
 
-Proxy HTTP saliente:
-- `GoogleAPIService` usa `undici.ProxyAgent` si `config.proxy.upstream_proxy.enabled`.
-- `GeminiClient` parsea `upstream_proxy.url` y la traduce a config de `axios`.
-- algunos tokens cloud tambien pueden portar `upstream_proxy_url`.
+- `error_reporting_enabled` esta en true en config
+- existe configuracion/env necesaria para DSN/proyecto
 
-Llamadas al host local:
-- abrir navegador para OAuth
-- abrir carpeta de logs
-- abrir carpeta de storage/identidad
-- lanzar URI `antigravity://oauth-success`
-- matar / arrancar el ejecutable Antigravity
+La documentacion del repo no hardcodea un endpoint unico en codigo de negocio, pero el mecanismo existe.
 
-Notas:
-- no se detectaron websockets propios del producto en la lectura hecha.
-- hay dependencias gRPC en `package.json`, pero no aparecen como integracion central del flujo principal documentado aqui.
+## Servicios locales expuestos por la app
 
-Referencias:
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\services\GoogleAPIService.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\modules\proxy\clients\gemini.client.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\modules\proxy\request-user-agent.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\cloud\authServer.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\scripts\setup-auto-backup.mjs`
+No son llamadas salientes, pero conviene inventariarlos:
+
+- `http://localhost:8888/oauth-callback`
+  callback local de OAuth
+- `http://localhost:<port>`
+  gateway NestJS local
+
+## Soporte de proxy upstream
+
+Si la config lo activa, el repo puede encaminar llamadas HTTP a traves de un upstream proxy:
+
+- en `GoogleAPIService`
+- en `GeminiClient`
+- y tambien via `upstream_proxy_url` asociado a una cuenta/token
+
+## Resumen practico por subsistema
+
+- Alta/refresco de cuenta: Google OAuth + userinfo
+- Resolucion de proyecto/cuota: Cloud Code internal APIs
+- Proxy local: Gemini + Cloud Code internal APIs
+- Versionado/update: updater service + changelog publico
+- Telemetria: Sentry opcional
+
+## Referencias de codigo
+
+- `src/services/GoogleAPIService.ts`
+- `src/server/modules/proxy/clients/gemini.client.ts`
+- `src/server/modules/proxy/request-user-agent.ts`
+- `src/main.ts`
+- `src/instrument.ts`
+- `src/preload.ts`
+- `src/renderer.ts`

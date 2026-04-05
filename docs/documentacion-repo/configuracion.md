@@ -1,17 +1,19 @@
 # Configuracion
 
-Resumen:
-- la config de app vive en `gui_config.json`
-- el estado de auto switch vive aparte en la tabla `settings` de `cloud_accounts.db`
-- el proxy Nest consume una copia en memoria llamada `serverConfig`
+Resumen: la configuracion principal se guarda en `gui_config.json` y se maneja con `ConfigManager`. El schema completo esta definido con Zod en `src/types/config.ts`. Hay settings generales de UI/operacion y un bloque amplio dedicado al proxy local.
 
-Archivo principal:
-- ruta:
-  `getAppDataDir()/gui_config.json`
-- en Windows normal:
-  `C:\Users\<usuario>\AppData\Roaming\Antigravity\gui_config.json`
+## Ubicacion
 
-Campos de `AppConfig`:
+Archivo:
+
+- `gui_config.json`
+
+Se guarda bajo `getAppDataDir()`, no dentro de `~/.antigravity-agent`.
+
+## `AppConfig`
+
+Campos de nivel alto:
+
 - `language`
 - `theme`
 - `auto_refresh`
@@ -27,7 +29,10 @@ Campos de `AppConfig`:
 - `grid_layout`
 - `proxy`
 
-Campos importantes de `proxy`:
+## `ProxyConfig`
+
+Campos observados:
+
 - `enabled`
 - `port`
 - `api_key`
@@ -49,45 +54,70 @@ Campos importantes de `proxy`:
 - `upstream_proxy.enabled`
 - `upstream_proxy.url`
 
-Como se carga:
-- `ConfigManager.loadConfig()`:
-  lee JSON, mezcla defaults y hace merge profundo de `proxy.upstream_proxy`.
-- `ConfigManager` mantiene cache de la config cargada.
+## Defaults relevantes
 
-Como se guarda:
-- `ConfigManager.saveConfig()` serializa JSON y actualiza cache.
-- `src/ipc/config/handlers.ts` es la via correcta desde UI:
-  guarda en disco, actualiza `serverConfig`, ajusta Sentry y sincroniza auto start.
+Segun `DEFAULT_APP_CONFIG`:
 
-Fuentes de config que NO son el mismo archivo:
-- `CloudAccountRepo.getSetting/setSetting`:
-  guarda pares clave/valor JSON en `cloud_accounts.db`.
-- hoy se usa ahi, por ejemplo:
-  `auto_switch_enabled`
+- `language: zh-CN`
+- `theme: system`
+- `auto_refresh: false`
+- `auto_sync: false`
+- `auto_startup: false`
+- `error_reporting_enabled: true`
+- `proxy.enabled: false`
+- `proxy.port: 8045`
+- `proxy.api_key: ''`
+- `proxy.auto_start: false`
+- `proxy.scheduling_mode: balance`
 
-Efectos operativos de cambios relevantes:
-- `proxy.port`:
-  afecta el proximo arranque manual o automatico del gateway.
-- `proxy.request_timeout`:
-  lo usa `GeminiClient` para requests internos.
-- `proxy.api_key`:
-  lo valida `ProxyGuard` contra `serverConfig`.
-- `proxy.upstream_proxy`:
-  cambia salida HTTP de `GoogleAPIService` y `GeminiClient`.
-- `auto_startup`:
-  pasa por `syncAutoStart`.
-- `error_reporting_enabled`:
-  cambia el logger y la inicializacion de Sentry.
+## Efecto operativo de settings importantes
 
-Hallazgo de consistencia:
-- `config.saveConfig` propaga `setServerConfig(config.proxy)`.
-- `gateway.generateKey` modifica el archivo pero no invoca `setServerConfig`.
-- consecuencia:
-  la API key regenerada puede no aplicarse al proxy ya corriendo hasta otra llamada de guardado o reinicio del servidor.
+- `proxy.enabled`
+  Habilita el feature del proxy.
+- `proxy.auto_start`
+  Permite arrancarlo al iniciar la app.
+- `proxy.port`
+  Define el puerto del servicio NestJS.
+- `proxy.api_key`
+  Si esta vacia, el proxy no exige autenticacion.
+- `proxy.upstream_proxy`
+  Encamina salidas HTTP por un proxy externo.
+- `proxy.custom_mapping` / `proxy.anthropic_mapping`
+  Ajustan la traduccion de modelos.
+- `error_reporting_enabled`
+  Habilita Sentry si el resto de prerequisitos existe.
+- `auto_startup`
+  Sincroniza login item / auto-start del sistema.
 
-Referencias:
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\types\config.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\config\manager.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\config\handlers.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\gateway\handlers.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\server-config.ts`
+## Observacion sobre settings aparentemente no cableados del todo
+
+Detecte `auto_refresh`, `refresh_interval`, `auto_sync` y `sync_interval` en schema y UI, pero no encontre un timer equivalente claramente conectado a esas opciones en los servicios principales actuales.
+
+Lo que si existe:
+
+- `CloudMonitorService` hace polling cada 5 minutos con constante interna
+- `AutoSwitchService` depende de `auto_switch_enabled` guardado en la tabla `settings` de la DB cloud
+
+Interpretacion practica:
+
+- esos toggles existen en la experiencia de usuario
+- pero pueden estar incompletos, reservados para futuras extensiones o parcialmente desconectados del runtime actual
+
+## Hallazgo de consistencia
+
+- `config.saveConfig` propaga `setServerConfig(config.proxy)`
+- `gateway.generateKey` modifica el archivo pero no invoca `setServerConfig`
+
+Consecuencia:
+
+- la API key regenerada puede no aplicarse al proxy ya corriendo hasta otro guardado o reinicio del servidor
+
+## Referencias de codigo
+
+- `src/ipc/config/manager.ts`
+- `src/ipc/config/router.ts`
+- `src/ipc/gateway/handlers.ts`
+- `src/server/server-config.ts`
+- `src/types/config.ts`
+- `src/routes/settings.tsx`
+- `src/utils/autoStart.ts`
