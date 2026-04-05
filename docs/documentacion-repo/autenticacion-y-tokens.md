@@ -1,49 +1,100 @@
 # Autenticacion y tokens
 
-Resumen: el flujo principal usa OAuth de Google. El main abre una ventana de auth, recibe el `code` via un server local, intercambia por tokens, guarda tokens cifrados en SQLite y los inyecta en el IDE para habilitar el acceso. El proxy interno reutiliza esos tokens via TokenManagerService.
+Resumen:
+- la autenticacion principal es OAuth 2.0 de Google
+- el `main` abre el navegador externo y un server local recibe el `code`
+- los tokens se guardan cifrados en `cloud_accounts.db`
+- luego se inyectan dentro de la DB del IDE Antigravity para "logear" la cuenta en el producto externo
 
-Flujo OAuth:
-- El renderer solicita `startAuthFlow` via ORPC.
-- Main abre la URL de OAuth de Google en el navegador.
-- AuthServer escucha en `http://localhost:8888/oauth-callback` y recibe el `code`.
-- Main intercambia el `code` por `access_token` y `refresh_token`.
-- Se obtiene `userinfo`, `loadCodeAssist` y `fetchAvailableModels`.
-- Se guarda la cuenta en la DB local con cifrado.
+Flujo OAuth completo:
 
-Almacenamiento:
-- Tokens y cuotas se cifran con AES-256-GCM.
-- La master key se obtiene de `safeStorage` o `keytar`, con fallback local.
-- La DB de cuentas vive en el directorio del agente.
+```plaintext
+UI -> cloud.startAuthFlow()
+  -> shell.openExternal(google auth URL)
+Google redirect
+  -> http://localhost:8888/oauth-callback?code=...
+AuthServer
+  -> renderer event GOOGLE_AUTH_CODE
+UI / ORPC
+  -> cloud.addGoogleAccount(authCode)
+GoogleAPIService.exchangeCode()
+GoogleAPIService.getUserInfo()
+GoogleAPIService.fetchQuota()
+CloudAccountRepo.addAccount()
+```
 
-Inyeccion en IDE:
-- Se escriben claves en `state.vscdb` para el token OAuth y estado de auth.
-- Se soportan formatos de token antiguos y nuevos segun version del IDE.
+Piezas implicadas:
+- `src/ipc/cloud/authServer.ts`
+- `src/ipc/cloud/handler.ts`
+- `src/services/GoogleAPIService.ts`
+- `src/ipc/database/cloudHandler.ts`
 
-Proxy interno:
-- El TokenManagerService cachea tokens por cuenta y decide cual usar.
-- Refresh automatico cuando el token expira o esta por expirar.
+Datos del token cloud:
+- `access_token`
+- `refresh_token`
+- `expires_in`
+- `expiry_timestamp`
+- `token_type`
+- `email`
+- `project_id`
+- `session_id`
+- `upstream_proxy_url`
 
-Tokens y formatos en el IDE:
-- Nuevo formato: se escribe `antigravityUnifiedStateSync.oauthToken` con un payload protobuf generado.
-- Formato legacy: se escribe `jetskiStateSync.agentManagerInitState` con el token en el campo 6 del protobuf.
-- Estado de auth: se actualiza `antigravityAuthStatus` y se ajusta `antigravityOnboarding` para evitar flujos repetidos.
-- Limpieza: se elimina la key `google.antigravity` para evitar conflictos.
+Unidad temporal importante:
+- TypeScript usa `expiry_timestamp` en segundos unix.
+- `addGoogleAccount`, `switchCloudAccount`, `refreshAccountQuota`, `CloudMonitorService` y `TokenManagerService` trabajan asi.
+- el CLI Python no sigue esa misma convencion y ahi hay una desviacion documentada en `hallazgos-y-riesgos.md`.
 
-Saldos y cuotas:
-- `fetchAvailableModels` devuelve cuotas por modelo.
-- Esas cuotas se guardan en `quota_json` y se usan para decisiones de auto-switch.
-- El proxy usa cuotas para rate limit y seleccion de cuenta.
+Scopes OAuth pedidos:
+- `https://www.googleapis.com/auth/cloud-platform`
+- `https://www.googleapis.com/auth/userinfo.email`
+- `https://www.googleapis.com/auth/userinfo.profile`
+- `https://www.googleapis.com/auth/cclog`
+- `https://www.googleapis.com/auth/experimentsandconfigs`
+
+Obtencion de metadatos posteriores al login:
+- `getUserInfo()` obtiene email, nombre y avatar.
+- `fetchProjectContext()` intenta resolver `project_id` y tier de suscripcion.
+- `fetchQuota()` obtiene cuotas y reglas dinamicas de forwarding.
 
 Refresco de tokens:
-- Si el token esta proximo a expirar, se usa `refresh_token` para renovar.
-- El TokenManagerService guarda el token actualizado en la DB local.
+- `refreshAccountQuota()` refresca si faltan menos de 5 minutos.
+- `switchCloudAccount()` intenta refrescar con margen de 20 minutos antes de inyectar.
+- `CloudMonitorService.poll()` refresca si faltan menos de 10 minutos.
+- `TokenManagerService.finalizeSelectedToken()` refresca si faltan menos de 5 minutos para una request del proxy.
+
+Almacenamiento de auth dentro del IDE:
+- clave nueva:
+  `antigravityUnifiedStateSync.oauthToken`
+- clave legacy:
+  `jetskiStateSync.agentManagerInitState`
+- estado complementario:
+  `antigravityAuthStatus`
+  `antigravityOnboarding`
+- limpieza:
+  elimina `google.antigravity`
+
+Estrategia de inyeccion:
+- `CloudAccountRepo` detecta version del IDE con `getAntigravityVersion()`.
+- si la version es nueva usa formato unified.
+- si la version es vieja usa protobuf legacy en el campo 6.
+- si no puede decidir, intenta ambos caminos.
+
+Sync desde el IDE:
+- `CloudAccountRepo.syncFromIDE()` lee `state.vscdb`.
+- intenta primero `antigravityUnifiedStateSync.oauthToken`.
+- si no existe, cae a `jetskiStateSync.agentManagerInitState`.
+- decodifica protobuf, valida token con Google y upsertea la cuenta en DB local.
+
+Riesgos y observaciones:
+- `CLIENT_ID` y `CLIENT_SECRET` estan embebidos en el repo.
+- `startAuthFlow()` construye la URL sin parametro `state`.
+- el redirect usa `localhost:8888` fijo.
+- `AuthServer` es local y simple; no hay rotacion de puerto ni proteccion adicional del callback.
 
 Referencias:
 - `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\cloud\handler.ts`
 - `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\cloud\authServer.ts`
 - `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\services\GoogleAPIService.ts`
 - `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\database\cloudHandler.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\utils\security.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\proxy\services\tokenManager.service.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\database\handler.ts`
 - `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\utils\protobuf.ts`

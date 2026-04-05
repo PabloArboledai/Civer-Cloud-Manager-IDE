@@ -16,6 +16,10 @@ Sentry:
 - Inicializacion en main y renderer si esta habilitado en config.
 - Controlado por `gui_config.json`.
 
+Debug:
+- Eventos internos se normalizan con `createDebugEvent`.
+- Logs recientes se agrupan para reportes de error.
+
 Proteccion de datos:
 - Masking de tokens, api keys y secretos en logs.
 
@@ -24,3 +28,4 @@ Referencias:
 - `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\utils\instrument.ts`
 - `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\utils\sensitiveDataMasking.ts`
 - `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\main.ts`
+- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\utils\debug.ts`

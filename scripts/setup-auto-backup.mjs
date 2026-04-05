@@ -96,6 +96,8 @@ function configureAutoBackupSettings(commitEmail) {
   runGit(['config', '--local', 'auto-backup.remote', BACKUP_REMOTE]);
   runGit(['config', '--local', 'auto-backup.branch', resolveCurrentBranch()]);
   runGit(['config', '--local', 'auto-backup.quiet-ms', '300000']);
+  runGit(['config', '--local', 'auto-backup.debounce-ms', '15000']);
+  runGit(['config', '--local', 'auto-backup.fallback-check-ms', '60000']);
   runGit(['config', '--local', 'auto-backup.commit-email', commitEmail]);
   runGit(['config', '--local', 'user.name', COMMIT_NAME]);
   runGit(['config', '--local', 'user.email', commitEmail]);

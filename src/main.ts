@@ -106,7 +106,7 @@ function startMainDebugHeartbeat() {
 
     logger.debugEvent('main', 'process', 'heartbeat', {
       isQuitting,
-      appFocused: app.isFocused(),
+      appFocused: BrowserWindow.getFocusedWindow() !== null,
       windowCount: BrowserWindow.getAllWindows().length,
       mainWindow: globalMainWindow
         ? {

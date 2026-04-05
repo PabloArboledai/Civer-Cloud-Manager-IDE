@@ -1,27 +1,70 @@
 # Dispositivo e identidad
 
-Resumen: el sistema permite capturar, generar y aplicar perfiles de identidad del IDE. Manipula valores en `storage.json` y sincroniza `storage.serviceMachineId` dentro de la DB del IDE. Incluye backups y modo seguro.
+Resumen:
+- el manager mantiene perfiles de identidad del IDE Antigravity
+- esos perfiles afectan `storage.json` y tambien `storage.serviceMachineId` en `state.vscdb`
+- el sistema tiene baseline global, historial por cuenta, rollback, safe mode y verificaciones
 
-Elementos de identidad:
-- `machineId`, `macMachineId`, `devDeviceId`, `sqmId` en `storage.json`.
-- `storage.serviceMachineId` en `state.vscdb`.
+Estructura del perfil:
+- `machineId`
+- `macMachineId`
+- `devDeviceId`
+- `sqmId`
 
-Operaciones:
-- Generar perfil desde estado actual.
-- Aplicar perfil con backup y verificacion.
-- Guardar historial por cuenta.
-- Modo seguro tras fallos consecutivos al aplicar identidad.
+Fuentes y destinos:
+- origen principal:
+  `storage.json`
+- sincronizacion extra:
+  `storage.serviceMachineId` en `ItemTable` de `state.vscdb`
 
-Backups y seguridad:
-- Se guarda el ultimo perfil aplicado por cuenta.
-- Hay backup del estado previo para rollback.
-- Se valida que los archivos existan antes de aplicar.
+Archivos auxiliares:
+- `device_original.json`
+  baseline global del dispositivo original
+- `device_last_known_good/*`
+  snapshots del ultimo estado considerado sano
 
-Flags y control:
-- Habilitacion via `CRACK_IDENTITY_PROFILE_APPLY_ENABLED` o `CRACK_DEVICE_FINGERPRINT_ENABLED`.
-- Temporizador de bloqueo para evitar loops de fallos.
+Capacidades del modulo:
+- leer perfil actual del IDE
+- generar perfil nuevo aleatorio
+- guardar baseline global si aun no existe
+- aplicar perfil de forma verificada
+- sincronizar `serviceMachineId` en DB
+- mantener historial por cuenta local o cloud
+
+Aplicacion de perfil:
+- `executeSwitchFlow()` decide si aplica fingerprint.
+- `applyDeviceProfile()` hace backup, escribe `storage.json`, sincroniza DB, verifica lectura y si falla intenta rollback.
+- si acumula fallos de aplicacion entra en `safeMode`.
+
+Controles de hardening:
+- contador de fallos consecutivos
+- `safeModeActive`
+- `safeModeUntil`
+- snapshot de ultimo fallo con etapa y razon
+- verificacion despues de escribir
+
+Flags de activacion:
+- `CRACK_IDENTITY_PROFILE_APPLY_ENABLED`
+- `CRACK_DEVICE_FINGERPRINT_ENABLED`
+
+Relacion con cuentas:
+- las cuentas cloud guardan `device_profile_json` y `device_history_json` en `cloud_accounts.db`.
+- los snapshots locales guardan `deviceProfile` y `deviceHistory` en `antigravity_accounts.json`.
+- se puede:
+  capturar el perfil actual
+  generar uno nuevo
+  restaurar una revision
+  restaurar baseline
+  borrar revisiones historicas
+
+Riesgos y observaciones:
+- la identidad aplicada depende de flags de entorno; un switch puede hacer solo cambio de token si la aplicacion esta deshabilitada.
+- el baseline es global, no por cuenta.
+- este sistema escribe sobre archivos del IDE externo, por lo que su superficie de fallo es mayor que la de un cambio puro en DB local.
 
 Referencias:
 - `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\device\handler.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\database\cloudHandler.ts`
+- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\types\account.ts`
+- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\account\handler.ts`
+- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\cloud\handler.ts`
 - `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\utils\paths.ts`

@@ -11,6 +11,7 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "autobackup:check": "node ./scripts/auto-backup.mjs",
+    "autobackup:daemon": "node ./scripts/auto-backup-daemon.mjs",
     "autobackup:setup": "node ./scripts/setup-auto-backup.mjs",
     "autobackup:register-task": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/register-auto-backup-task.ps1",
     "lint": "eslint .",
