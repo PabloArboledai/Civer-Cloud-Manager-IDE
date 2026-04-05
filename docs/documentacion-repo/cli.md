@@ -1,67 +1,68 @@
 # CLI
 
-Resumen:
-- el repo incluye una CLI Python que replica una parte importante del manager de escritorio
-- puede listar, refrescar, validar, cambiar y exportar cuentas
-- trabaja sobre la misma DB local y la misma DB del IDE
+Resumen: el repo incluye un CLI Python que replica parte del valor del manager Electron desde terminal. No es solo un wrapper cosmetico; interactua con la DB cifrada, refresca cuotas, valida tokens, maneja aliases y puede inyectar credenciales en el IDE.
 
-Archivos principales:
+## Estructura
+
+- `cli/main.py`
+  Comandos Typer + Rich + modo interactivo opcional con Questionary.
+- `cli/core.py`
+  Logica real de DB, cifrado, refresh de tokens y escritura al IDE.
+- `cli/proto_utils.py`
+  Helpers protobuf para el formato OAuth del IDE.
+- `cli/README.md`
+  Guia de uso para humanos.
+
+## Capacidades observadas
+
+- listar cuentas
+- mostrar cuotas
+- refrescar una o todas las cuentas
+- validar tokens
+- cambiar a la mejor cuenta
+- exportar/importar backup
+- aliases
+- watch de cuotas
+- doctor/diagnostics
+- setup PATH
+
+## Relacion con la app principal
+
+El CLI:
+
+- lee `cloud_accounts.db`
+- intenta obtener la misma master key
+- descifra `token_json` y `quota_json`
+- puede escribir `antigravityUnifiedStateSync.oauthToken` y otros campos en `state.vscdb`
+
+En la practica, es una ruta paralela al UI desktop para operar el mismo ecosistema de datos.
+
+## Diferencias y caveats
+
+- El CLI esta claramente mas sesgado a Windows en varias rutas y supuestos.
+- Duplica `CLIENT_ID` y `CLIENT_SECRET` de Google.
+- Implementa su propia busqueda de `.mk`, `Local State` y DPAPI.
+- Sus heuristicas de paths no siempre coinciden exactamente con `src/utils/paths.ts`.
+
+Eso significa que es util para diagnostico y operaciones rapidas, pero puede divergir del comportamiento del runtime TypeScript si uno evoluciona y el otro no.
+
+## Uso operativo recomendado
+
+Bueno para:
+
+- auditoria rapida de cuentas/cuotas
+- diagnostico en terminal
+- refresh masivo
+- scripting local
+
+Menos bueno para:
+
+- asumir que refleja al 100 por ciento la logica mas actual del main process
+- usarlo como unica fuente de verdad de paths o estrategias de cifrado
+
+## Referencias de codigo
+
+- `cli/README.md`
 - `cli/main.py`
 - `cli/core.py`
 - `cli/proto_utils.py`
-- `cli/README.md`
-
-Superficie funcional:
-- listado de cuentas
-- info detallada por cuenta
-- switch de cuenta
-- refresh individual y masivo
-- validacion y refresh de tokens
-- comparacion CLI <-> IDE
-- borrado de cuentas
-- aliases
-- export / import
-- auto switch
-- watch
-- doctor
-- setup PATH
-
-Capas del CLI:
-- `main.py`:
-  Typer, Rich e interfaz interactiva.
-- `core.py`:
-  descubrimiento de paths, cifrado, lectura de DB, APIs Google, inyeccion al IDE, procesos.
-- `proto_utils.py`:
-  helpers protobuf.
-
-Fuentes de datos del CLI:
-- `cloud_accounts.db`
-- `state.vscdb`
-- alias file
-- ejecutable Antigravity
-
-Solapamiento con la app TS:
-- comparte ideas de:
-  cifrado local
-  fetch de quota
-  refresh de token
-  inyeccion de token al IDE
-  proceso de switch
-- pero no comparte codigo; es una implementacion paralela
-
-Hallazgo fuerte:
-- `cli/core.py` trata `expiry_timestamp` como milisegundos.
-- el codigo TypeScript lo usa en segundos.
-- el CLI incluso reescribe `expiry_timestamp` en milisegundos al refrescar.
-- esto puede dejar estados mezclados entre GUI y CLI.
-
-Otras observaciones:
-- el README del CLI esta orientado a Windows.
-- el CLI habla de "same as the IDE" para el cifrado, pero en la practica esta reflejando el mismo modelo local del manager.
-- no se aprecia una suite de tests dedicada al CLI.
-
-Referencias:
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\cli\README.md`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\cli\main.py`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\cli\core.py`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\cli\proto_utils.py`

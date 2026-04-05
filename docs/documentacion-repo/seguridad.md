@@ -1,68 +1,103 @@
 # Seguridad
 
-Resumen:
-- el repo si tiene controles de seguridad reales, sobre todo en cifrado de tokens y sanitizacion de logs
-- tambien arrastra decisiones de riesgo en Electron, OAuth y exposicion del proxy
+Resumen: el repo tiene buenas bases de seguridad local para una app desktop de este tipo, especialmente en cifrado de secretos y masking de logs. Aun asi, tambien presenta varios riesgos concretos que otros agentes deberian conocer antes de ampliar o confiar ciegamente en ciertos flujos.
 
-Controles de seguridad positivos:
-- cifrado AES-256-GCM para `token_json` y `quota_json`
-- jerarquia de clave maestra:
-  `safeStorage`
-  `keytar`
-  `file` fallback
-- migracion automatica cuando una fila se descifra con key fallback
-- sanitizacion de objetos para logs y paquetes ORPC
-- fuses de Electron en empaquetado
+## Fortalezas observadas
 
-Jerarquia de claves:
-- preferido:
-  `safeStorage` de Electron
-- fallback:
-  `keytar`
-- ultimo recurso:
-  archivo `.mk`
+### Cifrado de datos sensibles
 
-Datos protegidos:
-- access tokens
-- refresh tokens
-- quota blobs
-- objetos complejos que pasan por logger
+- `token_json` y `quota_json` se cifran con AES-256-GCM.
+- Existe migracion desde formatos legacy/plaintext.
+- Hay soporte de varias fuentes de master key:
+  - `safeStorage`
+  - `keytar`
+  - fallback en archivo `.mk`
 
-Proteccion de logs:
-- `sanitizeObject()` y `safeStringifyPacket()` intentan ocultar secretos antes de persistir.
-- `logger.ts` tambien captura `recentLogs` para Sentry si esta habilitado.
+### Manejo cuidadoso de escrituras
 
-Postura Electron:
+- escrituras atomicas en varios puntos
+- backups antes de mutar `state.vscdb`
+- snapshots y rollback para device identity
+
+### Masking de logs
+
+- masking de tokens y API keys
+- `safeStringifyPacket()` para ORPC packet logging
+- buffer de logs recientes pensado para reportes de error
+
+## Riesgos y observaciones importantes
+
+### 1. Credenciales OAuth hardcodeadas
+
+Se observan `CLIENT_ID` y `CLIENT_SECRET` de Google hardcodeados en:
+
+- `src/services/GoogleAPIService.ts`
+- `src/ipc/cloud/handler.ts`
+- `cli/core.py`
+
+### 2. Flujo OAuth sin `state`
+
+No vi parametro `state` en la construccion de la URL OAuth.
+
+Impacto:
+
+- menor proteccion frente a CSRF o callbacks cruzados
+- el callback local confia practicamente en recibir un `code` valido
+
+### 3. `BrowserWindow` con `nodeIntegration: true`
+
+En `src/main.ts`:
+
 - `contextIsolation: true`
 - `nodeIntegration: true`
-- fuses de empaquetado:
-  `RunAsNode = false`
-  `EnableCookieEncryption = true`
-  `EnableNodeOptionsEnvironmentVariable = false`
-  `EnableNodeCliInspectArguments = false`
-  `EnableEmbeddedAsarIntegrityValidation = true`
-  `OnlyLoadAppFromAsar = true`
 
-Proxy local:
-- la API key se valida en `ProxyGuard`.
-- si la API key esta vacia, el proxy queda sin auth.
-- como el servidor escucha en `0.0.0.0`, el riesgo no es solo local si el host tiene red abierta.
+Eso reduce el aislamiento que normalmente se busca en una app Electron endurecida.
 
-Riesgos concretos detectados:
-- `nodeIntegration: true` ensancha la superficie del renderer.
-- `CLIENT_SECRET` de Google esta hardcodeado.
-- el OAuth no usa `state`.
-- `AuthServer` usa puerto fijo `8888`.
-- `gateway.generateKey` no sincroniza config viva del proxy ya corriendo.
+### 4. Proxy escuchando en `0.0.0.0`
 
-Notas sobre secretos:
-- no se detectaron variables de entorno obligatorias para el funcionamiento normal de auth Google; gran parte de esa identidad viene embebida.
-- Sentry si depende de `SENTRY_DSN` para un despliegue real.
+`src/server/main.ts` hace `listen(port, '0.0.0.0')` y habilita CORS.
 
-Referencias:
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\utils\security.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\utils\sensitiveDataMasking.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\main.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\instrument.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\server\modules\proxy\proxy.guard.ts`
-- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\forge.config.ts`
+Si ademas `api_key` esta vacia, el servicio puede quedar expuesto mas ampliamente de lo deseado.
+
+### 5. Proxy en modo abierto si no hay API key
+
+`ProxyGuard` devuelve `true` si no hay API key configurada.
+
+Eso es un comportamiento funcional intencional, pero desde seguridad requiere que el operador sepa exactamente que esta publicando.
+
+### 6. Fallback de master key en archivo
+
+Cuando `safeStorage` y `keytar` fallan, el sistema cae a `.mk`.
+
+Es un compromiso pragmatico, pero claramente menos fuerte que keychain/credential manager nativo.
+
+### 7. Packet logs siguen siendo sensibles
+
+Aunque haya masking, `orpc_packets.log` puede seguir conteniendo metadatos operativos delicados.
+
+### 8. Fallback de `project_id`
+
+`TokenManagerService` usa `silver-orbit-5m7qc` como fallback si no resuelve proyecto.
+
+No es un bug de seguridad clasico, pero si un comportamiento implicito que conviene auditar.
+
+## Recomendaciones operativas
+
+- No asumir que dejar `api_key` vacia es inocuo.
+- Tratar `orpc_packets.log`, `app logs` y `.mk` como artefactos sensibles.
+- Revisar cualquier cambio en preload/renderer con cuidado por la combinacion `contextIsolation + nodeIntegration`.
+- Si se endurece seguridad, priorizar:
+  - mover secretos OAuth fuera del repo
+  - agregar `state` al flujo OAuth
+  - evaluar reducir exposicion del proxy
+
+## Referencias de codigo
+
+- `src/utils/security.ts`
+- `src/utils/sensitiveDataMasking.ts`
+- `src/main.ts`
+- `src/server/main.ts`
+- `src/server/modules/proxy/proxy.guard.ts`
+- `src/services/GoogleAPIService.ts`
+- `src/ipc/cloud/handler.ts`
+- `cli/core.py`

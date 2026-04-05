@@ -5,7 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import squirrelStartup from 'electron-squirrel-startup';
 
-import { ipcMain } from 'electron/main';
+import { ipcMain } from 'electron';
 import { ipcContext } from '@/ipc/context';
 import { IPC_CHANNELS } from './constants';
 import { updateElectronApp, UpdateSourceType } from 'update-electron-app';
