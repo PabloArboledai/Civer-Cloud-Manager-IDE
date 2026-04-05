@@ -62,6 +62,23 @@ Nota:
 
 - Si ves otros archivos no listados arriba dentro de esta carpeta, tratalos como borradores o material heredado. La lista anterior es la referencia canonica mantenida por esta investigacion.
 
+## Material complementario util
+
+Estos archivos no son necesarios para seguir el mapa principal, pero contienen detalle adicional valioso:
+
+- `docs/documentacion-repo/saldos-y-modelos.md`
+  Profundiza en cuotas, modelos, forwarding y limites.
+- `docs/documentacion-repo/procesos-y-tray.md`
+  Explica control del proceso Antigravity, tray y auto-start.
+- `docs/documentacion-repo/automatizacion-y-backup.md`
+  Documenta el sistema de auto-backup Git/GitHub del repo.
+- `docs/documentacion-repo/hallazgos-y-riesgos.md`
+  Variante ampliada de hallazgos practicos y deuda tecnica.
+- `docs/documentacion-repo/ipc-orpc-y-api-interna.md`
+  Version alternativa/previa del mapa de IPC interno.
+- `docs/documentacion-repo/build-test-release.md`
+  Variante previa de la documentacion de build y release.
+
 ## Conclusiones rapidas
 
 - El nucleo real del producto esta en `src/main.ts`, `src/ipc/database/cloudHandler.ts`, `src/services/GoogleAPIService.ts`, `src/server/modules/proxy/*` y `src/ipc/device/handler.ts`.
