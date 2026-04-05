@@ -17,6 +17,7 @@ Contenido sugerido:
 - `docs/documentacion-repo/cli.md`
 - `docs/documentacion-repo/configuracion.md`
 - `docs/documentacion-repo/seguridad.md`
+- `docs/documentacion-repo/saldos-y-modelos.md`
 
 Notas de lectura:
 - Esta documentacion usa rutas completas para referencias de codigo.
