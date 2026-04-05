@@ -1,12 +1,14 @@
-# User Guide
+# Guía de Usuario
 
-This document is a user-level guide for AI assistants working in this repository. It standardizes language, tool/script preferences, and development notes for the current tech stack.
+Este documento es una guía para asistentes de IA que trabajen en este repositorio. Estandariza el idioma, las preferencias de herramientas/scripts y las notas de desarrollo para la pila tecnológica actual.
 
-## 💬 Communication Conventions
+## 💬 Convenciones de Comunicación
 
-- **Language**: Use English consistently for conversation, TODOs, and code-related content (comments, UI copy, commit messages, PR descriptions, and similar artifacts).
-- **Conclusion first**: Start with the core conclusion/summary, then provide details.
-- **References**: When citing code, always provide full file paths (for example, `src/main.ts:42`).
+- **Idioma**: Usa español de forma consistente para la conversación, TODOs, documentación, comentarios de código, textos de UI, mensajes de commit, descripciones de PR y artefactos generados similares, salvo que un requisito técnico obligue explícitamente a usar otro idioma.
+- **Idioma por defecto en respuestas**: Responde siempre al usuario en español, salvo que el usuario pida expresamente otro idioma.
+- **Contenido heredado**: Si queda texto antiguo en inglés dentro de este archivo o en documentos relacionados, debe interpretarse y reescribirse en español cuando se use o se actualice.
+- **Conclusión primero**: Empieza con la conclusión o el resumen principal y después da los detalles.
+- **Referencias**: Al citar código, proporciona siempre rutas completas de archivo (por ejemplo, `src/main.ts:42`).
 
 ## 💻 Runtime and Tooling
 

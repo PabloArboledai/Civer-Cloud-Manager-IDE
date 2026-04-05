@@ -29,7 +29,7 @@ function Resolve-NodePath {
     }
   }
 
-  throw 'Node.exe could not be resolved. Set AUTO_BACKUP_NODE_BIN to a valid path.'
+  throw 'No se pudo resolver Node.exe. Define AUTO_BACKUP_NODE_BIN con una ruta válida.'
 }
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
@@ -45,11 +45,11 @@ $nodePath = Resolve-NodePath
 
 Push-Location $repoRoot
 try {
-  "[{0}] Starting scheduled auto-backup run." -f (Get-Date -Format o) | Out-File -FilePath $logFile -Append -Encoding utf8
+  "[{0}] Iniciando ejecución programada de auto-backup." -f (Get-Date -Format o) | Out-File -FilePath $logFile -Append -Encoding utf8
   & $nodePath $scriptPath 2>&1 | Out-File -FilePath $logFile -Append -Encoding utf8
 
   if ($LASTEXITCODE -ne 0) {
-    throw "auto-backup.mjs exited with code $LASTEXITCODE."
+    throw "auto-backup.mjs terminó con el código $LASTEXITCODE."
   }
 } finally {
   Pop-Location

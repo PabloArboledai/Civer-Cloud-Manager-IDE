@@ -16,7 +16,7 @@ const BACKUP_BRANCH =
   getGitConfig('auto-backup.branch') ||
   resolveCurrentBranch();
 const COMMIT_NAME =
-  process.env.AUTO_BACKUP_COMMIT_NAME || getGitConfig('user.name') || 'Auto Backup Bot';
+  process.env.AUTO_BACKUP_COMMIT_NAME || getGitConfig('user.name') || 'Bot de respaldo automático';
 const COMMIT_EMAIL =
   process.env.AUTO_BACKUP_COMMIT_EMAIL ||
   getGitConfig('user.email') ||
@@ -30,7 +30,7 @@ function main() {
   ensureBackupRemoteExists();
 
   if (hasActiveGitOperation()) {
-    log('Git is busy with another operation. Skipping this run.');
+    log('Git está ocupado con otra operación. Se omite esta ejecución.');
     return;
   }
 
@@ -43,16 +43,16 @@ function main() {
     state.lastDirtyChangeAt = null;
 
     if (headBeforeRun !== state.lastSuccessfulHead) {
-      log(`Working tree is clean and HEAD ${headBeforeRun} has not been backed up yet.`);
+      log(`El árbol de trabajo está limpio y HEAD ${headBeforeRun} aún no se ha respaldado.`);
       pushCurrentHead(BACKUP_BRANCH);
       state.lastSuccessfulHead = getHeadHash();
       writeState(state);
-      log(`Backup push finished for ${state.lastSuccessfulHead}.`);
+      log(`El push de respaldo finalizó para ${state.lastSuccessfulHead}.`);
       return;
     }
 
     writeState(state);
-    log('Working tree is clean and already backed up. Nothing to do.');
+    log('El árbol de trabajo está limpio y ya está respaldado. No hay nada que hacer.');
     return;
   }
 
@@ -77,17 +77,17 @@ function main() {
   const quietForMs = nowMs - (state.lastDirtyChangeAt || nowMs);
   if (quietForMs < QUIET_MS) {
     log(
-      `Detected pending changes, but the quiet period has only been ${Math.floor(
+      `Se detectaron cambios pendientes, pero el periodo de silencio solo lleva ${Math.floor(
         quietForMs / 1000,
-      )}s. Waiting for ${Math.floor(QUIET_MS / 1000)}s.`,
+      )}s. Esperando ${Math.floor(QUIET_MS / 1000)}s.`,
     );
     return;
   }
 
   log(
-    `Detected pending changes after ${Math.floor(
+    `Se detectaron cambios pendientes tras ${Math.floor(
       quietForMs / 1000,
-    )}s of inactivity. Creating a backup snapshot.`,
+    )}s de inactividad. Creando un snapshot de respaldo.`,
   );
 
   const committedHead = createBackupCommitIfNeeded(headBeforeRun);
@@ -98,7 +98,7 @@ function main() {
   state.lastDirtyChangeAt = null;
   writeState(state);
 
-  log(`Backup push finished for ${state.lastSuccessfulHead}.`);
+  log(`El push de respaldo finalizó para ${state.lastSuccessfulHead}.`);
 }
 
 function resolveGitBinary() {
@@ -131,7 +131,7 @@ function resolveGitBinary() {
       .find(Boolean);
   } catch (error) {
     throw new Error(
-      'Git could not be resolved. Set AUTO_BACKUP_GIT_BIN to a valid git.exe path.',
+      'No se pudo resolver Git. Define AUTO_BACKUP_GIT_BIN con una ruta válida a git.exe.',
     );
   }
 }
@@ -156,7 +156,7 @@ function ensureGitRepository() {
   const repoRoot = runGit(['rev-parse', '--show-toplevel']);
   if (path.resolve(repoRoot) !== path.resolve(REPO_ROOT)) {
     throw new Error(
-      `Run this script from the repository root. Expected ${repoRoot}, received ${REPO_ROOT}.`,
+      `Ejecuta este script desde la raíz del repositorio. Se esperaba ${repoRoot} y se recibió ${REPO_ROOT}.`,
     );
   }
 }
@@ -178,7 +178,7 @@ function ensureCommitIdentity() {
 
   if (!resolvedName || !resolvedEmail) {
     throw new Error(
-      'Git commit identity is missing. Set AUTO_BACKUP_COMMIT_NAME and AUTO_BACKUP_COMMIT_EMAIL or configure git user.name and user.email.',
+      'Falta la identidad de commit de Git. Define AUTO_BACKUP_COMMIT_NAME y AUTO_BACKUP_COMMIT_EMAIL o configura git user.name y user.email.',
     );
   }
 }
@@ -187,7 +187,7 @@ function ensureBackupRemoteExists() {
   const remoteUrl = runGit(['remote', 'get-url', BACKUP_REMOTE], { allowFailure: true });
   if (!remoteUrl) {
     throw new Error(
-      `The backup remote "${BACKUP_REMOTE}" is not configured. Run scripts/setup-auto-backup.mjs first.`,
+      `El remoto de respaldo "${BACKUP_REMOTE}" no está configurado. Ejecuta primero scripts/setup-auto-backup.mjs.`,
     );
   }
 }
@@ -218,7 +218,7 @@ function readState() {
   try {
     return JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
   } catch (error) {
-    log('The previous auto-backup state could not be parsed. Rebuilding it.');
+    log('No se pudo interpretar el estado previo de auto-backup. Se reconstruirá.');
     return {
       lastSuccessfulHead: null,
       lastDirtySignature: null,
@@ -308,11 +308,11 @@ function createBackupCommitIfNeeded(headBeforeRun) {
     .filter(Boolean).length;
 
   if (hasChangesAfterAdd === 0) {
-    log('No staged changes remained by commit time. Skipping the commit step.');
+    log('Ya no quedaban cambios preparados al momento del commit. Se omite el paso de commit.');
     return headBeforeRun;
   }
 
-  const commitMessage = `chore(auto-backup): snapshot ${new Date().toISOString()}`;
+  const commitMessage = `chore(auto-backup): respaldo ${new Date().toISOString()}`;
   runGit(['commit', '-m', commitMessage]);
 
   return getHeadHash();

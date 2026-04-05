@@ -1,15 +1,15 @@
-# Auto Backup
+# Respaldo Automático
 
-This repository now includes a local backup flow that can snapshot and push the current branch to a private GitHub repository after 5 minutes without changes.
+Este repositorio ahora incluye un flujo local de respaldo que puede crear snapshots y hacer push de la rama actual a un repositorio privado de GitHub después de 5 minutos sin cambios.
 
-## What It Does
+## Qué Hace
 
-- `scripts/auto-backup.mjs` checks the working tree, waits for a 5-minute quiet period, commits a snapshot when needed, and pushes the current branch to the configured backup remote.
-- `scripts/run-auto-backup.ps1` is the Windows-friendly runner that resolves `node.exe`, writes to `logs/auto-backup.log`, and executes the backup script from the repository root.
-- `scripts/register-auto-backup-task.ps1` creates a Scheduled Task that runs the runner every minute.
-- `scripts/setup-auto-backup.mjs` creates or reuses a private GitHub repository, stores credentials through Git Credential Manager, and configures the `backup` remote.
+- `scripts/auto-backup.mjs` revisa el árbol de trabajo, espera un periodo de silencio de 5 minutos, crea un snapshot cuando hace falta y hace push de la rama actual al remoto de respaldo configurado.
+- `scripts/run-auto-backup.ps1` es el runner compatible con Windows que resuelve `node.exe`, escribe en `logs/auto-backup.log` y ejecuta el script de respaldo desde la raíz del repositorio.
+- `scripts/register-auto-backup-task.ps1` crea una tarea programada que ejecuta el runner cada minuto.
+- `scripts/setup-auto-backup.mjs` crea o reutiliza un repositorio privado de GitHub, almacena las credenciales con Git Credential Manager y configura el remoto `backup`.
 
-## Commands
+## Comandos
 
 ```plaintext
 npm run autobackup:setup
@@ -17,16 +17,16 @@ npm run autobackup:check
 npm run autobackup:register-task
 ```
 
-## Required Environment Variables
+## Variables de Entorno Requeridas
 
-Setup expects a GitHub token in one of these variables:
+La configuración espera un token de GitHub en una de estas variables:
 
 ```plaintext
 AUTO_BACKUP_GITHUB_TOKEN
 GITHUB_TOKEN
 ```
 
-Optional overrides:
+Variables opcionales:
 
 ```plaintext
 AUTO_BACKUP_REPO_NAME
@@ -39,8 +39,8 @@ AUTO_BACKUP_QUIET_MS
 AUTO_BACKUP_BRANCH
 ```
 
-## Notes
+## Notas
 
-- The backup state file is stored under `.git/auto-backup-state.json`.
-- Credentials are stored in Git Credential Manager instead of inside the repository.
-- The scheduled task runs every minute, but a backup commit only happens after the working tree has been quiet for 5 minutes.
+- El archivo de estado del respaldo se guarda en `.git/auto-backup-state.json`.
+- Las credenciales se almacenan en Git Credential Manager en lugar de dentro del repositorio.
+- La tarea programada corre cada minuto, pero solo se crea un commit de respaldo cuando el árbol de trabajo lleva 5 minutos en silencio.

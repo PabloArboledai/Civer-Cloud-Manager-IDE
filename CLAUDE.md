@@ -1,1 +1,1 @@
-Always refer to `@AGENTS.md`.
+Consulta siempre `@AGENTS.md`.

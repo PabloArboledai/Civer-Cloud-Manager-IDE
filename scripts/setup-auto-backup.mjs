@@ -11,7 +11,7 @@ const REPO_NAME =
   process.env.AUTO_BACKUP_REPO_NAME || `${slugify(path.basename(REPO_ROOT))}-private-backup`;
 const TOKEN = process.env.AUTO_BACKUP_GITHUB_TOKEN || process.env.GITHUB_TOKEN;
 const COMMIT_NAME =
-  process.env.AUTO_BACKUP_COMMIT_NAME || getGitConfig('user.name') || 'Auto Backup Bot';
+  process.env.AUTO_BACKUP_COMMIT_NAME || getGitConfig('user.name') || 'Bot de respaldo automático';
 
 main().catch((error) => {
   console.error(error.message);
@@ -23,7 +23,7 @@ async function main() {
 
   if (!TOKEN) {
     throw new Error(
-      'Missing GitHub token. Set AUTO_BACKUP_GITHUB_TOKEN or GITHUB_TOKEN before running setup-auto-backup.mjs.',
+      'Falta el token de GitHub. Define AUTO_BACKUP_GITHUB_TOKEN o GITHUB_TOKEN antes de ejecutar setup-auto-backup.mjs.',
     );
   }
 
@@ -39,16 +39,16 @@ async function main() {
   configureRemote(repo.clone_url);
   configureAutoBackupSettings(commitEmail);
 
-  console.log(`Configured backup remote "${BACKUP_REMOTE}" -> ${repo.clone_url}`);
-  console.log(`Configured backup branch "${resolveCurrentBranch()}".`);
-  console.log('Stored GitHub credentials in Git Credential Manager.');
+  console.log(`Remoto de respaldo configurado "${BACKUP_REMOTE}" -> ${repo.clone_url}`);
+  console.log(`Rama de respaldo configurada "${resolveCurrentBranch()}".`);
+  console.log('Las credenciales de GitHub se guardaron en Git Credential Manager.');
 }
 
 function ensureGitRepository() {
   const repoRoot = runGit(['rev-parse', '--show-toplevel']);
   if (path.resolve(repoRoot) !== path.resolve(REPO_ROOT)) {
     throw new Error(
-      `Run this script from the repository root. Expected ${repoRoot}, received ${REPO_ROOT}.`,
+      `Ejecuta este script desde la raíz del repositorio. Se esperaba ${repoRoot} y se recibió ${REPO_ROOT}.`,
     );
   }
 }
@@ -61,7 +61,7 @@ async function ensurePrivateRepository(login) {
   if (existingRepository) {
     if (!existingRepository.private) {
       throw new Error(
-        `The repository ${login}/${REPO_NAME} already exists and is not private. Choose a different AUTO_BACKUP_REPO_NAME.`,
+        `El repositorio ${login}/${REPO_NAME} ya existe y no es privado. Elige otro AUTO_BACKUP_REPO_NAME.`,
       );
     }
 
@@ -73,7 +73,7 @@ async function ensurePrivateRepository(login) {
     body: {
       name: REPO_NAME,
       private: true,
-      description: `Automated backup mirror for ${path.basename(REPO_ROOT)}`,
+      description: `Espejo de respaldo automatizado para ${path.basename(REPO_ROOT)}`,
       auto_init: false,
     },
   });
@@ -127,7 +127,7 @@ async function githubRequest(endpoint, options = {}) {
   if (!response.ok) {
     const failureBody = await response.text();
     throw new Error(
-      `GitHub API request failed (${response.status} ${response.statusText}) for ${endpoint}: ${failureBody}`,
+      `La solicitud a la API de GitHub falló (${response.status} ${response.statusText}) para ${endpoint}: ${failureBody}`,
     );
   }
 
@@ -154,7 +154,7 @@ function resolveGitBinary() {
   }
 
   throw new Error(
-    'Git could not be resolved. Set AUTO_BACKUP_GIT_BIN to a valid git.exe path before running setup.',
+    'No se pudo resolver Git. Define AUTO_BACKUP_GIT_BIN con una ruta válida a git.exe antes de ejecutar la configuración.',
   );
 }
 
