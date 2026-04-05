@@ -46,7 +46,7 @@ $nodePath = Resolve-NodePath
 Push-Location $repoRoot
 try {
   "[{0}] Starting scheduled auto-backup run." -f (Get-Date -Format o) | Out-File -FilePath $logFile -Append -Encoding utf8
-  & $nodePath $scriptPath *>> $logFile
+  & $nodePath $scriptPath 2>&1 | Out-File -FilePath $logFile -Append -Encoding utf8
 
   if ($LASTEXITCODE -ne 0) {
     throw "auto-backup.mjs exited with code $LASTEXITCODE."
