@@ -43,7 +43,7 @@ Datos del token cloud:
 Unidad temporal importante:
 - TypeScript usa `expiry_timestamp` en segundos unix.
 - `addGoogleAccount`, `switchCloudAccount`, `refreshAccountQuota`, `CloudMonitorService` y `TokenManagerService` trabajan asi.
-- el CLI Python no sigue esa misma convencion y ahi hay una desviacion documentada en `hallazgos-y-riesgos.md`.
+- el CLI Python no sigue esa misma convencion y ahi hay una desviacion documentada en `riesgos-y-hallazgos.md`.
 
 Scopes OAuth pedidos:
 - `https://www.googleapis.com/auth/cloud-platform`
