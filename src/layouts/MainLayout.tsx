@@ -7,6 +7,7 @@ import {
   Settings,
   Network,
   Rocket,
+  TerminalSquare,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
@@ -59,6 +60,11 @@ export const MainLayout: React.FC = () => {
       to: '/proxy',
       icon: Network,
       label: t('nav.proxy', 'API Proxy'),
+    },
+    {
+      to: '/codex',
+      icon: TerminalSquare,
+      label: t('nav.codex', 'Codex'),
     },
     {
       to: '/settings',
