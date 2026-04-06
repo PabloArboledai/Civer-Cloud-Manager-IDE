@@ -76,7 +76,7 @@ function decodeJwtSegment(segment: string): Record<string, unknown> | null {
   }
 }
 
-function parseCodexConfig(content: string): CodexConfigSnapshot {
+export function parseCodexConfig(content: string): CodexConfigSnapshot {
   const lines = content.split(/\r?\n/);
   let currentSection = '';
   let model: string | null = null;
@@ -143,7 +143,7 @@ function readCodexConfigSnapshot(): CodexConfigSnapshot {
     const content = fs.readFileSync(configPath, 'utf-8');
     return parseCodexConfig(content);
   } catch (error) {
-    logger.warn('No se pudo leer la configuración de Codex', error);
+    logger.warn('No se pudo leer la configuracion de Codex', error);
     return {
       model: null,
       modelReasoningEffort: null,
@@ -218,11 +218,11 @@ function readCodexAuthStatus(): CodexAuthStatus {
       hasApiKey,
     };
   } catch (error) {
-    logger.warn('No se pudo leer el estado de autenticación de Codex', error);
+    logger.warn('No se pudo leer el estado de autenticacion de Codex', error);
     return {
       isAuthenticated: false,
       authMode: null,
-      loginLabel: 'Estado inválido',
+      loginLabel: 'Estado invalido',
       accountIdMasked: null,
       lastRefresh: null,
       hasAccessToken: false,
@@ -242,7 +242,7 @@ async function readCodexVersion(executablePath: string): Promise<string | null> 
     const version = stdout.trim();
     return version.length > 0 ? version : null;
   } catch (error) {
-    logger.warn('No se pudo leer la versión de Codex', error);
+    logger.warn('No se pudo leer la version de Codex', error);
     return null;
   }
 }
@@ -323,6 +323,20 @@ function extractTokenMetadata(idToken: string | null) {
   const audienceCount = Array.isArray(audienceValue) ? audienceValue.length : audienceValue ? 1 : null;
   const organizationsValue = authInfo?.organizations;
   const organizationCount = Array.isArray(organizationsValue) ? organizationsValue.length : null;
+  const platformUrlValue =
+    typeof authInfo?.platform_url === 'string'
+      ? authInfo.platform_url
+      : typeof claims?.platform_url === 'string'
+        ? claims.platform_url
+        : null;
+  let platformUrlHost: string | null = null;
+  if (platformUrlValue) {
+    try {
+      platformUrlHost = new URL(platformUrlValue).host;
+    } catch {
+      platformUrlHost = null;
+    }
+  }
 
   return {
     header: {
@@ -345,7 +359,7 @@ function extractTokenMetadata(idToken: string | null) {
       localhost: typeof authInfo?.localhost === 'boolean' ? authInfo.localhost : null,
       organizationCount,
       projectIdPresent: Boolean(authInfo?.project_id),
-      platformUrlHost: buildQueryDiagnostics(new URL(`http://localhost/success?platform_url=${encodeURIComponent(typeof claims?.platform_url === 'string' ? claims.platform_url : '')}`)).queryFlags.platformUrlHost,
+      platformUrlHost,
     },
   };
 }
@@ -363,7 +377,7 @@ export function analyzeCodexCallback(input: string): CodexCallbackDiagnostics {
       path: null,
       parameterNames: [],
       sensitiveParams: [],
-      warnings: ['No se recibió ningún callback para analizar.'],
+      warnings: ['No se recibio ningun callback para analizar.'],
       queryFlags: {
         needsSetup: null,
         planType: null,
@@ -393,7 +407,7 @@ export function analyzeCodexCallback(input: string): CodexCallbackDiagnostics {
       path: null,
       parameterNames: [],
       sensitiveParams: [],
-      warnings: ['El callback no tiene un formato de URL válido.'],
+      warnings: ['El callback no tiene un formato de URL valido.'],
       queryFlags: {
         needsSetup: null,
         planType: null,
@@ -406,7 +420,7 @@ export function analyzeCodexCallback(input: string): CodexCallbackDiagnostics {
   }
 
   if (!LOCALHOST_HOSTS.has(url.hostname)) {
-    warnings.push('Solo se admiten callbacks localhost para diagnóstico.');
+    warnings.push('Solo se admiten callbacks localhost para diagnostico.');
   }
   if (url.pathname !== '/success') {
     warnings.push('La ruta no coincide con /success.');
@@ -414,7 +428,7 @@ export function analyzeCodexCallback(input: string): CodexCallbackDiagnostics {
 
   const queryDiagnostics = buildQueryDiagnostics(url);
   if (!url.searchParams.get('id_token')) {
-    warnings.push('No se detectó id_token en el callback.');
+    warnings.push('No se detecto id_token en el callback.');
   }
 
   return {
@@ -485,7 +499,7 @@ class CodexExecManager {
   public cancel(runId: string): void {
     const activeRun = this.activeRuns.get(runId);
     if (!activeRun) {
-      throw new Error('No hay una ejecución activa con ese identificador.');
+      throw new Error('No hay una ejecucion activa con ese identificador.');
     }
 
     activeRun.cancelRequested = true;
@@ -494,7 +508,7 @@ class CodexExecManager {
 
   public start(executablePath: string, request: CodexExecRequest): CodexExecRunSnapshot {
     if (this.activeRuns.size > 0) {
-      throw new Error('Ya hay una ejecución de Codex en curso.');
+      throw new Error('Ya hay una ejecucion de Codex en curso.');
     }
 
     ensureDirectoryExists(request.cwd);
@@ -593,7 +607,7 @@ class CodexExecManager {
         status,
         exitCode,
         signal,
-        errorMessage: status === 'failed' ? `Proceso finalizado con código ${exitCode ?? 'desconocido'}` : null,
+        errorMessage: status === 'failed' ? `Proceso finalizado con codigo ${exitCode ?? 'desconocido'}` : null,
       });
       this.appendEvent(runId, {
         runId,
@@ -601,8 +615,8 @@ class CodexExecManager {
         at: new Date().toISOString(),
         line:
           status === 'cancelled'
-            ? 'Ejecución cancelada por el usuario.'
-            : `Proceso finalizado con código ${exitCode ?? 'desconocido'}.`,
+            ? 'Ejecucion cancelada por el usuario.'
+            : `Proceso finalizado con codigo ${exitCode ?? 'desconocido'}.`,
         summary: { ...this.runs.get(runId)!.summary },
       });
       this.activeRuns.delete(runId);
@@ -775,7 +789,7 @@ export async function getCodexStatus(): Promise<CodexStatusSnapshot> {
 export async function openCodexLogin(): Promise<void> {
   const installation = await detectCodexInstallation();
   if (!installation.available || !installation.executablePath) {
-    throw new Error('No se encontró ninguna instalación de Codex.');
+    throw new Error('No se encontro ninguna instalacion de Codex.');
   }
 
   if (process.platform === 'win32') {
@@ -798,7 +812,7 @@ export async function openCodexLogin(): Promise<void> {
 export async function logoutCodex(): Promise<void> {
   const installation = await detectCodexInstallation();
   if (!installation.available || !installation.executablePath) {
-    throw new Error('No se encontró ninguna instalación de Codex.');
+    throw new Error('No se encontro ninguna instalacion de Codex.');
   }
 
   await execFileAsync(installation.executablePath, ['logout'], {
@@ -817,7 +831,7 @@ export async function openCodexHome(): Promise<void> {
 export async function startCodexExec(request: CodexExecRequest): Promise<CodexExecRunSnapshot> {
   const installation = await detectCodexInstallation();
   if (!installation.available || !installation.executablePath) {
-    throw new Error('No se encontró ninguna instalación de Codex.');
+    throw new Error('No se encontro ninguna instalacion de Codex.');
   }
 
   return codexExecManager.start(installation.executablePath, request);
