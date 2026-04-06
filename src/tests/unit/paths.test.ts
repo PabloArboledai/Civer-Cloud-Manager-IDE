@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import {
   getAppDataDir,
   getAntigravityDbPath,
@@ -7,6 +7,17 @@ import {
 } from '../../utils/paths';
 
 describe('Path Utilities', () => {
+  const originalPlatform = process.platform;
+  const originalPath = process.env.PATH;
+
+  afterEach(() => {
+    vi.resetModules();
+    vi.doUnmock('fs');
+    vi.doUnmock('os');
+    Object.defineProperty(process, 'platform', { value: originalPlatform, configurable: true });
+    process.env.PATH = originalPath;
+  });
+
   it('should get correct AppData directory', () => {
     const appData = getAppDataDir();
     expect(appData).toBeDefined();
