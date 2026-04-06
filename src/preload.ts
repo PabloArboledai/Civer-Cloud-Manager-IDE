@@ -58,6 +58,11 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer.on('GOOGLE_AUTH_CODE', handler);
     return () => ipcRenderer.off('GOOGLE_AUTH_CODE', handler);
   },
+  onCodexExecEvent: (callback: (event: unknown) => void) => {
+    const handler = (_event: unknown, detail: unknown) => callback(detail);
+    ipcRenderer.on(IPC_CHANNELS.CODEX_EXEC_EVENT, handler);
+    return () => ipcRenderer.off(IPC_CHANNELS.CODEX_EXEC_EVENT, handler);
+  },
   changeLanguage: (lang: string) => {
     ipcRenderer.send(IPC_CHANNELS.CHANGE_LANGUAGE, lang);
   },

@@ -4,6 +4,7 @@ import { window } from './window';
 import { databaseRouter } from './database/router';
 import { accountRouter } from './account/router';
 import { cloudRouter } from './cloud/router';
+import { codexRouter } from './codex/router';
 import { configRouter } from './config/router';
 import { gatewayRouter } from './gateway/router';
 
@@ -67,6 +68,7 @@ export const router = os.use(logMiddleware).router({
 
   account: accountRouter,
   cloud: cloudRouter,
+  codex: codexRouter,
   config: configRouter,
   gateway: gatewayRouter,
   system: systemHandler,
