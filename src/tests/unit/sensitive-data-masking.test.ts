@@ -83,6 +83,22 @@ describe('sensitive data masking', () => {
         pin: '[REDACTED]',
       });
     });
+
+    it('masks Codex-specific credential keys', () => {
+      expect(
+        sanitizeObject({
+          id_token: 'jwt',
+          sid: 'sid-value',
+          cap_sid: 'cap-value',
+          account_id: 'account-123',
+        }),
+      ).toEqual({
+        id_token: '[REDACTED]',
+        sid: '[REDACTED]',
+        cap_sid: '[REDACTED]',
+        account_id: '[REDACTED]',
+      });
+    });
   });
 
   describe('safeStringifyPacket', () => {

@@ -5,6 +5,19 @@ vi.mock('find-process', () => ({
   default: vi.fn(),
 }));
 
+vi.mock('child_process', () => ({
+  exec: vi.fn(),
+  execSync: vi.fn(),
+  execFile: vi.fn(),
+  spawn: vi.fn(),
+}));
+
+vi.mock('electron', () => ({
+  shell: {
+    openPath: vi.fn(() => Promise.resolve('')),
+  },
+}));
+
 // Mock logger to avoid console output during tests
 vi.mock('../../utils/logger', () => ({
   logger: {
@@ -23,6 +36,7 @@ vi.mock('../../utils/paths', () => ({
 
 // Import after mocks are set up
 import { isProcessRunning, closeAntigravity, startAntigravity } from '../../ipc/process/handler';
+import { analyzeCodexCallback, parseCodexConfig } from '../../ipc/codex/handler';
 import findProcess from 'find-process';
 
 describe('Process Handler', () => {
@@ -177,6 +191,37 @@ describe('Process Handler', () => {
       expect(isProcessRunning).toBeDefined();
       expect(closeAntigravity).toBeDefined();
       expect(startAntigravity).toBeDefined();
+    });
+  });
+
+  describe('Codex helper parsing', () => {
+    it('should parse a safe subset of Codex config.toml', () => {
+      const snapshot = parseCodexConfig(`
+model = "gpt-5.4"
+model_reasoning_effort = "high"
+profile = "default"
+[windows]
+sandbox = "workspace-write"
+`);
+
+      expect(snapshot).toEqual({
+        model: 'gpt-5.4',
+        modelReasoningEffort: 'high',
+        profile: 'default',
+        sandboxMode: 'workspace-write',
+      });
+    });
+
+    it('should analyze localhost callbacks without exposing token values', () => {
+      const diagnostics = analyzeCodexCallback(
+        'http://localhost:1455/success?id_token=aaa.bbb.ccc&needs_setup=false&plan_type=free',
+      );
+
+      expect(diagnostics.host).toBe('localhost');
+      expect(diagnostics.path).toBe('/success');
+      expect(diagnostics.sensitiveParams).toContain('id_token');
+      expect(diagnostics.normalizedUrl).toContain('id_token=%5BREDACTED%5D');
+      expect(diagnostics.queryFlags.planType).toBe('free');
     });
   });
 });
