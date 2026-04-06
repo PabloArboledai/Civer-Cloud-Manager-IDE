@@ -1,38 +1,44 @@
 import { ipc } from '@/ipc/manager';
-import type { CodexExecRequest } from '@/types/codex';
+import type {
+  CodexCallbackDiagnostics,
+  CodexExecRequest,
+  CodexExecRunSnapshot,
+  CodexInstallation,
+  CodexStatusSnapshot,
+} from '@/types/codex';
 
-export function getCodexStatus() {
-  return ipc.client.codex.getStatus();
+export function getCodexStatus(): Promise<CodexStatusSnapshot> {
+  return ipc.client.codex.getStatus() as Promise<CodexStatusSnapshot>;
 }
 
-export function detectCodexInstallation() {
-  return ipc.client.codex.detectInstallation();
+export function detectCodexInstallation(): Promise<CodexInstallation> {
+  return ipc.client.codex.detectInstallation() as Promise<CodexInstallation>;
 }
 
-export function openCodexLogin() {
-  return ipc.client.codex.openLogin();
+export function openCodexLogin(): Promise<void> {
+  return ipc.client.codex.openLogin() as Promise<void>;
 }
 
-export function logoutCodex() {
-  return ipc.client.codex.logout();
+export function logoutCodex(): Promise<void> {
+  return ipc.client.codex.logout() as Promise<void>;
 }
 
-export function openCodexHome() {
-  return ipc.client.codex.openHome();
+export function openCodexHome(): Promise<void> {
+  return ipc.client.codex.openHome() as Promise<void>;
 }
 
-export function analyzeCodexCallback(input: { input: string }) {
-  return ipc.client.codex.analyzeCallback(input);
+export function analyzeCodexCallback(input: { input: string }): Promise<CodexCallbackDiagnostics> {
+  return ipc.client.codex.analyzeCallback(input) as Promise<CodexCallbackDiagnostics>;
 }
 
-export function startCodexExec(input: CodexExecRequest) {
-  return ipc.client.codex.startExec(input);
+export function startCodexExec(input: CodexExecRequest): Promise<CodexExecRunSnapshot> {
+  return ipc.client.codex.startExec(input) as Promise<CodexExecRunSnapshot>;
 }
 
-export function cancelCodexExec(input: { runId: string }) {
-  return ipc.client.codex.cancelExec(input);
+export function cancelCodexExec(input: { runId: string }): Promise<void> {
+  return ipc.client.codex.cancelExec(input) as Promise<void>;
 }
 
-export function getCodexRun(input: { runId: string }) {
-  return ipc.client.codex.getRun(input);
+export function getCodexRun(input: { runId: string }): Promise<CodexExecRunSnapshot | null> {
+  return ipc.client.codex.getRun(input) as Promise<CodexExecRunSnapshot | null>;
 }

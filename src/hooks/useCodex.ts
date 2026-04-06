@@ -9,7 +9,12 @@ import {
   openCodexLogin,
   startCodexExec,
 } from '@/actions/codex';
-import type { CodexExecRunSnapshot, CodexStatusSnapshot } from '@/types/codex';
+import type {
+  CodexCallbackDiagnostics,
+  CodexExecRequest,
+  CodexExecRunSnapshot,
+  CodexStatusSnapshot,
+} from '@/types/codex';
 
 export const CODEX_STATUS_QUERY_KEY = ['codex', 'status'];
 
@@ -24,7 +29,7 @@ export function useCodexStatus(refetchInterval: number | false = false) {
 export function useOpenCodexLogin() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<void, unknown, void>({
     mutationFn: openCodexLogin,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CODEX_STATUS_QUERY_KEY });
@@ -35,7 +40,7 @@ export function useOpenCodexLogin() {
 export function useLogoutCodex() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<void, unknown, void>({
     mutationFn: logoutCodex,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CODEX_STATUS_QUERY_KEY });
@@ -44,13 +49,13 @@ export function useLogoutCodex() {
 }
 
 export function useOpenCodexHome() {
-  return useMutation({
+  return useMutation<void, unknown, void>({
     mutationFn: openCodexHome,
   });
 }
 
 export function useAnalyzeCodexCallback() {
-  return useMutation({
+  return useMutation<CodexCallbackDiagnostics, unknown, { input: string }>({
     mutationFn: analyzeCodexCallback,
   });
 }
@@ -58,7 +63,7 @@ export function useAnalyzeCodexCallback() {
 export function useStartCodexExec() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<CodexExecRunSnapshot, unknown, CodexExecRequest>({
     mutationFn: startCodexExec,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CODEX_STATUS_QUERY_KEY });
@@ -69,7 +74,7 @@ export function useStartCodexExec() {
 export function useCancelCodexExec() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<void, unknown, { runId: string }>({
     mutationFn: cancelCodexExec,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CODEX_STATUS_QUERY_KEY });

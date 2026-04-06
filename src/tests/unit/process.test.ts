@@ -5,11 +5,22 @@ vi.mock('find-process', () => ({
   default: vi.fn(),
 }));
 
+const mockExec = vi.fn();
+const mockExecSync = vi.fn();
+const mockExecFile = vi.fn();
+const mockSpawn = vi.fn();
+
 vi.mock('child_process', () => ({
-  exec: vi.fn(),
-  execSync: vi.fn(),
-  execFile: vi.fn(),
-  spawn: vi.fn(),
+  exec: mockExec,
+  execSync: mockExecSync,
+  execFile: mockExecFile,
+  spawn: mockSpawn,
+  default: {
+    exec: mockExec,
+    execSync: mockExecSync,
+    execFile: mockExecFile,
+    spawn: mockSpawn,
+  },
 }));
 
 vi.mock('electron', () => ({

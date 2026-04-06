@@ -261,6 +261,8 @@ function CodexPage() {
         cwd: execCwd,
         model: execModel || undefined,
         sandbox: execSandbox,
+        skipGitRepoCheck: false,
+        fullAuto: false,
       },
       {
         onSuccess: (result) => {

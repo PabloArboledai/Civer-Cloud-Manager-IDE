@@ -1,3 +1,6 @@
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import {
   getAppDataDir,
@@ -9,13 +12,33 @@ import {
 describe('Path Utilities', () => {
   const originalPlatform = process.platform;
   const originalPath = process.env.PATH;
+  const originalHome = process.env.HOME;
+  const originalUserProfile = process.env.USERPROFILE;
+  const tempDirs: string[] = [];
+
+  function createTempDir(): string {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codex-paths-'));
+    tempDirs.push(tempDir);
+    return tempDir;
+  }
 
   afterEach(() => {
     vi.resetModules();
-    vi.doUnmock('fs');
-    vi.doUnmock('os');
     Object.defineProperty(process, 'platform', { value: originalPlatform, configurable: true });
     process.env.PATH = originalPath;
+    if (originalHome === undefined) {
+      delete process.env.HOME;
+    } else {
+      process.env.HOME = originalHome;
+    }
+    if (originalUserProfile === undefined) {
+      delete process.env.USERPROFILE;
+    } else {
+      process.env.USERPROFILE = originalUserProfile;
+    }
+    for (const tempDir of tempDirs.splice(0)) {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
   });
 
   it('should get correct AppData directory', () => {
@@ -47,32 +70,25 @@ describe('Path Utilities', () => {
   it('should resolve Codex path candidates from PATH on Windows', async () => {
     vi.resetModules();
     Object.defineProperty(process, 'platform', { value: 'win32', configurable: true });
-    process.env.PATH = 'C:\\Tools';
+    const tempDir = createTempDir();
+    const toolsDir = path.join(tempDir, 'Tools');
+    const homeDir = path.join(tempDir, 'home');
+    const executablePath = path.join(toolsDir, 'codex.exe');
 
-    const existsSync = vi.fn((candidate: string) => candidate === 'C:\\Tools\\codex.exe');
-    const readdirSync = vi.fn(() => []);
+    fs.mkdirSync(toolsDir, { recursive: true });
+    fs.mkdirSync(homeDir, { recursive: true });
+    fs.writeFileSync(executablePath, '');
 
-    vi.doMock('fs', () => ({
-      existsSync,
-      readdirSync,
-      default: {
-        existsSync,
-        readdirSync,
-      },
-    }));
-    vi.doMock('os', () => ({
-      homedir: () => 'C:\\Users\\Tester',
-      default: {
-        homedir: () => 'C:\\Users\\Tester',
-      },
-    }));
+    process.env.PATH = toolsDir;
+    process.env.HOME = homeDir;
+    process.env.USERPROFILE = homeDir;
 
     const { getCodexExecutableCandidates } = await import('../../utils/codexPaths');
     const candidates = getCodexExecutableCandidates();
 
     expect(candidates).toEqual([
       {
-        path: 'C:\\Tools\\codex.exe',
+        path: executablePath,
         source: 'path',
       },
     ]);
@@ -81,35 +97,24 @@ describe('Path Utilities', () => {
   it('should resolve Codex extension fallback candidates on Windows', async () => {
     vi.resetModules();
     Object.defineProperty(process, 'platform', { value: 'win32', configurable: true });
+    const tempDir = createTempDir();
+    const homeDir = path.join(tempDir, 'home');
+    const executablePath = path.join(
+      homeDir,
+      '.vscode-insiders',
+      'extensions',
+      'openai.chatgpt-1.2.3',
+      'bin',
+      'windows-x86_64',
+      'codex.exe',
+    );
+
+    fs.mkdirSync(path.dirname(executablePath), { recursive: true });
+    fs.writeFileSync(executablePath, '');
+
     process.env.PATH = '';
-
-    const extensionRoot = 'C:\\Users\\Tester\\.vscode-insiders\\extensions';
-    const executablePath =
-      'C:\\Users\\Tester\\.vscode-insiders\\extensions\\openai.chatgpt-1.2.3\\bin\\windows-x86_64\\codex.exe';
-    const existsSync = vi.fn((candidate: string) => {
-      return candidate === extensionRoot || candidate === executablePath;
-    });
-    const readdirSync = vi.fn((candidate: string) => {
-      if (candidate === extensionRoot) {
-        return ['openai.chatgpt-1.2.3'];
-      }
-      return [];
-    });
-
-    vi.doMock('fs', () => ({
-      existsSync,
-      readdirSync,
-      default: {
-        existsSync,
-        readdirSync,
-      },
-    }));
-    vi.doMock('os', () => ({
-      homedir: () => 'C:\\Users\\Tester',
-      default: {
-        homedir: () => 'C:\\Users\\Tester',
-      },
-    }));
+    process.env.HOME = homeDir;
+    process.env.USERPROFILE = homeDir;
 
     const { getCodexExecutableCandidates } = await import('../../utils/codexPaths');
     const candidates = getCodexExecutableCandidates();

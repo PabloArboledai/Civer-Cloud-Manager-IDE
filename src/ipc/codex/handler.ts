@@ -9,6 +9,7 @@ import {
   type CodexConfigSnapshot,
   type CodexExecEvent,
   type CodexExecRequest,
+  type CodexExecRequestResolved,
   type CodexExecRunSnapshot,
   type CodexExecRunSummary,
   type CodexInstallation,
@@ -445,7 +446,19 @@ export function analyzeCodexCallback(input: string): CodexCallbackDiagnostics {
   };
 }
 
-function createCommandPreview(request: CodexExecRequest): string {
+function normalizeCodexExecRequest(request: CodexExecRequest): CodexExecRequestResolved {
+  return {
+    prompt: request.prompt,
+    cwd: request.cwd,
+    model: request.model,
+    sandbox: request.sandbox,
+    profile: request.profile,
+    skipGitRepoCheck: request.skipGitRepoCheck ?? false,
+    fullAuto: request.fullAuto ?? false,
+  };
+}
+
+function createCommandPreview(request: CodexExecRequestResolved): string {
   const segments = ['codex exec --json'];
   if (request.model) {
     segments.push(`-m ${request.model}`);
@@ -506,7 +519,7 @@ class CodexExecManager {
     activeRun.child.kill();
   }
 
-  public start(executablePath: string, request: CodexExecRequest): CodexExecRunSnapshot {
+  public start(executablePath: string, request: CodexExecRequestResolved): CodexExecRunSnapshot {
     if (this.activeRuns.size > 0) {
       throw new Error('Ya hay una ejecucion de Codex en curso.');
     }
@@ -834,7 +847,7 @@ export async function startCodexExec(request: CodexExecRequest): Promise<CodexEx
     throw new Error('No se encontro ninguna instalacion de Codex.');
   }
 
-  return codexExecManager.start(installation.executablePath, request);
+  return codexExecManager.start(installation.executablePath, normalizeCodexExecRequest(request));
 }
 
 export async function cancelCodexExec(runId: string): Promise<void> {
