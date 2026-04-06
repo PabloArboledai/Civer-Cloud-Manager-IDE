@@ -5,21 +5,23 @@ vi.mock('find-process', () => ({
   default: vi.fn(),
 }));
 
-const mockExec = vi.fn();
-const mockExecSync = vi.fn();
-const mockExecFile = vi.fn();
-const mockSpawn = vi.fn();
+const childProcessMocks = vi.hoisted(() => ({
+  exec: vi.fn(),
+  execSync: vi.fn(),
+  execFile: vi.fn(),
+  spawn: vi.fn(),
+}));
 
 vi.mock('child_process', () => ({
-  exec: mockExec,
-  execSync: mockExecSync,
-  execFile: mockExecFile,
-  spawn: mockSpawn,
+  exec: childProcessMocks.exec,
+  execSync: childProcessMocks.execSync,
+  execFile: childProcessMocks.execFile,
+  spawn: childProcessMocks.spawn,
   default: {
-    exec: mockExec,
-    execSync: mockExecSync,
-    execFile: mockExecFile,
-    spawn: mockSpawn,
+    exec: childProcessMocks.exec,
+    execSync: childProcessMocks.execSync,
+    execFile: childProcessMocks.execFile,
+    spawn: childProcessMocks.spawn,
   },
 }));
 
