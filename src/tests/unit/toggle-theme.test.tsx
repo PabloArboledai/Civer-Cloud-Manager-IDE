@@ -41,7 +41,7 @@ test('renders ToggleTheme', () => {
   const { getByRole } = render(<ToggleTheme />);
   const isButton = getByRole('button');
 
-  expect(isButton).toBeInTheDocument();
+  expect(isButton).toBeTruthy();
 });
 
 test('has icon', () => {
@@ -49,7 +49,7 @@ test('has icon', () => {
   const button = getByRole('button');
   const icon = button.querySelector('svg');
 
-  expect(icon).toBeInTheDocument();
+  expect(icon).toBeTruthy();
 });
 
 test('is moon icon', () => {
@@ -67,7 +67,7 @@ test('defaults ThemeProvider to dark when no preference is stored', () => {
     </ThemeProvider>,
   );
 
-  expect(getByTestId('theme-probe')).toHaveTextContent('dark');
+  expect(getByTestId('theme-probe').textContent).toBe('dark');
   expect(document.documentElement.classList).toContain('dark');
 });
 
