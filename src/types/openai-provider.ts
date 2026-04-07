@@ -54,6 +54,10 @@ export interface OpenAIProviderStateSnapshot {
   usage?: OpenAIProviderUsageSnapshot;
   budget?: OpenAIProviderBudgetSnapshot;
   health: OpenAIProviderHealthSnapshot;
+  availableModels?: string[];
+  api_key_id?: string | null;
+  admin_api_available?: boolean | null;
+  last_refreshed_at?: number | null;
   lastSuccessfulRequestAt?: number | null;
   lastFailedRequestAt?: number | null;
 }
@@ -129,6 +133,10 @@ export const OpenAIProviderStateSnapshotSchema = z.object({
   usage: OpenAIProviderUsageSnapshotSchema.optional(),
   budget: OpenAIProviderBudgetSnapshotSchema.optional(),
   health: OpenAIProviderHealthSnapshotSchema,
+  availableModels: z.array(z.string()).optional(),
+  api_key_id: NullableStringSchema,
+  admin_api_available: z.boolean().nullable().optional(),
+  last_refreshed_at: z.number().int().nullable().optional(),
   lastSuccessfulRequestAt: z.number().int().nullable().optional(),
   lastFailedRequestAt: z.number().int().nullable().optional(),
 });
@@ -195,6 +203,10 @@ export function createDefaultOpenAIProviderState(
       lastErrorCode: null,
       lastErrorMessage: null,
     },
+    availableModels: [],
+    api_key_id: null,
+    admin_api_available: null,
+    last_refreshed_at: null,
     lastSuccessfulRequestAt: null,
     lastFailedRequestAt: null,
   };
