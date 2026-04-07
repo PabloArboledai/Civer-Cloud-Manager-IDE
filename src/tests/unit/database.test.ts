@@ -8,6 +8,11 @@ import {
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
+import {
+  buildOpenAIProviderApiKeyPreview,
+  createDefaultOpenAIProviderState,
+  OpenAIProviderCreateInputSchema,
+} from '../../types/openai-provider';
 
 // Mock paths to use a temp DB
 const tempDbPath = path.join(process.cwd(), 'temp_test.vscdb');
@@ -30,6 +35,36 @@ vi.mock('../../utils/logger', () => ({
     warn: vi.fn(),
   },
 }));
+
+describe('OpenAI provider domain', () => {
+  it('should validate provider creation input', () => {
+    const result = OpenAIProviderCreateInputSchema.parse({
+      label: 'Cuenta principal',
+      apiKey: 'sk-proj-1234567890',
+      organizationId: 'org_123',
+      projectId: 'proj_123',
+      baseUrl: 'https://api.openai.com/v1',
+      enabled: true,
+    });
+
+    expect(result.label).toBe('Cuenta principal');
+    expect(result.baseUrl).toBe('https://api.openai.com/v1');
+  });
+
+  it('should build a redacted API key preview', () => {
+    const preview = buildOpenAIProviderApiKeyPreview('sk-proj-1234567890');
+
+    expect(preview).toContain('sk-proj');
+    expect(preview.endsWith('7890')).toBe(true);
+  });
+
+  it('should mark disabled providers with disabled health status by default', () => {
+    const state = createDefaultOpenAIProviderState(false);
+
+    expect(state.health.status).toBe('disabled');
+    expect(state.health.consecutiveFailures).toBe(0);
+  });
+});
 
 // NOTE: These tests are skipped because better-sqlite3 is compiled for Electron, not Node.js.
 // Run these tests manually in an Electron environment.

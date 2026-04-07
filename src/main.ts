@@ -18,6 +18,7 @@ import {
   resolveInstallNoticeLanguage,
 } from './utils/installNotice';
 import { CloudAccountRepo } from './ipc/database/cloudHandler';
+import { OpenAIProviderRepo } from './ipc/database/openaiProviderRepo';
 import { initDatabase } from './ipc/database/handler';
 import { CloudMonitorService } from './services/CloudMonitorService';
 
@@ -436,6 +437,13 @@ app
       logger.error('Startup: Failed to initialize CloudAccountRepo', e);
       // We might want to exit here or show a dialog, but for now we proceed
       // though functionality will be broken.
+    }
+
+    logger.info('Step: Initialize OpenAIProviderRepo');
+    try {
+      await OpenAIProviderRepo.init();
+    } catch (e) {
+      logger.error('Startup: Failed to initialize OpenAIProviderRepo', e);
     }
 
     logger.info('Step: Initialize Antigravity DB (WAL Mode)');

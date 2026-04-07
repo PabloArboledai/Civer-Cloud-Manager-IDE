@@ -7,6 +7,7 @@ import { cloudRouter } from './cloud/router';
 import { codexRouter } from './codex/router';
 import { configRouter } from './config/router';
 import { gatewayRouter } from './gateway/router';
+import { openaiRouter } from './openai/router';
 
 import { os } from '@orpc/server';
 import { z } from 'zod';
@@ -71,5 +72,6 @@ export const router = os.use(logMiddleware).router({
   codex: codexRouter,
   config: configRouter,
   gateway: gatewayRouter,
+  openai: openaiRouter,
   system: systemHandler,
 });
