@@ -31,6 +31,7 @@ import {
 } from '../../../lib/antigravity/ModelMapping';
 import { getServerConfig } from '../../server-config';
 import { TokenManagerService } from './token-manager.service';
+import { OpenAIProviderSchedulerService } from './openai-provider-scheduler.service';
 
 @Controller('v1')
 @UseGuards(ProxyGuard)
@@ -40,19 +41,25 @@ export class ProxyController {
   constructor(
     @Inject(ProxyService) private readonly proxyService: ProxyService,
     @Optional() @Inject(TokenManagerService) private readonly tokenManager?: TokenManagerService,
+    @Optional()
+    @Inject(OpenAIProviderSchedulerService)
+    private readonly openaiScheduler?: OpenAIProviderSchedulerService,
   ) {}
 
   @Get('models')
-  listModels(@Res() res: FastifyReply) {
+  async listModels(@Res() res: FastifyReply) {
     try {
       const config = getServerConfig();
       const customMapping = config?.custom_mapping ?? {};
-      const modelIds = getAllDynamicModels(
-        customMapping,
-        this.tokenManager?.getAllCollectedModels(),
+      const modelIds = new Set(
+        getAllDynamicModels(customMapping, this.tokenManager?.getAllCollectedModels()),
       );
+      const openAIModels = (await this.openaiScheduler?.getKnownModels()) ?? [];
+      for (const modelId of openAIModels) {
+        modelIds.add(modelId);
+      }
 
-      const data = modelIds.map((id) => ({
+      const data = Array.from(modelIds).map((id) => ({
         id,
         object: 'model',
         created: MODEL_LIST_CREATED_AT,
