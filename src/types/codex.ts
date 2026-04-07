@@ -25,6 +25,36 @@ export const CodexAuthStatusSchema = z.object({
   hasRefreshToken: z.boolean(),
   hasIdToken: z.boolean(),
   hasApiKey: z.boolean(),
+  identity: z
+    .object({
+      displayNameMasked: z.string().nullable(),
+      emailMasked: z.string().nullable(),
+      emailVerified: z.boolean().nullable(),
+      accountIdMasked: z.string().nullable(),
+      userIdMasked: z.string().nullable(),
+      planType: z.string().nullable(),
+      authProvider: z.string().nullable(),
+      localhostCallback: z.boolean().nullable(),
+      organizationCount: z.number().nullable(),
+      defaultOrganization: z
+        .object({
+          titleMasked: z.string().nullable(),
+          role: z.string().nullable(),
+          isDefault: z.boolean(),
+        })
+        .nullable(),
+      subscription: z
+        .object({
+          activeStart: z.string().nullable(),
+          activeUntil: z.string().nullable(),
+          lastChecked: z.string().nullable(),
+        })
+        .nullable(),
+      idTokenExpiresAt: z.string().nullable(),
+      accessTokenExpiresAt: z.string().nullable(),
+      platformUrlHost: z.string().nullable(),
+    })
+    .nullable(),
 });
 
 export const CodexConfigSnapshotSchema = z.object({
