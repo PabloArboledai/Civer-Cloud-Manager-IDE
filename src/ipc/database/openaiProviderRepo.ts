@@ -277,6 +277,11 @@ export class OpenAIProviderRepo {
   }
 
   static async listProviders(): Promise<OpenAIProviderCredential[]> {
+    const providers = await this.listProvidersWithSecrets();
+    return providers.map((provider) => mapStoredProviderToPublic(provider));
+  }
+
+  static async listProvidersWithSecrets(): Promise<StoredOpenAIProviderCredential[]> {
     const { raw, orm } = getOpenAIProvidersDb();
     try {
       const rows = orm
@@ -290,7 +295,7 @@ export class OpenAIProviderRepo {
         }),
       );
 
-      return providers.map((provider) => mapStoredProviderToPublic(provider));
+      return providers;
     } finally {
       raw.close();
     }
