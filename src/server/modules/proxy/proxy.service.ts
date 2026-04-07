@@ -33,6 +33,8 @@ import { normalizeGeminiModelAlias, resolveModelRoute } from '../../../lib/antig
 import { getMaxOutputTokens, getThinkingBudget } from '../../../lib/antigravity/ModelSpecs';
 import { resolveRequestUserAgent } from './request-user-agent';
 import { UpstreamRequestError } from './clients/upstream-error';
+import { OpenAIClient } from './clients/openai.client';
+import { OpenAIProviderSchedulerService } from './openai-provider-scheduler.service';
 
 @Injectable()
 export class ProxyService {
@@ -41,6 +43,9 @@ export class ProxyService {
   constructor(
     @Inject(TokenManagerService) private readonly tokenManager: TokenManagerService,
     @Inject(GeminiClient) private readonly geminiClient: GeminiClient,
+    @Inject(OpenAIClient) private readonly openaiClient: OpenAIClient,
+    @Inject(OpenAIProviderSchedulerService)
+    private readonly openaiScheduler: OpenAIProviderSchedulerService,
   ) {}
 
   // --- Anthropic Handlers ---
@@ -664,6 +669,9 @@ export class ProxyService {
     request: OpenAIChatRequest,
   ): Promise<OpenAIChatResponse | Observable<string>> {
     const sessionKey = this.extractOpenAISessionKey(request);
+    if (await this.shouldRouteToOpenAIProviderPool(request.model)) {
+      return this.handleOfficialOpenAIChatCompletions(request, sessionKey);
+    }
 
     const targetModel = this.resolveTargetModel(request.model);
     const extraHeaders = this.createModelSpecificHeaders(request.model);
@@ -790,6 +798,88 @@ export class ProxyService {
       }
     }
     throw lastError || new Error('Request failed after retries');
+  }
+
+  private async shouldRouteToOpenAIProviderPool(model: string): Promise<boolean> {
+    const normalizedModel = model.replace(/^models\//i, '').trim().toLowerCase();
+    const knownOpenAIModels = await this.openaiScheduler.getKnownModels();
+
+    if (knownOpenAIModels.includes(normalizedModel)) {
+      return true;
+    }
+
+    const looksLikeOpenAIModel =
+      normalizedModel.startsWith('gpt-') ||
+      normalizedModel.startsWith('o1') ||
+      normalizedModel.startsWith('o3') ||
+      normalizedModel.startsWith('o4') ||
+      normalizedModel.startsWith('o5') ||
+      normalizedModel.startsWith('omni') ||
+      normalizedModel.startsWith('codex');
+
+    if (!looksLikeOpenAIModel) {
+      return false;
+    }
+
+    return this.openaiScheduler.hasAnyProvider();
+  }
+
+  private async handleOfficialOpenAIChatCompletions(
+    request: OpenAIChatRequest,
+    sessionKey?: string,
+  ): Promise<OpenAIChatResponse | Observable<string>> {
+    let lastError: unknown = null;
+    const attemptedProviderIds = new Set<string>();
+    const maxRetries = 3;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      if (attempt > 0) {
+        const delay = calculateRetryDelay(attempt - 1);
+        this.logger.log(
+          `OpenAI provider retry ${attempt + 1}/${maxRetries}, backoff=${delay}ms (jittered)`,
+        );
+        await sleep(delay);
+      }
+
+      const provider = await this.openaiScheduler.getNextProvider({
+        sessionKey,
+        excludeProviderIds: Array.from(attemptedProviderIds),
+        model: request.model,
+      });
+
+      if (!provider) {
+        break;
+      }
+
+      attemptedProviderIds.add(provider.id);
+
+      try {
+        if (request.stream) {
+          const stream = await this.openaiClient.streamChatCompletion(request, {
+            apiKey: provider.secret.apiKey,
+            baseUrl: provider.base_url,
+            organizationId: provider.organization_id,
+            projectId: provider.project_id,
+          });
+          await this.openaiScheduler.markSuccess(provider.id);
+          return this.passthroughSseStream(stream);
+        }
+
+        const response = await this.openaiClient.createChatCompletion(request, {
+          apiKey: provider.secret.apiKey,
+          baseUrl: provider.base_url,
+          organizationId: provider.organization_id,
+          projectId: provider.project_id,
+        });
+        await this.openaiScheduler.markSuccess(provider.id);
+        return response;
+      } catch (error) {
+        lastError = error;
+        await this.openaiScheduler.markFailure(provider.id, error, request.model);
+      }
+    }
+
+    throw lastError || new Error('No available OpenAI providers');
   }
 
   private async generateInternalWithStreamFallback(
