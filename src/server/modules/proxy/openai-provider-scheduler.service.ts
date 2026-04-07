@@ -46,7 +46,9 @@ export class OpenAIProviderSchedulerService implements OnModuleInit {
       await this.reloadProviders();
     }
 
-    return this.providers.size > 0;
+    return Array.from(this.providers.values()).some((provider) =>
+      this.isProviderEligible(provider, undefined),
+    );
   }
 
   async getKnownModels(): Promise<string[]> {

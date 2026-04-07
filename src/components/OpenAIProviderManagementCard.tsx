@@ -85,9 +85,10 @@ export function OpenAIProviderManagementCard() {
         enabled,
       },
       {
-        onSuccess: () => {
+        onSuccess: (provider) => {
           setIsDialogOpen(false);
           resetForm();
+          refreshProviderMutation.mutate({ providerId: provider.id });
           toast({
             title: 'Proveedor agregado',
             description: 'La credencial oficial de OpenAI ya esta almacenada y cifrada.',
