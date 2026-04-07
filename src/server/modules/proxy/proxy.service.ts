@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger, Inject, Optional } from '@nestjs/common';
 import { isEmpty, isNil, isPlainObject, isString } from 'lodash-es';
 import { TokenManagerService } from './token-manager.service';
 import { GeminiClient } from './clients/gemini.client';
@@ -43,9 +43,10 @@ export class ProxyService {
   constructor(
     @Inject(TokenManagerService) private readonly tokenManager: TokenManagerService,
     @Inject(GeminiClient) private readonly geminiClient: GeminiClient,
-    @Inject(OpenAIClient) private readonly openaiClient: OpenAIClient,
+    @Optional() @Inject(OpenAIClient) private readonly openaiClient?: OpenAIClient,
+    @Optional()
     @Inject(OpenAIProviderSchedulerService)
-    private readonly openaiScheduler: OpenAIProviderSchedulerService,
+    private readonly openaiScheduler?: OpenAIProviderSchedulerService,
   ) {}
 
   // --- Anthropic Handlers ---
