@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { startTransition, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { startTransition, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   TerminalSquare,
@@ -96,10 +96,10 @@ function CodexPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [statusPollUntil, setStatusPollUntil] = useState<number | null>(null);
-  const [shouldPollStatus, setShouldPollStatus] = useState(false);
+  const pollTimeoutRef = useRef<number | null>(null);
+  const [pollWindowActive, setPollWindowActive] = useState(false);
   const { data, isLoading, isError, error, refetch } = useCodexStatus(
-    shouldPollStatus ? 3000 : false,
+    pollWindowActive && !data?.auth.isAuthenticated ? 3000 : false,
   );
   const loginMutation = useOpenCodexLogin();
   const logoutMutation = useLogoutCodex();
@@ -120,52 +120,24 @@ function CodexPage() {
   const [execSandbox, setExecSandbox] = useState<
     'read-only' | 'workspace-write' | 'danger-full-access'
   >('workspace-write');
-  const [runSnapshot, setRunSnapshot] = useState<CodexExecRunSnapshot | null>(null);
-  const deferredEvents = useDeferredValue(runSnapshot?.events ?? []);
+  const [liveRunSnapshot, setLiveRunSnapshot] = useState<CodexExecRunSnapshot | null>(null);
   const activeRunId =
-    runSnapshot?.summary.status === 'running'
-      ? runSnapshot.summary.runId
+    liveRunSnapshot?.summary.status === 'running'
+      ? liveRunSnapshot.summary.runId
       : data?.lastRun?.status === 'running'
         ? data.lastRun.runId
         : null;
   const { data: storedRunSnapshot } = useCodexRun(activeRunId);
+  const runSnapshot = storedRunSnapshot ?? liveRunSnapshot;
+  const deferredEvents = useDeferredValue(runSnapshot?.events ?? []);
 
   useEffect(() => {
-    if (!storedRunSnapshot) {
-      return;
-    }
-
-    setRunSnapshot(storedRunSnapshot);
-  }, [storedRunSnapshot]);
-
-  useEffect(() => {
-    if (data?.auth.isAuthenticated) {
-      setStatusPollUntil(null);
-    }
-  }, [data?.auth.isAuthenticated]);
-
-  useEffect(() => {
-    if (statusPollUntil === null) {
-      setShouldPollStatus(false);
-      return;
-    }
-
-    const now = Date.now();
-    if (statusPollUntil <= now) {
-      setShouldPollStatus(false);
-      return;
-    }
-
-    setShouldPollStatus(true);
-    const timeoutId = window.setTimeout(() => {
-      setShouldPollStatus(false);
-      setStatusPollUntil(null);
-    }, statusPollUntil - now);
-
     return () => {
-      window.clearTimeout(timeoutId);
+      if (pollTimeoutRef.current !== null) {
+        window.clearTimeout(pollTimeoutRef.current);
+      }
     };
-  }, [statusPollUntil]);
+  }, []);
 
   useEffect(() => {
     if (!window.electron?.onCodexExecEvent) {
@@ -179,7 +151,7 @@ function CodexPage() {
       }
 
       startTransition(() => {
-        setRunSnapshot((previous) => {
+        setLiveRunSnapshot((previous) => {
           const previousEvents = previous?.summary.runId === event.runId ? previous.events : [];
           const nextEvents = [...previousEvents, event].slice(-MAX_VISIBLE_EVENTS);
           return {
@@ -239,7 +211,13 @@ function CodexPage() {
   const handleLogin = () => {
     loginMutation.mutate(undefined, {
       onSuccess: () => {
-        setStatusPollUntil(Date.now() + 60_000);
+        setPollWindowActive(true);
+        if (pollTimeoutRef.current !== null) {
+          window.clearTimeout(pollTimeoutRef.current);
+        }
+        pollTimeoutRef.current = window.setTimeout(() => {
+          setPollWindowActive(false);
+        }, 60_000);
         toast({
           title: 'Flujo oficial iniciado',
           description:
@@ -316,7 +294,7 @@ function CodexPage() {
       },
       {
         onSuccess: (result) => {
-          setRunSnapshot(result);
+          setLiveRunSnapshot(result);
           toast({
             title: 'Ejecucion iniciada',
             description: 'Codex exec se esta ejecutando con stream de eventos en vivo.',
