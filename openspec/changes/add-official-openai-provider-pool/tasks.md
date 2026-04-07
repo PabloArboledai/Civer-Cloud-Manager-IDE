@@ -12,26 +12,26 @@
 
 ## 3. Provider State and Health
 
-- [ ] 3.1 Add a service to refresh usage/cost/budget/health state from official OpenAI APIs.
-- [ ] 3.2 Normalize provider state for scheduling decisions.
-- [ ] 3.3 Add failure classification for auth, rate-limit, budget, and transient errors.
+- [x] 3.1 Add a service to refresh usage/cost/budget/health state from official OpenAI APIs.
+- [x] 3.2 Normalize provider state for scheduling decisions.
+- [x] 3.3 Add failure classification for auth, rate-limit, budget, and transient errors.
 
 ## 4. Proxy and Scheduling
 
-- [ ] 4.1 Add a real OpenAI backend/client behind the local proxy.
-- [ ] 4.2 Add scheduler selection/failover across multiple OpenAI credentials.
-- [ ] 4.3 Preserve sticky-session semantics where possible.
-- [ ] 4.4 Ensure current Google/Gemini behavior does not regress.
+- [x] 4.1 Add a real OpenAI backend/client behind the local proxy.
+- [x] 4.2 Add scheduler selection/failover across multiple OpenAI credentials.
+- [x] 4.3 Preserve sticky-session semantics where possible.
+- [x] 4.4 Ensure current Google/Gemini behavior does not regress.
 
 ## 5. UI and Operator Experience
 
-- [ ] 5.1 Add a management surface for official OpenAI API credentials.
-- [ ] 5.2 Show usage/cost/health state in UI.
-- [ ] 5.3 Explain proxy-based rotation and out-of-scope direct-client behavior.
+- [x] 5.1 Add a management surface for official OpenAI API credentials.
+- [x] 5.2 Show usage/cost/health state in UI.
+- [x] 5.3 Explain proxy-based rotation and out-of-scope direct-client behavior.
 
 ## 6. Verification
 
-- [ ] 6.1 Unit test encrypted persistence and schema validation.
-- [ ] 6.2 Unit test scheduler failover and cooldown logic.
-- [ ] 6.3 Integration test proxy requests against OpenAI backend abstraction.
+- [x] 6.1 Unit test encrypted persistence and schema validation.
+- [ ] 6.2 Unit test scheduler failover and cooldown logic. *(pendiente; no se creo un archivo de test nuevo por la restriccion de mantenimiento)*
+- [ ] 6.3 Integration test proxy requests against OpenAI backend abstraction. *(pendiente; requiere harness/fixtures adicionales)*
 - [ ] 6.4 Manual test with 2+ credentials through the local proxy.
