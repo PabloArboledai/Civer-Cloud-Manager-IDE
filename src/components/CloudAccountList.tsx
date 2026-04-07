@@ -24,6 +24,9 @@ import {
   RefreshCcw,
   Download,
   CheckSquare,
+  Info,
+  ArrowRight,
+  TerminalSquare,
   Trash2,
   X,
   RefreshCw,
@@ -136,6 +139,7 @@ export function CloudAccountList() {
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [authCode, setAuthCode] = useState('');
+  const [showManualAuthEntry, setShowManualAuthEntry] = useState(false);
   const [identityAccount, setIdentityAccount] = useState<CloudAccount | null>(null);
   const totalAccounts = size(accounts);
   const activeAccounts = filter(accounts, (account) => account.is_active).length;
@@ -155,6 +159,7 @@ export function CloudAccountList() {
         onSuccess: () => {
           setIsAddDialogOpen(false);
           setAuthCode('');
+          setShowManualAuthEntry(false);
           toast({ title: t('cloud.toast.addSuccess') });
         },
         onError: (err) => {
@@ -174,6 +179,7 @@ export function CloudAccountList() {
       const cleanup = window.electron.onGoogleAuthCode((code) => {
         console.log('[OAuth] Received Google auth code via IPC:', code?.substring(0, 10) + '...');
         setAuthCode(code);
+        setShowManualAuthEntry(false);
       });
       return cleanup;
     }
@@ -312,15 +318,29 @@ export function CloudAccountList() {
 
   const openGoogleAuthSignIn = async () => {
     try {
+      setAuthCode('');
+      setShowManualAuthEntry(false);
       await startAuthFlow();
+      toast({
+        title: t('cloud.authDialog.browserOpenedTitle'),
+        description: t('cloud.authDialog.browserOpenedDescription'),
+      });
     } catch (e) {
       toast({
-        title: t('cloud.toast.startAuthFailed'), // Need to add this key or just use generic error
+        title: t('cloud.toast.startAuthFailed'),
         description: String(e),
         variant: 'destructive',
       });
     }
   };
+
+  const handleAddDialogOpenChange = useCallback((nextOpen: boolean) => {
+    setIsAddDialogOpen(nextOpen);
+    if (!nextOpen) {
+      setAuthCode('');
+      setShowManualAuthEntry(false);
+    }
+  }, []);
 
   // Batch Selection Handlers
   const setSelectionState = (id: string, selected: boolean) => {
@@ -449,6 +469,21 @@ export function CloudAccountList() {
         </div>
       </div>
 
+      <div className="bg-muted/40 flex flex-wrap items-start gap-3 rounded-lg border border-dashed p-4">
+        <div className="bg-background flex h-9 w-9 shrink-0 items-center justify-center rounded-full border">
+          <Info className="text-muted-foreground h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1 space-y-1">
+          <div className="text-sm font-semibold">{t('cloud.managementNotice.title')}</div>
+          <p className="text-muted-foreground text-sm">{t('cloud.managementNotice.description')}</p>
+        </div>
+        <div className="text-muted-foreground flex items-center gap-2 text-xs font-medium">
+          <TerminalSquare className="h-4 w-4" />
+          <span>{t('cloud.managementNotice.codexPanel')}</span>
+          <ArrowRight className="h-3.5 w-3.5" />
+        </div>
+      </div>
+
       <div className="bg-card flex flex-wrap items-center gap-2 rounded-lg border p-3">
         <div className="bg-muted/50 flex items-center gap-2 rounded-md border px-3 py-2">
           <div className="flex items-center gap-2">
@@ -501,7 +536,7 @@ export function CloudAccountList() {
           {t('cloud.syncFromIDE')}
         </Button>
 
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <Dialog open={isAddDialogOpen} onOpenChange={handleAddDialogOpenChange}>
           <DialogTrigger asChild>
             <Button className="cursor-pointer">
               <Plus className="mr-2 h-4 w-4" />
@@ -514,32 +549,76 @@ export function CloudAccountList() {
               <DialogDescription>{t('cloud.authDialog.description')}</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              <div className="bg-muted/40 rounded-md border border-dashed p-3">
+                <div className="text-sm font-medium">{t('cloud.authDialog.autoTitle')}</div>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {t('cloud.authDialog.autoDescription')}
+                </p>
+              </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Button variant="outline" className="col-span-4" onClick={openGoogleAuthSignIn}>
                   <Cloud className="mr-2 h-4 w-4" />
                   {t('cloud.authDialog.openLogin')}
                 </Button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="code">{t('cloud.authDialog.authCode')}</Label>
-                <Input
-                  id="code"
-                  placeholder={t('cloud.authDialog.placeholder')}
-                  value={authCode}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAuthCode(e.target.value)}
-                />
-                <p className="text-muted-foreground text-xs">{t('cloud.authDialog.instruction')}</p>
+
+              {authCode && !showManualAuthEntry && (
+                <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                  {addMutation.isPending
+                    ? t('cloud.authDialog.callbackReceivedPending')
+                    : t('cloud.authDialog.callbackReceived')}
+                </div>
+              )}
+
+              <div className="rounded-md border px-3 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="text-sm font-medium">{t('cloud.authDialog.manualTitle')}</div>
+                    <p className="text-muted-foreground text-xs">
+                      {t('cloud.authDialog.manualDescription')}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    type="button"
+                    onClick={() => setShowManualAuthEntry((prev) => !prev)}
+                  >
+                    {showManualAuthEntry
+                      ? t('cloud.authDialog.hideManual')
+                      : t('cloud.authDialog.showManual')}
+                  </Button>
+                </div>
+
+                {showManualAuthEntry && (
+                  <div className="mt-3 space-y-2">
+                    <Label htmlFor="code">{t('cloud.authDialog.authCode')}</Label>
+                    <Input
+                      id="code"
+                      placeholder={t('cloud.authDialog.placeholder')}
+                      value={authCode}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setAuthCode(e.target.value)
+                      }
+                    />
+                    <p className="text-muted-foreground text-xs">
+                      {t('cloud.authDialog.instruction')}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-            <DialogFooter>
-              <Button
-                onClick={() => submitAuthCode()}
-                disabled={addMutation.isPending || !authCode}
-              >
-                {addMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {t('cloud.authDialog.verify')}
-              </Button>
-            </DialogFooter>
+            {showManualAuthEntry && (
+              <DialogFooter>
+                <Button
+                  onClick={() => submitAuthCode()}
+                  disabled={addMutation.isPending || !authCode}
+                >
+                  {addMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {t('cloud.authDialog.verify')}
+                </Button>
+              </DialogFooter>
+            )}
           </DialogContent>
         </Dialog>
 

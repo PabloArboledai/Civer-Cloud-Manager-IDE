@@ -1,5 +1,5 @@
 import './instrument'; // MUST be the first import to ensure Sentry initializes before app ready
-import { app, BrowserWindow, dialog, shell } from 'electron';
+import { app, BrowserWindow, dialog, nativeTheme, shell } from 'electron';
 import type { MessageBoxOptions } from 'electron';
 import path from 'path';
 import fs from 'fs';
@@ -55,6 +55,7 @@ ipcMain.on(IPC_CHANNELS.DEBUG_LOG, (_event, payload) => {
 });
 
 app.disableHardwareAcceleration();
+nativeTheme.themeSource = 'dark';
 
 if (squirrelStartup) {
   app.quit();
