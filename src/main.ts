@@ -282,7 +282,7 @@ function createWindow({ startHidden }: { startHidden: boolean }) {
             logger.info(`createWindow: Vite server ready after ${i * delay}ms`);
             return true;
           }
-        } catch (e) {
+        } catch {
           // Server not ready yet
         }
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -328,7 +328,7 @@ function createWindow({ startHidden }: { startHidden: boolean }) {
     globalMainWindow = null;
   });
 
-  mainWindow.webContents.on('render-process-gone', (event, details) => {
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
     logger.error('Renderer process gone:', details);
   });
 
@@ -350,7 +350,7 @@ function createWindow({ startHidden }: { startHidden: boolean }) {
   });
 }
 
-app.on('child-process-gone', (event, details) => {
+app.on('child-process-gone', (_event, details) => {
   logger.error('Child process gone:', details);
 });
 
@@ -359,7 +359,7 @@ app.on('before-quit', () => {
   logger.info('App before-quit event triggered - isQuitting set to true');
 });
 
-app.on('will-quit', (event) => {
+app.on('will-quit', (_event) => {
   logger.info('App will quit event triggered');
   stopMainDebugHeartbeat();
   try {
@@ -403,7 +403,7 @@ async function setupORPC() {
         const data = msgEvent.data;
 
         logPacket(data);
-      } catch (e) {
+      } catch {
         logger.debug('[RAW ORPC MSG] (unparseable)', msgEvent.data);
       }
     });
