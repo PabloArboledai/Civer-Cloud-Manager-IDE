@@ -95,6 +95,8 @@ Contenido destacado:
 - La UI principal visible esta muy orientada a cuentas cloud; el subsistema de snapshots locales existe en backend, pero no parece tener la misma prominencia en el arbol de rutas actual.
 - `routeTree.gen.ts` muestra esencialmente solo tres vistas principales: home, proxy y settings.
 - La identidad de dispositivo ya esta bastante integrada en la experiencia de cuentas cloud gracias a `IdentityProfileDialog`.
+- La ruta `Codex` ahora expone una tarjeta de identidad local separada para sesiones ChatGPT/Codex detectadas en `~/.codex`; no se mezcla con `Accounts`.
+- Esa tarjeta muestra solo datos redaccionados y derivados del estado local: correo enmascarado, plan, organizacion por defecto, rol y expiracion de tokens.
 
 ## Referencias de codigo
 

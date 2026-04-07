@@ -98,3 +98,23 @@ Referencias:
 - `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\services\GoogleAPIService.ts`
 - `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\database\cloudHandler.ts`
 - `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\utils\protobuf.ts`
+
+## Codex / ChatGPT local
+
+El login de Codex/ChatGPT no entra al pool `Accounts`. Se detecta como estado local separado en `~/.codex` y se muestra en la ruta `Codex`.
+
+Puntos clave:
+- `auth.json` se lee desde `C:\Users\Afrodita\.codex\auth.json`.
+- el estado se considera autenticado si existe `access_token`, `refresh_token`, `id_token` o `OPENAI_API_KEY`.
+- la UI no expone tokens crudos; solo muestra una tarjeta redaccionada con:
+  - cuenta enmascarada
+  - correo enmascarado
+  - plan ChatGPT
+  - organizacion por defecto
+  - expiracion aproximada de tokens
+  - ventana de suscripcion, si el claim existe
+
+Referencias:
+- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\ipc\codex\handler.ts`
+- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\routes\codex.tsx`
+- `C:\Users\Afrodita\Desktop\DraculaboAntigravityManager\src\types\codex.ts`
