@@ -29,6 +29,20 @@ No es una aplicacion web tradicional con backend remoto propio. La mayor parte d
 
 Si vas a trabajar en soporte OpenAI/Codex, consulta primero esos planes. Son la referencia operativa para coordinar trabajo paralelo.
 
+## Estado actual de OpenAI oficial
+
+Ya existe una primera implementacion operativa del soporte para credenciales oficiales OpenAI API:
+
+- Persistencia cifrada de proveedores OpenAI.
+- Estado operativo y refresh de modelos/usage/coste cuando la credencial lo permite.
+- Scheduler/failover multi-proveedor dentro del proxy local.
+- Panel de gestion dentro de `Proxy`, separado del sistema legacy de cuentas Google.
+
+Para continuar ese trabajo, usa como fuente de verdad:
+
+- `docs/planes/openai-provider-oficial/README.md`
+- `openspec/changes/add-official-openai-provider-pool/tasks.md`
+
 ## Mapa de archivos canonicos
 
 - `docs/documentacion-repo/stack-y-dependencias.md`
