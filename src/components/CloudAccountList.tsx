@@ -148,30 +148,33 @@ export function CloudAccountList() {
     (account) => account.status === 'rate_limited',
   ).length;
 
-  const submitAuthCode = useCallback((incomingAuthCode?: string) => {
-    const codeToUse = incomingAuthCode || authCode;
-    if (!codeToUse) {
-      return;
-    }
-    addMutation.mutate(
-      { authCode: codeToUse },
-      {
-        onSuccess: () => {
-          setIsAddDialogOpen(false);
-          setAuthCode('');
-          setShowManualAuthEntry(false);
-          toast({ title: t('cloud.toast.addSuccess') });
+  const submitAuthCode = useCallback(
+    (incomingAuthCode?: string) => {
+      const codeToUse = incomingAuthCode || authCode;
+      if (!codeToUse) {
+        return;
+      }
+      addMutation.mutate(
+        { authCode: codeToUse },
+        {
+          onSuccess: () => {
+            setIsAddDialogOpen(false);
+            setAuthCode('');
+            setShowManualAuthEntry(false);
+            toast({ title: t('cloud.toast.addSuccess') });
+          },
+          onError: (err) => {
+            toast({
+              title: t('cloud.toast.addFailed.title'),
+              description: getLocalizedErrorMessage(err, t),
+              variant: 'destructive',
+            });
+          },
         },
-        onError: (err) => {
-          toast({
-            title: t('cloud.toast.addFailed.title'),
-            description: getLocalizedErrorMessage(err, t),
-            variant: 'destructive',
-          });
-        },
-      },
-    );
-  }, [addMutation, authCode, t, toast]);
+      );
+    },
+    [addMutation, authCode, t, toast],
+  );
   // Listen for Google Auth Code
   useEffect(() => {
     if (window.electron?.onGoogleAuthCode) {

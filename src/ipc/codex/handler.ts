@@ -154,7 +154,11 @@ function readCodexConfigSnapshot(): CodexConfigSnapshot {
   }
 }
 
-function deriveLoginLabel(authMode: string | null, hasApiKey: boolean, isAuthenticated: boolean): string {
+function deriveLoginLabel(
+  authMode: string | null,
+  hasApiKey: boolean,
+  isAuthenticated: boolean,
+): string {
   if (!isAuthenticated) {
     return 'No autenticado';
   }
@@ -343,7 +347,11 @@ function extractTokenMetadata(idToken: string | null) {
       : null;
 
   const audienceValue = claims?.aud;
-  const audienceCount = Array.isArray(audienceValue) ? audienceValue.length : audienceValue ? 1 : null;
+  const audienceCount = Array.isArray(audienceValue)
+    ? audienceValue.length
+    : audienceValue
+      ? 1
+      : null;
   const organizationsValue = authInfo?.organizations;
   const organizationCount = Array.isArray(organizationsValue) ? organizationsValue.length : null;
   const platformUrlValue =
@@ -468,7 +476,9 @@ export function analyzeCodexCallback(input: string): CodexCallbackDiagnostics {
       warnings.push('La URL de autorizacion no incluye code_challenge.');
     }
   } else {
-    warnings.push('La URL no coincide con un callback localhost ni con una URL oficial de autorizacion.');
+    warnings.push(
+      'La URL no coincide con un callback localhost ni con una URL oficial de autorizacion.',
+    );
   }
 
   return {
@@ -541,7 +551,7 @@ class CodexExecManager {
   private lastRunId: string | null = null;
 
   public getLastRunSummary(): CodexExecRunSummary | null {
-    return this.lastRunId ? this.runs.get(this.lastRunId)?.summary ?? null : null;
+    return this.lastRunId ? (this.runs.get(this.lastRunId)?.summary ?? null) : null;
   }
 
   public getRun(runId: string): CodexExecRunSnapshot | null {
@@ -648,18 +658,15 @@ class CodexExecManager {
     child.on('close', (exitCode, signal) => {
       const activeRun = this.activeRuns.get(runId);
       const status =
-        activeRun?.cancelRequested === true
-          ? 'cancelled'
-          : exitCode === 0
-            ? 'completed'
-            : 'failed';
+        activeRun?.cancelRequested === true ? 'cancelled' : exitCode === 0 ? 'completed' : 'failed';
 
       this.flushBuffers(runId);
       this.finalizeRun(runId, {
         status,
         exitCode,
         signal,
-        errorMessage: status === 'failed' ? `Proceso finalizado con codigo ${exitCode ?? 'desconocido'}` : null,
+        errorMessage:
+          status === 'failed' ? `Proceso finalizado con codigo ${exitCode ?? 'desconocido'}` : null,
       });
       this.appendEvent(runId, {
         runId,

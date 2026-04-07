@@ -278,7 +278,8 @@ i18n
               browserOpenedTitle: 'Browser opened',
               browserOpenedDescription:
                 'Complete Google login in the browser. Antigravity will verify the callback automatically.',
-              callbackReceived: 'Google callback received. The account will be added automatically.',
+              callbackReceived:
+                'Google callback received. The account will be added automatically.',
               callbackReceivedPending:
                 'Google callback received. Antigravity is verifying the account now...',
               manualTitle: 'Manual fallback',

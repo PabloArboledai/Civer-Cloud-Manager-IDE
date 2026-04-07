@@ -1,7 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { startTransition, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TerminalSquare, Loader2, RefreshCw, ShieldCheck, PlugZap, Play, Square, LogIn, LogOut, FolderOpen, SearchCode, Cpu } from 'lucide-react';
+import {
+  TerminalSquare,
+  Loader2,
+  RefreshCw,
+  ShieldCheck,
+  PlugZap,
+  Play,
+  Square,
+  LogIn,
+  LogOut,
+  FolderOpen,
+  SearchCode,
+  Cpu,
+} from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,7 +60,13 @@ function StatusPill({
           ? 'border-rose-200 bg-rose-50 text-rose-700'
           : 'border-slate-200 bg-slate-50 text-slate-700';
 
-  return <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${toneClass}`}>{label}</span>;
+  return (
+    <span
+      className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${toneClass}`}
+    >
+      {label}
+    </span>
+  );
 }
 
 function SummaryRow({ label, value }: { label: string; value: string | null | undefined }) {
@@ -79,7 +98,9 @@ function CodexPage() {
   const queryClient = useQueryClient();
   const [statusPollUntil, setStatusPollUntil] = useState<number | null>(null);
   const shouldPollStatus = statusPollUntil !== null && statusPollUntil > Date.now();
-  const { data, isLoading, isError, error, refetch } = useCodexStatus(shouldPollStatus ? 3000 : false);
+  const { data, isLoading, isError, error, refetch } = useCodexStatus(
+    shouldPollStatus ? 3000 : false,
+  );
   const loginMutation = useOpenCodexLogin();
   const logoutMutation = useLogoutCodex();
   const openHomeMutation = useOpenCodexHome();
@@ -90,11 +111,15 @@ function CodexPage() {
   const defaultCwd =
     typeof process !== 'undefined' && typeof process.cwd === 'function' ? process.cwd() : '';
   const [callbackInput, setCallbackInput] = useState('');
-  const [callbackDiagnostics, setCallbackDiagnostics] = useState<CodexCallbackDiagnostics | null>(null);
+  const [callbackDiagnostics, setCallbackDiagnostics] = useState<CodexCallbackDiagnostics | null>(
+    null,
+  );
   const [execPrompt, setExecPrompt] = useState('');
   const [execCwd, setExecCwd] = useState(defaultCwd);
   const [execModel, setExecModel] = useState('');
-  const [execSandbox, setExecSandbox] = useState<'read-only' | 'workspace-write' | 'danger-full-access'>('workspace-write');
+  const [execSandbox, setExecSandbox] = useState<
+    'read-only' | 'workspace-write' | 'danger-full-access'
+  >('workspace-write');
   const [runSnapshot, setRunSnapshot] = useState<CodexExecRunSnapshot | null>(null);
   const deferredEvents = useDeferredValue(runSnapshot?.events ?? []);
   const activeRunId =
@@ -132,8 +157,7 @@ function CodexPage() {
 
       startTransition(() => {
         setRunSnapshot((previous) => {
-          const previousEvents =
-            previous?.summary.runId === event.runId ? previous.events : [];
+          const previousEvents = previous?.summary.runId === event.runId ? previous.events : [];
           const nextEvents = [...previousEvents, event].slice(-MAX_VISIBLE_EVENTS);
           return {
             summary: event.summary,
@@ -176,7 +200,9 @@ function CodexPage() {
     return (
       <div className="container mx-auto max-w-6xl p-6">
         <div className="rounded-lg border border-dashed p-8 text-center">
-          <div className="text-lg font-semibold">{t('error.generic', 'Ocurrio un error inesperado.')}</div>
+          <div className="text-lg font-semibold">
+            {t('error.generic', 'Ocurrio un error inesperado.')}
+          </div>
           <div className="text-muted-foreground mt-2 text-sm">{String(error)}</div>
           <Button className="mt-4" variant="outline" onClick={() => void refetch()}>
             <RefreshCw className="mr-2 h-4 w-4" />
@@ -193,7 +219,8 @@ function CodexPage() {
         setStatusPollUntil(Date.now() + 60_000);
         toast({
           title: 'Flujo oficial iniciado',
-          description: 'Se abrio Codex para completar el inicio de sesion. El estado se refrescara automaticamente.',
+          description:
+            'Se abrio Codex para completar el inicio de sesion. El estado se refrescara automaticamente.',
         });
       },
       onError: (mutationError) => {
@@ -319,7 +346,8 @@ function CodexPage() {
             <div>
               <h2 className="text-3xl font-bold tracking-tight">Codex</h2>
               <p className="text-muted-foreground">
-                Soporte para instalacion local, estado seguro de sesion, diagnostico de callbacks y ejecucion no interactiva.
+                Soporte para instalacion local, estado seguro de sesion, diagnostico de callbacks y
+                ejecucion no interactiva.
               </p>
             </div>
           </div>
@@ -334,8 +362,15 @@ function CodexPage() {
             <FolderOpen className="mr-2 h-4 w-4" />
             Abrir .codex
           </Button>
-          <Button onClick={handleLogin} disabled={loginMutation.isPending || !data?.installation.available}>
-            {loginMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
+          <Button
+            onClick={handleLogin}
+            disabled={loginMutation.isPending || !data?.installation.available}
+          >
+            {loginMutation.isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <LogIn className="mr-2 h-4 w-4" />
+            )}
             Iniciar sesion
           </Button>
           <Button
@@ -343,18 +378,24 @@ function CodexPage() {
             onClick={handleLogout}
             disabled={logoutMutation.isPending || !data?.auth.isAuthenticated}
           >
-            {logoutMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogOut className="mr-2 h-4 w-4" />}
+            {logoutMutation.isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <LogOut className="mr-2 h-4 w-4" />
+            )}
             Cerrar sesion
           </Button>
         </div>
       </div>
 
       <div className="bg-muted/40 rounded-lg border border-dashed p-4">
-        <div className="text-sm font-semibold">Codex y ChatGPT se gestionan aqui, no en Accounts</div>
+        <div className="text-sm font-semibold">
+          Codex y ChatGPT se gestionan aqui, no en Accounts
+        </div>
         <p className="text-muted-foreground mt-1 text-sm">
           Antigravity detecta el estado compartido de <code className="font-mono">~/.codex</code>,
-          incluyendo sesiones creadas por el CLI oficial y por la extension oficial de VS Code /
-          VS Code Insiders. Si completas el login fuera de esta ventana, vuelve aqui y pulsa
+          incluyendo sesiones creadas por el CLI oficial y por la extension oficial de VS Code / VS
+          Code Insiders. Si completas el login fuera de esta ventana, vuelve aqui y pulsa
           <span className="font-medium"> Refrescar</span>.
         </p>
       </div>
@@ -386,7 +427,9 @@ function CodexPage() {
               <ShieldCheck className="h-4 w-4" />
               Sesion
             </CardTitle>
-            <CardDescription>Lectura segura y redactada del estado local de autenticacion.</CardDescription>
+            <CardDescription>
+              Lectura segura y redactada del estado local de autenticacion.
+            </CardDescription>
             <StatusPill label={data?.auth.loginLabel || 'Sin datos'} tone={authTone} />
           </CardHeader>
           <CardContent className="grid gap-3">
@@ -522,7 +565,9 @@ function CodexPage() {
           <Card>
             <CardHeader>
               <CardTitle>Resumen de ejecucion</CardTitle>
-              <CardDescription>Ultimo snapshot conocido del proceso actual o mas reciente.</CardDescription>
+              <CardDescription>
+                Ultimo snapshot conocido del proceso actual o mas reciente.
+              </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               <SummaryRow label="Run ID" value={execSummary?.runId} />
@@ -545,11 +590,16 @@ function CodexPage() {
                   <div className="text-muted-foreground">Todavia no hay eventos de ejecucion.</div>
                 ) : (
                   deferredEvents.map((event) => (
-                    <div key={`${event.runId}-${event.at}-${event.kind}`} className="border-border/60 border-b py-2 last:border-b-0">
+                    <div
+                      key={`${event.runId}-${event.at}-${event.kind}`}
+                      className="border-border/60 border-b py-2 last:border-b-0"
+                    >
                       <div className="text-muted-foreground mb-1">
                         [{event.at}] {event.kind}
                       </div>
-                      <div className="break-words whitespace-pre-wrap">{formatEventLine(event)}</div>
+                      <div className="break-words whitespace-pre-wrap">
+                        {formatEventLine(event)}
+                      </div>
                     </div>
                   ))
                 )}
@@ -582,7 +632,10 @@ function CodexPage() {
                   placeholder="https://auth.openai.com/oauth/authorize?... o http://localhost:1455/success?... o solo needs_setup=false&id_token=..."
                 />
               </div>
-              <Button onClick={handleAnalyzeCallback} disabled={analyzeMutation.isPending || !callbackInput.trim()}>
+              <Button
+                onClick={handleAnalyzeCallback}
+                disabled={analyzeMutation.isPending || !callbackInput.trim()}
+              >
                 {analyzeMutation.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -598,11 +651,16 @@ function CodexPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Resultado del analisis</CardTitle>
-                  <CardDescription>Vista normalizada y sin secretos de la URL analizada.</CardDescription>
+                  <CardDescription>
+                    Vista normalizada y sin secretos de la URL analizada.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                   <SummaryRow label="Valido" value={callbackDiagnostics.valid ? 'si' : 'no'} />
-                  <SummaryRow label="Tipo de flujo" value={callbackDiagnostics.queryFlags.flowType} />
+                  <SummaryRow
+                    label="Tipo de flujo"
+                    value={callbackDiagnostics.queryFlags.flowType}
+                  />
                   <SummaryRow label="Host" value={callbackDiagnostics.host} />
                   <SummaryRow label="Puerto" value={callbackDiagnostics.port?.toString()} />
                   <SummaryRow label="Ruta" value={callbackDiagnostics.path} />
@@ -644,7 +702,10 @@ function CodexPage() {
                     <StatusPill label="Sin advertencias" tone="success" />
                   ) : (
                     warningList.map((warning) => (
-                      <div key={warning} className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                      <div
+                        key={warning}
+                        className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700"
+                      >
                         {warning}
                       </div>
                     ))
@@ -655,20 +716,34 @@ function CodexPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Metadatos del token</CardTitle>
-                  <CardDescription>Solo se muestran campos no sensibles utiles para compatibilidad.</CardDescription>
+                  <CardDescription>
+                    Solo se muestran campos no sensibles utiles para compatibilidad.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                   <SummaryRow label="alg" value={callbackDiagnostics.tokenMetadata?.header?.alg} />
                   <SummaryRow label="typ" value={callbackDiagnostics.tokenMetadata?.header?.typ} />
                   <SummaryRow label="kid" value={callbackDiagnostics.tokenMetadata?.header?.kid} />
-                  <SummaryRow label="issuer" value={callbackDiagnostics.tokenMetadata?.claims?.issuer} />
+                  <SummaryRow
+                    label="issuer"
+                    value={callbackDiagnostics.tokenMetadata?.claims?.issuer}
+                  />
                   <SummaryRow
                     label="audienceCount"
                     value={callbackDiagnostics.tokenMetadata?.claims?.audienceCount?.toString()}
                   />
-                  <SummaryRow label="issuedAt" value={callbackDiagnostics.tokenMetadata?.claims?.issuedAt} />
-                  <SummaryRow label="expiresAt" value={callbackDiagnostics.tokenMetadata?.claims?.expiresAt} />
-                  <SummaryRow label="planType" value={callbackDiagnostics.tokenMetadata?.claims?.planType} />
+                  <SummaryRow
+                    label="issuedAt"
+                    value={callbackDiagnostics.tokenMetadata?.claims?.issuedAt}
+                  />
+                  <SummaryRow
+                    label="expiresAt"
+                    value={callbackDiagnostics.tokenMetadata?.claims?.expiresAt}
+                  />
+                  <SummaryRow
+                    label="planType"
+                    value={callbackDiagnostics.tokenMetadata?.claims?.planType}
+                  />
                 </CardContent>
               </Card>
             </>

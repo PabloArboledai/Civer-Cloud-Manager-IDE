@@ -8,7 +8,11 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { LOCAL_STORAGE_KEYS } from '@/constants';
 import { getIpcDebugSnapshot } from '@/ipc/manager';
-import { attachQueryClientDebugLogging, emitRendererDebug, installRendererDebugInstrumentation } from '@/utils/rendererDebug';
+import {
+  attachQueryClientDebugLogging,
+  emitRendererDebug,
+  installRendererDebugInstrumentation,
+} from '@/utils/rendererDebug';
 import { updateAppLanguage } from './actions/language';
 import { syncWithLocalTheme } from './actions/theme';
 import './localization/i18n';
