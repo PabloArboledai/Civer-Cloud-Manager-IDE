@@ -254,7 +254,9 @@ export class OpenAIProviderRepo {
       row.stateJson,
     );
 
-    const secret = normalizeSecret(OpenAIProviderSecretSchema.parse(JSON.parse(secretResult.value)));
+    const secret = normalizeSecret(
+      OpenAIProviderSecretSchema.parse(JSON.parse(secretResult.value)),
+    );
     const state = OpenAIProviderStateSnapshotSchema.parse(JSON.parse(stateResult.value));
 
     return {
@@ -277,7 +279,11 @@ export class OpenAIProviderRepo {
   static async listProviders(): Promise<OpenAIProviderCredential[]> {
     const { raw, orm } = getOpenAIProvidersDb();
     try {
-      const rows = orm.select().from(openaiProviders).orderBy(desc(openaiProviders.updatedAt)).all();
+      const rows = orm
+        .select()
+        .from(openaiProviders)
+        .orderBy(desc(openaiProviders.updatedAt))
+        .all();
       const providers = await Promise.all(
         rows.map(async (row) => {
           return this.parseStoredProvider(orm, row);
@@ -304,7 +310,11 @@ export class OpenAIProviderRepo {
   ): Promise<StoredOpenAIProviderCredential | undefined> {
     const { raw, orm } = getOpenAIProvidersDb();
     try {
-      const rows = orm.select().from(openaiProviders).where(eq(openaiProviders.id, providerId)).all();
+      const rows = orm
+        .select()
+        .from(openaiProviders)
+        .where(eq(openaiProviders.id, providerId))
+        .all();
       const row = rows[0];
       if (!row) {
         return undefined;
@@ -382,15 +392,15 @@ export class OpenAIProviderRepo {
           organizationId:
             input.organizationId !== undefined
               ? normalizeOptionalString(input.organizationId)
-              : existingProvider.organization_id ?? null,
+              : (existingProvider.organization_id ?? null),
           projectId:
             input.projectId !== undefined
               ? normalizeOptionalString(input.projectId)
-              : existingProvider.project_id ?? null,
+              : (existingProvider.project_id ?? null),
           baseUrl:
             input.baseUrl !== undefined
               ? normalizeOptionalString(input.baseUrl)
-              : existingProvider.base_url ?? null,
+              : (existingProvider.base_url ?? null),
           secretJson: await encrypt(JSON.stringify(nextSecret)),
           stateJson: await encrypt(JSON.stringify(nextState)),
           enabled: nextEnabled ? 1 : 0,
