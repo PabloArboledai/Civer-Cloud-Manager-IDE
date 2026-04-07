@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -68,12 +68,29 @@ export function OpenAIProviderManagementCard() {
   const [projectId, setProjectId] = useState('');
   const [baseUrl, setBaseUrl] = useState('https://api.openai.com/v1');
   const [enabled, setEnabled] = useState(true);
+  const hasTriggeredInitialRefresh = useRef(false);
 
   const providerCount = providers?.length ?? 0;
   const healthyCount = useMemo(() => {
     return (providers ?? []).filter((provider) => provider.state.health.status === 'healthy')
       .length;
   }, [providers]);
+
+  useEffect(() => {
+    if (isLoading || refreshAllMutation.isPending || hasTriggeredInitialRefresh.current) {
+      return;
+    }
+
+    const needsBootstrapRefresh = (providers ?? []).some(
+      (provider) => !provider.state.last_refreshed_at,
+    );
+    if (!needsBootstrapRefresh) {
+      return;
+    }
+
+    hasTriggeredInitialRefresh.current = true;
+    refreshAllMutation.mutate();
+  }, [isLoading, providers, refreshAllMutation]);
 
   const resetForm = () => {
     setLabel('');
@@ -223,6 +240,15 @@ export function OpenAIProviderManagementCard() {
             <div className="mt-2 text-sm font-medium">
               GPT/o-models entran por el proxy local y rotan sin reiniciar el cliente.
             </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-100">
+          <div className="font-medium">Como funciona esta rotacion</div>
+          <div className="opacity-90">
+            Antigravity rota automaticamente entre proveedores OpenAI solo para clientes que usan
+            este proxy local. Si una extension o script usa la API key oficial directamente, esa
+            rotacion no aplica.
           </div>
         </div>
 
