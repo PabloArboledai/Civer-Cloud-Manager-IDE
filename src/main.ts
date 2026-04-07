@@ -244,8 +244,9 @@ function createWindow({ startHidden }: { startHidden: boolean }) {
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    show: !startHidden,
+    show: false,
     autoHideMenuBar: true,
+    backgroundColor: '#09090b',
     webPreferences: {
       devTools: inDevelopment,
       contextIsolation: true,
@@ -264,6 +265,18 @@ function createWindow({ startHidden }: { startHidden: boolean }) {
     mainWindow.hide();
     logger.info('createWindow: startHidden enabled, window hidden');
   }
+
+  let hasRevealedWindow = false;
+  const revealWindow = (reason: string) => {
+    if (hasRevealedWindow || startHidden || mainWindow.isDestroyed()) {
+      return;
+    }
+
+    hasRevealedWindow = true;
+    logger.info(`createWindow: revealing BrowserWindow (${reason})`);
+    mainWindow.show();
+    mainWindow.focus();
+  };
 
   logger.info('createWindow: setting main window in ipcContext');
   ipcContext.setMainWindow(mainWindow);
@@ -338,7 +351,16 @@ function createWindow({ startHidden }: { startHidden: boolean }) {
 
   mainWindow.webContents.on('did-finish-load', () => {
     logger.info('Page finished loading successfully');
+    revealWindow('did-finish-load');
   });
+
+  mainWindow.once('ready-to-show', () => {
+    revealWindow('ready-to-show');
+  });
+
+  setTimeout(() => {
+    revealWindow('launch-timeout-fallback');
+  }, 12000);
 
   mainWindow.webContents.on('console-message', (details) => {
     const { level, message, lineNumber, sourceId } = details;
