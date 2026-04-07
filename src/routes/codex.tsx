@@ -97,7 +97,7 @@ function CodexPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [statusPollUntil, setStatusPollUntil] = useState<number | null>(null);
-  const shouldPollStatus = statusPollUntil !== null && statusPollUntil > Date.now();
+  const [shouldPollStatus, setShouldPollStatus] = useState(false);
   const { data, isLoading, isError, error, refetch } = useCodexStatus(
     shouldPollStatus ? 3000 : false,
   );
@@ -143,6 +143,29 @@ function CodexPage() {
       setStatusPollUntil(null);
     }
   }, [data?.auth.isAuthenticated]);
+
+  useEffect(() => {
+    if (statusPollUntil === null) {
+      setShouldPollStatus(false);
+      return;
+    }
+
+    const now = Date.now();
+    if (statusPollUntil <= now) {
+      setShouldPollStatus(false);
+      return;
+    }
+
+    setShouldPollStatus(true);
+    const timeoutId = window.setTimeout(() => {
+      setShouldPollStatus(false);
+      setStatusPollUntil(null);
+    }, statusPollUntil - now);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [statusPollUntil]);
 
   useEffect(() => {
     if (!window.electron?.onCodexExecEvent) {
