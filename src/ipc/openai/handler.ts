@@ -4,6 +4,7 @@ import {
   OpenAIProviderUpdateInput,
 } from '../../types/openai-provider';
 import { OpenAIProviderRepo } from '../database/openaiProviderRepo';
+import { OpenAIProviderStateService } from '../../services/OpenAIProviderStateService';
 
 export async function listOpenAIProviders(): Promise<OpenAIProviderCredential[]> {
   return OpenAIProviderRepo.listProviders();
@@ -29,4 +30,14 @@ export async function updateOpenAIProvider(
 
 export async function deleteOpenAIProvider(providerId: string): Promise<void> {
   await OpenAIProviderRepo.deleteProvider(providerId);
+}
+
+export async function refreshOpenAIProviderState(
+  providerId: string,
+): Promise<OpenAIProviderCredential> {
+  return OpenAIProviderStateService.refreshProviderState(providerId);
+}
+
+export async function refreshAllOpenAIProviderStates(): Promise<OpenAIProviderCredential[]> {
+  return OpenAIProviderStateService.refreshAllProviderStates();
 }

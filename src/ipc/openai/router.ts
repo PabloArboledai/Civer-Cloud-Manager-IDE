@@ -10,6 +10,8 @@ import {
   deleteOpenAIProvider,
   getOpenAIProvider,
   listOpenAIProviders,
+  refreshAllOpenAIProviderStates,
+  refreshOpenAIProviderState,
   updateOpenAIProvider,
 } from './handler';
 
@@ -45,5 +47,18 @@ export const openaiRouter = os.router({
     .output(z.void())
     .handler(async ({ input }) => {
       await deleteOpenAIProvider(input.providerId);
+    }),
+
+  refreshProviderState: os
+    .input(z.object({ providerId: z.string() }))
+    .output(OpenAIProviderCredentialSchema)
+    .handler(async ({ input }) => {
+      return refreshOpenAIProviderState(input.providerId);
+    }),
+
+  refreshAllProviderStates: os
+    .output(z.array(OpenAIProviderCredentialSchema))
+    .handler(async () => {
+      return refreshAllOpenAIProviderStates();
     }),
 });

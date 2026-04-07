@@ -4,6 +4,8 @@ import {
   deleteOpenAIProvider,
   getOpenAIProvider,
   listOpenAIProviders,
+  refreshAllOpenAIProviderStates,
+  refreshOpenAIProviderState,
   updateOpenAIProvider,
 } from '@/actions/openai';
 import type {
@@ -74,6 +76,29 @@ export function useDeleteOpenAIProvider() {
       queryClient.removeQueries({
         queryKey: OPENAI_PROVIDER_QUERY_KEYS.detail(variables.providerId),
       });
+    },
+  });
+}
+
+export function useRefreshOpenAIProviderState() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ providerId }: { providerId: string }) => refreshOpenAIProviderState({ providerId }),
+    onSuccess: (provider) => {
+      queryClient.invalidateQueries({ queryKey: OPENAI_PROVIDER_QUERY_KEYS.all });
+      queryClient.setQueryData(OPENAI_PROVIDER_QUERY_KEYS.detail(provider.id), provider);
+    },
+  });
+}
+
+export function useRefreshAllOpenAIProviderStates() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: refreshAllOpenAIProviderStates,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPENAI_PROVIDER_QUERY_KEYS.all });
     },
   });
 }

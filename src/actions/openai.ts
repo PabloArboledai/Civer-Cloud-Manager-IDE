@@ -30,3 +30,13 @@ export function updateOpenAIProvider(
 export function deleteOpenAIProvider(input: { providerId: string }): Promise<void> {
   return ipc.client.openai.deleteProvider(input) as Promise<void>;
 }
+
+export function refreshOpenAIProviderState(input: {
+  providerId: string;
+}): Promise<OpenAIProviderCredential> {
+  return ipc.client.openai.refreshProviderState(input) as Promise<OpenAIProviderCredential>;
+}
+
+export function refreshAllOpenAIProviderStates(): Promise<OpenAIProviderCredential[]> {
+  return ipc.client.openai.refreshAllProviderStates() as Promise<OpenAIProviderCredential[]>;
+}
