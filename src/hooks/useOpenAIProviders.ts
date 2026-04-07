@@ -84,7 +84,8 @@ export function useRefreshOpenAIProviderState() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ providerId }: { providerId: string }) => refreshOpenAIProviderState({ providerId }),
+    mutationFn: ({ providerId }: { providerId: string }) =>
+      refreshOpenAIProviderState({ providerId }),
     onSuccess: (provider) => {
       queryClient.invalidateQueries({ queryKey: OPENAI_PROVIDER_QUERY_KEYS.all });
       queryClient.setQueryData(OPENAI_PROVIDER_QUERY_KEYS.detail(provider.id), provider);

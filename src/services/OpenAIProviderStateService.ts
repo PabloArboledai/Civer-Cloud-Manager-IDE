@@ -115,7 +115,11 @@ function matchesProjectApiKey(
     return false;
   }
 
-  return normalizedRedacted.startsWith(prefix) || normalizedRedacted.endsWith(suffix) || normalizedRedacted === preview;
+  return (
+    normalizedRedacted.startsWith(prefix) ||
+    normalizedRedacted.endsWith(suffix) ||
+    normalizedRedacted === preview
+  );
 }
 
 function classifyRefreshFailure(error: unknown): {
@@ -300,7 +304,9 @@ export class OpenAIProviderStateService {
               limit: 31,
               group_by: ['project_id', 'api_key_id', 'model'],
               ...(matchedApiKeyId ? { api_key_ids: [matchedApiKeyId] } : {}),
-              models: availableModels.filter((model) => model.startsWith('gpt') || model.startsWith('o')),
+              models: availableModels.filter(
+                (model) => model.startsWith('gpt') || model.startsWith('o'),
+              ),
             },
           );
           const usageTotals = aggregateUsage(
@@ -312,12 +318,16 @@ export class OpenAIProviderStateService {
           const monthStart = new Date();
           monthStart.setUTCDate(1);
           monthStart.setUTCHours(0, 0, 0, 0);
-          const costsPage = await getJson<OpenAIPage<OpenAICostBucket>>(provider, '/organization/costs', {
-            start_time: Math.floor(monthStart.getTime() / 1000),
-            bucket_width: '1d',
-            limit: 31,
-            group_by: ['project_id'],
-          });
+          const costsPage = await getJson<OpenAIPage<OpenAICostBucket>>(
+            provider,
+            '/organization/costs',
+            {
+              start_time: Math.floor(monthStart.getTime() / 1000),
+              bucket_width: '1d',
+              limit: 31,
+              group_by: ['project_id'],
+            },
+          );
 
           budget = aggregateCosts(costsPage.data ?? [], provider.project_id) ?? budget;
           totalCostUsd = (costsPage.data ?? [])

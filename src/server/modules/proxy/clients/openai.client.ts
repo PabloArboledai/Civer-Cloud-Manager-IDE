@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
-import {
-  OpenAIChatRequest,
-  OpenAIChatResponse,
-} from '../interfaces/request-interfaces';
+import { OpenAIChatRequest, OpenAIChatResponse } from '../interfaces/request-interfaces';
 import { UpstreamRequestError } from './upstream-error';
 
 interface OpenAIRequestOptions {

@@ -56,9 +56,7 @@ export const openaiRouter = os.router({
       return refreshOpenAIProviderState(input.providerId);
     }),
 
-  refreshAllProviderStates: os
-    .output(z.array(OpenAIProviderCredentialSchema))
-    .handler(async () => {
-      return refreshAllOpenAIProviderStates();
-    }),
+  refreshAllProviderStates: os.output(z.array(OpenAIProviderCredentialSchema)).handler(async () => {
+    return refreshAllOpenAIProviderStates();
+  }),
 });

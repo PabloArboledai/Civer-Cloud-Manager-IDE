@@ -2,7 +2,13 @@ import { useMemo, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -24,7 +30,10 @@ function formatNumber(value: number | null | undefined): string {
   return new Intl.NumberFormat('es-ES').format(value);
 }
 
-function formatCurrency(value: number | null | undefined, currency: string | null | undefined): string {
+function formatCurrency(
+  value: number | null | undefined,
+  currency: string | null | undefined,
+): string {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     return 'N/D';
   }
@@ -62,7 +71,8 @@ export function OpenAIProviderManagementCard() {
 
   const providerCount = providers?.length ?? 0;
   const healthyCount = useMemo(() => {
-    return (providers ?? []).filter((provider) => provider.state.health.status === 'healthy').length;
+    return (providers ?? []).filter((provider) => provider.state.health.status === 'healthy')
+      .length;
   }, [providers]);
 
   const resetForm = () => {
@@ -178,7 +188,11 @@ export function OpenAIProviderManagementCard() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={handleRefreshAll} disabled={refreshAllMutation.isPending}>
+            <Button
+              variant="outline"
+              onClick={handleRefreshAll}
+              disabled={refreshAllMutation.isPending}
+            >
               {refreshAllMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -281,7 +295,9 @@ export function OpenAIProviderManagementCard() {
                     </div>
                   </div>
                   <div className="rounded-md border p-3">
-                    <div className="text-muted-foreground text-xs uppercase">Modelos detectados</div>
+                    <div className="text-muted-foreground text-xs uppercase">
+                      Modelos detectados
+                    </div>
                     <div className="mt-1 text-xs">
                       {provider.state.availableModels?.length
                         ? `${provider.state.availableModels.length} modelos`
@@ -290,7 +306,9 @@ export function OpenAIProviderManagementCard() {
                   </div>
                   <div className="rounded-md border p-3">
                     <div className="text-muted-foreground text-xs uppercase">Ultimo refresh</div>
-                    <div className="mt-1 text-xs">{formatDate(provider.state.last_refreshed_at)}</div>
+                    <div className="mt-1 text-xs">
+                      {formatDate(provider.state.last_refreshed_at)}
+                    </div>
                   </div>
                   <div className="rounded-md border p-3">
                     <div className="text-muted-foreground text-xs uppercase">Solicitudes 30d</div>

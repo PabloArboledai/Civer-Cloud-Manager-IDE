@@ -242,7 +242,11 @@ export class OpenAIProviderSchedulerService implements OnModuleInit {
         };
       }
 
-      if (status === 429 || lowered.includes('rate limit') || lowered.includes('too many requests')) {
+      if (
+        status === 429 ||
+        lowered.includes('rate limit') ||
+        lowered.includes('too many requests')
+      ) {
         const cooldownSeconds = error.headers?.retryAfter
           ? Number.parseInt(error.headers.retryAfter, 10) || 15
           : 15;
