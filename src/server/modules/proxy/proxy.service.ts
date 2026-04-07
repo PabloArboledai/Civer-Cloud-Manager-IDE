@@ -802,6 +802,10 @@ export class ProxyService {
   }
 
   private async shouldRouteToOpenAIProviderPool(model: string): Promise<boolean> {
+    if (!this.openaiScheduler) {
+      return false;
+    }
+
     const normalizedModel = model.replace(/^models\//i, '').trim().toLowerCase();
     const knownOpenAIModels = await this.openaiScheduler.getKnownModels();
 
@@ -829,6 +833,10 @@ export class ProxyService {
     request: OpenAIChatRequest,
     sessionKey?: string,
   ): Promise<OpenAIChatResponse | Observable<string>> {
+    if (!this.openaiClient || !this.openaiScheduler) {
+      throw new Error('OpenAI provider pool is not available');
+    }
+
     let lastError: unknown = null;
     const attemptedProviderIds = new Set<string>();
     const maxRetries = 3;
