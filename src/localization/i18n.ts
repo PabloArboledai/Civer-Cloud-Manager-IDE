@@ -51,6 +51,7 @@ i18n
           nav: {
             accounts: 'Accounts',
             proxy: 'API Proxy',
+            codex: 'Codex',
             settings: 'Settings',
           },
           account: {
@@ -244,15 +245,22 @@ i18n
             },
           },
           cloud: {
-            title: 'Accounts',
-            description: 'Manage your Google Gemini account pool.',
+            title: 'Google Accounts',
+            description:
+              'Manage your Google Gemini account pool. ChatGPT / Codex login is managed separately in the Codex panel.',
             autoSwitch: 'Auto-Switch',
             providerGroupings: 'Provider Groupings',
-            addAccount: 'Add Account',
+            addAccount: 'Add Google Account',
             syncFromIDE: 'Sync from IDE',
             checkQuota: 'Check Quota Now',
             polling: 'Polling triggered',
             globalQuota: 'Global Quota',
+            managementNotice: {
+              title: 'Google accounts stay here. Codex stays in its own panel.',
+              description:
+                'Use this screen only for Google / Gemini accounts. If you want ChatGPT / Codex login, open the Codex section in the sidebar.',
+              codexPanel: 'Open Codex panel',
+            },
             layout: {
               auto: 'Auto',
               twoCol: '2 Columns',
@@ -261,12 +269,27 @@ i18n
             },
             authDialog: {
               title: 'Add Google Account',
-              description: 'To add an account, you need to authorize the application.',
+              description:
+                'This dialog is only for Google / Gemini accounts. The preferred flow is automatic through the localhost callback.',
+              autoTitle: 'Recommended: automatic Google callback',
+              autoDescription:
+                'Open the browser, complete Google login, and Antigravity will add the account automatically when the localhost callback returns.',
               openLogin: 'Open Login Page',
+              browserOpenedTitle: 'Browser opened',
+              browserOpenedDescription:
+                'Complete Google login in the browser. Antigravity will verify the callback automatically.',
+              callbackReceived: 'Google callback received. The account will be added automatically.',
+              callbackReceivedPending:
+                'Google callback received. Antigravity is verifying the account now...',
+              manualTitle: 'Manual fallback',
+              manualDescription:
+                'Only use this if automatic callback detection fails and you need to paste the code yourself.',
+              showManual: 'Paste code manually',
+              hideManual: 'Hide manual entry',
               authCode: 'Authorization Code',
               placeholder: 'Paste the code starting with 4/...',
               instruction:
-                'Will open default browser for Google login. Copy the code from localhost page and paste here.',
+                'Copy the code from the localhost page and paste it here only if automatic verification did not happen.',
               verify: 'Verify & Add',
             },
             card: {
@@ -316,7 +339,7 @@ i18n
               baseline: 'Baseline Identity',
             },
             list: {
-              noAccounts: 'No cloud accounts added yet.',
+              noAccounts: 'No Google cloud accounts added yet.',
             },
             error: {
               loadFailed: 'Failed to load cloud accounts.',
@@ -334,6 +357,7 @@ i18n
               addFailed: {
                 title: 'Failed to add account',
               },
+              startAuthFailed: 'Failed to open Google login',
               quotaRefreshed: 'Quota refreshed',
               refreshFailed: 'Failed to refresh quota',
               pollFailed: 'Failed to poll quota for all accounts',
