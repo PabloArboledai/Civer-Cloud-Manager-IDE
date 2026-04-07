@@ -211,7 +211,6 @@ function aggregateCosts(
     return undefined;
   }
 
-  let totalCostUsd = 0;
   let currency: string | null = null;
 
   for (const bucket of buckets) {
@@ -220,7 +219,6 @@ function aggregateCosts(
         continue;
       }
 
-      totalCostUsd += result.amount?.value ?? 0;
       currency = result.amount?.currency ?? currency;
     }
   }
