@@ -11,6 +11,7 @@ import path from 'path';
 import {
   buildOpenAIProviderApiKeyPreview,
   createDefaultOpenAIProviderState,
+  OpenAIProviderCredentialSchema,
   OpenAIProviderCreateInputSchema,
 } from '../../types/openai-provider';
 
@@ -63,6 +64,36 @@ describe('OpenAI provider domain', () => {
 
     expect(state.health.status).toBe('disabled');
     expect(state.health.consecutiveFailures).toBe(0);
+    expect(state.admin_api_available).toBeNull();
+  });
+
+  it('should validate provider snapshots with refresh metadata', () => {
+    const provider = OpenAIProviderCredentialSchema.parse({
+      id: 'provider-1',
+      provider: 'openai',
+      label: 'Cuenta principal',
+      api_key_preview: 'sk-proj…7890',
+      organization_id: 'org_123',
+      project_id: 'proj_123',
+      base_url: 'https://api.openai.com/v1',
+      enabled: true,
+      created_at: 1,
+      updated_at: 2,
+      last_used_at: 3,
+      state: {
+        availableModels: ['gpt-4.1', 'gpt-5'],
+        api_key_id: 'key_123',
+        admin_api_available: true,
+        last_refreshed_at: 4,
+        health: {
+          status: 'healthy',
+          consecutiveFailures: 0,
+        },
+      },
+    });
+
+    expect(provider.state.availableModels).toEqual(['gpt-4.1', 'gpt-5']);
+    expect(provider.state.admin_api_available).toBe(true);
   });
 });
 
