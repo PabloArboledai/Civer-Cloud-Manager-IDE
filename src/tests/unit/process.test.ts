@@ -232,9 +232,24 @@ sandbox = "workspace-write"
 
       expect(diagnostics.host).toBe('localhost');
       expect(diagnostics.path).toBe('/success');
+      expect(diagnostics.queryFlags.flowType).toBe('localhost-callback');
       expect(diagnostics.sensitiveParams).toContain('id_token');
       expect(diagnostics.normalizedUrl).toContain('id_token=%5BREDACTED%5D');
       expect(diagnostics.queryFlags.planType).toBe('free');
+    });
+
+    it('should analyze official authorize URLs used by VS Code style Codex login flows', () => {
+      const diagnostics = analyzeCodexCallback(
+        'https://auth.openai.com/oauth/authorize?response_type=code&client_id=app_EMoamEEZ73f0CkXaXp7hrann&redirect_uri=http://localhost:1455/auth/callback&scope=openid%20profile%20email%20offline_access&code_challenge=abc123&code_challenge_method=S256&state=test-state&originator=codex_vscode',
+      );
+
+      expect(diagnostics.valid).toBe(true);
+      expect(diagnostics.host).toBe('auth.openai.com');
+      expect(diagnostics.queryFlags.flowType).toBe('authorize-url');
+      expect(diagnostics.queryFlags.redirectUriHost).toBe('localhost:1455');
+      expect(diagnostics.queryFlags.originator).toBe('codex_vscode');
+      expect(diagnostics.queryFlags.hasState).toBe(true);
+      expect(diagnostics.queryFlags.hasCodeChallenge).toBe(true);
     });
   });
 });
