@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { OpenAIProviderManagementCard } from '@/components/OpenAIProviderManagementCard';
 import {
   Select,
   SelectContent,
@@ -563,6 +564,8 @@ print(response.choices[0].message.content)`;
           </div>
         </CardContent>
       </Card>
+
+      <OpenAIProviderManagementCard />
 
       {/* Usage Examples Card */}
       <Card>
