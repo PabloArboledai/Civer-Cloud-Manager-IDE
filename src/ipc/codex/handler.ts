@@ -65,6 +65,19 @@ function safeIsoFromEpoch(value: unknown): string | null {
   return new Date(value * 1000).toISOString();
 }
 
+function safeIsoFromString(value: unknown): string | null {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed.toISOString();
+}
+
 function decodeJwtSegment(segment: string): Record<string, unknown> | null {
   try {
     const normalized = segment.replace(/-/g, '+').replace(/_/g, '/');
@@ -75,6 +88,203 @@ function decodeJwtSegment(segment: string): Record<string, unknown> | null {
   } catch {
     return null;
   }
+}
+
+function decodeJwtClaims(token: string | null | undefined): Record<string, unknown> | null {
+  if (!token) {
+    return null;
+  }
+
+  const [, claimsSegment] = token.split('.');
+  if (!claimsSegment) {
+    return null;
+  }
+
+  return decodeJwtSegment(claimsSegment);
+}
+
+function maskEmail(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const [localPart, domainPart] = value.split('@');
+  if (!localPart || !domainPart) {
+    return null;
+  }
+
+  const maskedLocal =
+    localPart.length <= 2 ? `${localPart[0] ?? '*'}***` : `${localPart.slice(0, 2)}***`;
+  const domainSegments = domainPart.split('.');
+  const domainName = domainSegments[0] ?? '';
+  const tld = domainSegments.slice(1).join('.');
+  const maskedDomain =
+    domainName.length <= 2 ? `${domainName[0] ?? '*'}***` : `${domainName.slice(0, 2)}***`;
+
+  return tld ? `${maskedLocal}@${maskedDomain}.${tld}` : `${maskedLocal}@${maskedDomain}`;
+}
+
+function maskDisplayName(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const tokens = value
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
+  if (tokens.length === 0) {
+    return null;
+  }
+
+  if (tokens.length === 1) {
+    const token = tokens[0];
+    return token.length <= 2 ? `${token[0] ?? '*'}***` : `${token.slice(0, 2)}***`;
+  }
+
+  return tokens.map((token) => `${token[0]?.toUpperCase() ?? '*'}.`).join(' ');
+}
+
+function maskUserId(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const digest = createHash('sha256').update(value).digest('hex');
+  return `user_${digest.slice(0, 12)}`;
+}
+
+function maskOrganizationTitle(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  if (value.toLowerCase() === 'personal') {
+    return 'Personal';
+  }
+
+  return value.length <= 3 ? `${value[0] ?? '*'}***` : `${value.slice(0, 3)}***`;
+}
+
+function getOpenAIAuthPayload(claims: Record<string, unknown> | null): Record<string, unknown> | null {
+  if (!claims) {
+    return null;
+  }
+
+  const payload = claims['https://api.openai.com/auth'];
+  return payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : null;
+}
+
+function getOpenAIProfilePayload(
+  claims: Record<string, unknown> | null,
+): Record<string, unknown> | null {
+  if (!claims) {
+    return null;
+  }
+
+  const payload = claims['https://api.openai.com/profile'];
+  return payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : null;
+}
+
+function firstNonEmptyString(...values: unknown[]): string | null {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function firstBoolean(...values: unknown[]): boolean | null {
+  for (const value of values) {
+    if (typeof value === 'boolean') {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+type CodexAuthRawPayload = {
+  auth_mode?: string;
+  OPENAI_API_KEY?: string | null;
+  last_refresh?: string;
+  tokens?: {
+    access_token?: string;
+    refresh_token?: string;
+    id_token?: string;
+    account_id?: string;
+  };
+};
+
+function deriveCodexIdentity(raw: CodexAuthRawPayload) {
+  const idClaims = decodeJwtClaims(raw.tokens?.id_token);
+  const accessClaims = decodeJwtClaims(raw.tokens?.access_token);
+  const idAuthPayload = getOpenAIAuthPayload(idClaims);
+  const accessAuthPayload = getOpenAIAuthPayload(accessClaims);
+  const authPayload = idAuthPayload ?? accessAuthPayload;
+  const profilePayload = getOpenAIProfilePayload(accessClaims);
+  const organizations = Array.isArray(authPayload?.organizations) ? authPayload.organizations : [];
+  const defaultOrganization =
+    organizations.find(
+      (organization) =>
+        organization &&
+        typeof organization === 'object' &&
+        (organization as Record<string, unknown>).is_default === true,
+    ) ?? organizations[0];
+  const defaultOrganizationRecord =
+    defaultOrganization && typeof defaultOrganization === 'object'
+      ? (defaultOrganization as Record<string, unknown>)
+      : null;
+  const platformUrlValue = firstNonEmptyString(
+    authPayload?.platform_url,
+    idClaims?.platform_url,
+    accessClaims?.platform_url,
+  );
+  let platformUrlHost: string | null = null;
+  if (platformUrlValue) {
+    try {
+      platformUrlHost = new URL(platformUrlValue).host;
+    } catch {
+      platformUrlHost = null;
+    }
+  }
+
+  return {
+    displayNameMasked: maskDisplayName(firstNonEmptyString(idClaims?.name)),
+    emailMasked: maskEmail(firstNonEmptyString(idClaims?.email, profilePayload?.email)),
+    emailVerified: firstBoolean(idClaims?.email_verified, profilePayload?.email_verified),
+    accountIdMasked: maskAccountId(
+      firstNonEmptyString(authPayload?.chatgpt_account_id, raw.tokens?.account_id),
+    ),
+    userIdMasked: maskUserId(firstNonEmptyString(authPayload?.user_id, authPayload?.chatgpt_user_id)),
+    planType: firstNonEmptyString(authPayload?.chatgpt_plan_type),
+    authProvider: firstNonEmptyString(idClaims?.auth_provider, authPayload?.auth_provider),
+    localhostCallback: firstBoolean(authPayload?.localhost),
+    organizationCount: organizations.length > 0 ? organizations.length : null,
+    defaultOrganization: defaultOrganizationRecord
+      ? {
+          titleMasked: maskOrganizationTitle(firstNonEmptyString(defaultOrganizationRecord.title)),
+          role: firstNonEmptyString(defaultOrganizationRecord.role),
+          isDefault: defaultOrganizationRecord.is_default === true,
+        }
+      : null,
+    subscription:
+      authPayload &&
+      (authPayload.chatgpt_subscription_active_start ||
+        authPayload.chatgpt_subscription_active_until ||
+        authPayload.chatgpt_subscription_last_checked)
+        ? {
+            activeStart: safeIsoFromString(authPayload.chatgpt_subscription_active_start),
+            activeUntil: safeIsoFromString(authPayload.chatgpt_subscription_active_until),
+            lastChecked: safeIsoFromString(authPayload.chatgpt_subscription_last_checked),
+          }
+        : null,
+    idTokenExpiresAt: safeIsoFromEpoch(idClaims?.exp),
+    accessTokenExpiresAt: safeIsoFromEpoch(accessClaims?.exp),
+    platformUrlHost,
+  };
 }
 
 export function parseCodexConfig(content: string): CodexConfigSnapshot {
@@ -174,36 +384,9 @@ function deriveLoginLabel(
   return 'Autenticado';
 }
 
-function readCodexAuthStatus(): CodexAuthStatus {
-  const authPath = getCodexAuthFilePath();
-  if (!fs.existsSync(authPath)) {
-    return {
-      isAuthenticated: false,
-      authMode: null,
-      loginLabel: 'No autenticado',
-      accountIdMasked: null,
-      lastRefresh: null,
-      hasAccessToken: false,
-      hasRefreshToken: false,
-      hasIdToken: false,
-      hasApiKey: false,
-    };
-  }
-
+export function parseCodexAuthStatus(content: string): CodexAuthStatus {
   try {
-    const content = fs.readFileSync(authPath, 'utf-8');
-    const raw = JSON.parse(content) as {
-      auth_mode?: string;
-      OPENAI_API_KEY?: string | null;
-      last_refresh?: string;
-      tokens?: {
-        access_token?: string;
-        refresh_token?: string;
-        id_token?: string;
-        account_id?: string;
-      };
-    };
-
+    const raw = JSON.parse(content) as CodexAuthRawPayload;
     const hasAccessToken = Boolean(raw.tokens?.access_token);
     const hasRefreshToken = Boolean(raw.tokens?.refresh_token);
     const hasIdToken = Boolean(raw.tokens?.id_token);
@@ -221,7 +404,44 @@ function readCodexAuthStatus(): CodexAuthStatus {
       hasRefreshToken,
       hasIdToken,
       hasApiKey,
+      identity: isAuthenticated ? deriveCodexIdentity(raw) : null,
     };
+  } catch {
+    return {
+      isAuthenticated: false,
+      authMode: null,
+      loginLabel: 'Estado invalido',
+      accountIdMasked: null,
+      lastRefresh: null,
+      hasAccessToken: false,
+      hasRefreshToken: false,
+      hasIdToken: false,
+      hasApiKey: false,
+      identity: null,
+    };
+  }
+}
+
+function readCodexAuthStatus(): CodexAuthStatus {
+  const authPath = getCodexAuthFilePath();
+  if (!fs.existsSync(authPath)) {
+    return {
+      isAuthenticated: false,
+      authMode: null,
+      loginLabel: 'No autenticado',
+      accountIdMasked: null,
+      lastRefresh: null,
+      hasAccessToken: false,
+      hasRefreshToken: false,
+      hasIdToken: false,
+      hasApiKey: false,
+      identity: null,
+    };
+  }
+
+  try {
+    const content = fs.readFileSync(authPath, 'utf-8');
+    return parseCodexAuthStatus(content);
   } catch (error) {
     logger.warn('No se pudo leer el estado de autenticacion de Codex', error);
     return {
@@ -234,6 +454,7 @@ function readCodexAuthStatus(): CodexAuthStatus {
       hasRefreshToken: false,
       hasIdToken: false,
       hasApiKey: false,
+      identity: null,
     };
   }
 }
