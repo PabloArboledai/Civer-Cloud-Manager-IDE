@@ -68,11 +68,16 @@ export const CodexCallbackDiagnosticsSchema = z.object({
   sensitiveParams: z.array(z.string()),
   warnings: z.array(z.string()),
   queryFlags: z.object({
+    flowType: z.enum(['authorize-url', 'localhost-callback', 'unknown']),
     needsSetup: z.boolean().nullable(),
     planType: z.string().nullable(),
     hasOrgId: z.boolean(),
     hasProjectId: z.boolean(),
     platformUrlHost: z.string().nullable(),
+    redirectUriHost: z.string().nullable(),
+    hasState: z.boolean(),
+    hasCodeChallenge: z.boolean(),
+    originator: z.string().nullable(),
   }),
   tokenMetadata: CodexCallbackTokenMetadataSchema.nullable(),
 });
