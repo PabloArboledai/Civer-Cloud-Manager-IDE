@@ -35,7 +35,7 @@ export async function toggleTheme() {
 export async function syncWithLocalTheme() {
   const { local } = await getCurrentTheme();
   if (!local) {
-    setTheme('system');
+    await setTheme('dark');
     return;
   }
 

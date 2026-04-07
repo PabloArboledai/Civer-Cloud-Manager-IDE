@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN || env.SENTRY_AUTH_TOKEN;
   const shouldEnableSentry = mode === 'production' && Boolean(sentryAuthToken);
+  const shouldEnableRouteCodeSplitting = mode === 'production';
 
   return {
     plugins: [
@@ -36,7 +37,7 @@ export default defineConfig(({ mode }) => {
         : []),
       tanstackRouter({
         target: 'react',
-        autoCodeSplitting: true,
+        autoCodeSplitting: shouldEnableRouteCodeSplitting,
       }),
       tailwindcss(),
       react({
