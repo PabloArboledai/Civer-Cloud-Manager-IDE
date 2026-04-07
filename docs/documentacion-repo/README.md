@@ -21,6 +21,14 @@ No es una aplicacion web tradicional con backend remoto propio. La mayor parte d
 - Ve a `docs/documentacion-repo/proxy-gateway.md` si vas a trabajar en el proxy local.
 - Consulta `docs/documentacion-repo/riesgos-y-hallazgos.md` antes de tocar seguridad o comportamiento critico.
 
+## Planes activos para agentes
+
+- `docs/planes/README.md`
+- `docs/planes/openai-provider-oficial/README.md`
+- `openspec/changes/add-official-openai-provider-pool/proposal.md`
+
+Si vas a trabajar en soporte OpenAI/Codex, consulta primero esos planes. Son la referencia operativa para coordinar trabajo paralelo.
+
 ## Mapa de archivos canonicos
 
 - `docs/documentacion-repo/stack-y-dependencias.md`
