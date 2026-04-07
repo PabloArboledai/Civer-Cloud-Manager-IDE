@@ -49,7 +49,11 @@ vi.mock('../../utils/paths', () => ({
 
 // Import after mocks are set up
 import { isProcessRunning, closeAntigravity, startAntigravity } from '../../ipc/process/handler';
-import { analyzeCodexCallback, parseCodexConfig } from '../../ipc/codex/handler';
+import {
+  analyzeCodexCallback,
+  parseCodexAuthStatus,
+  parseCodexConfig,
+} from '../../ipc/codex/handler';
 import findProcess from 'find-process';
 
 describe('Process Handler', () => {
@@ -250,6 +254,33 @@ sandbox = "workspace-write"
       expect(diagnostics.queryFlags.originator).toBe('codex_vscode');
       expect(diagnostics.queryFlags.hasState).toBe(true);
       expect(diagnostics.queryFlags.hasCodeChallenge).toBe(true);
+    });
+
+    it('should derive a redacted Codex identity card from local auth.json content', () => {
+      const authStatus = parseCodexAuthStatus(`{
+  "auth_mode": "chatgpt",
+  "OPENAI_API_KEY": null,
+  "tokens": {
+    "id_token": "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImxhbnViLm9yZ0BnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6Ik51YmUgVmlydHVhbCIsImF1dGhfcHJvdmlkZXIiOiJwYXNzd29yZCIsImV4cCI6MTc3NTU3MzgxMH0.sig",
+    "access_token": "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NzY0MzQyMTEsImh0dHBzOi8vYXBpLm9wZW5haS5jb20vYXV0aCI6eyJjaGF0Z3B0X2FjY291bnRfaWQiOiI5YTllMTM2YS04YWJjLTQzZmYtYmEzOC05OThlYjQxNzAxNDgiLCJjaGF0Z3B0X3VzZXJfaWQiOiJ1c2VyLUxCV3RWVUUxeTZ3Z2xWTFdFMjE0VWtIeSIsImNoYXRncHRfcGxhbl90eXBlIjoidGVhbSIsImNoYXRncHRfc3Vic2NyaXB0aW9uX2FjdGl2ZV9zdGFydCI6IjIwMjYtMDQtMDJUMDY6Mzk6NDErMDA6MDAiLCJjaGF0Z3B0X3N1YnNjcmlwdGlvbl9hY3RpdmVfdW50aWwiOiIyMDI2LTA1LTAyVDA2OjM5OjQxKzAwOjAwIiwiY2hhdGdwdF9zdWJzY3JpcHRpb25fbGFzdF9jaGVja2VkIjoiMjAyNi0wNC0wN1QxMzo1Njo0Ni44MDE2NzMrMDA6MDAiLCJsb2NhbGhvc3QiOnRydWUsIm9yZ2FuaXphdGlvbnMiOlt7InRpdGxlIjoiUGVyc29uYWwiLCJyb2xlIjoib3duZXIiLCJpc19kZWZhdWx0Ijp0cnVlfV0sInBsYXRmb3JtX3VybCI6Imh0dHBzOi8vcGxhdGZvcm0ub3BlbmFpLmNvbSIsInVzZXJfaWQiOiJ1c2VyLUxCV3RWVUUxeTZ3Z2xWTFdFMjE0VWtIeSJ9LCJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiJsYW51Yi5vcmdAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWV9fQ.sig",
+    "refresh_token": "rt_value",
+    "account_id": "9a9e136a-8abc-43ff-ba38-998eb4170148"
+  },
+  "last_refresh": "2026-04-07T13:56:51.572425600Z"
+}`);
+
+      expect(authStatus.isAuthenticated).toBe(true);
+      expect(authStatus.loginLabel).toBe('Autenticado con ChatGPT');
+      expect(authStatus.identity?.emailMasked).toBe('la***@gm***.com');
+      expect(authStatus.identity?.displayNameMasked).toBe('N. V.');
+      expect(authStatus.identity?.planType).toBe('team');
+      expect(authStatus.identity?.defaultOrganization?.titleMasked).toBe('Personal');
+      expect(authStatus.identity?.defaultOrganization?.role).toBe('owner');
+      expect(authStatus.identity?.localhostCallback).toBe(true);
+      expect(authStatus.identity?.platformUrlHost).toBe('platform.openai.com');
+      expect(authStatus.identity?.subscription?.activeUntil).toBe('2026-05-02T06:39:41.000Z');
+      expect(authStatus.identity?.accountIdMasked).toMatch(/^acct_[a-f0-9]{12}$/);
+      expect(authStatus.identity?.userIdMasked).toMatch(/^user_[a-f0-9]{12}$/);
     });
   });
 });

@@ -14,6 +14,10 @@ import {
   FolderOpen,
   SearchCode,
   Cpu,
+  UserRound,
+  Mail,
+  Building2,
+  BadgeCheck,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,7 +43,12 @@ import {
   useOpenCodexLogin,
   useStartCodexExec,
 } from '@/hooks/useCodex';
-import type { CodexCallbackDiagnostics, CodexExecEvent, CodexExecRunSnapshot } from '@/types/codex';
+import type {
+  CodexCallbackDiagnostics,
+  CodexExecEvent,
+  CodexExecRunSnapshot,
+  CodexStatusSnapshot,
+} from '@/types/codex';
 import { useQueryClient } from '@tanstack/react-query';
 
 const MAX_VISIBLE_EVENTS = 200;
@@ -90,6 +99,173 @@ function formatEventLine(event: CodexExecEvent): string {
     }
   }
   return event.kind;
+}
+
+function formatTimestampLabel(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return parsed.toLocaleString();
+}
+
+function formatBooleanLabel(value: boolean | null | undefined): string | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  return value ? 'Si' : 'No';
+}
+
+function CodexIdentityCard({
+  auth,
+}: {
+  auth: CodexStatusSnapshot['auth'] | undefined;
+}) {
+  const identity = auth?.identity;
+  const stateTone = auth?.isAuthenticated ? 'success' : 'warning';
+
+  return (
+    <Card>
+      <CardHeader className="space-y-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1">
+            <CardTitle className="flex items-center gap-2">
+              <UserRound className="h-4 w-4" />
+              Identidad local de Codex / ChatGPT
+            </CardTitle>
+            <CardDescription>
+              Tarjeta segura de la sesion activa compartida en <code>~/.codex</code>. Esto no se
+              mezcla con el pool de Google en <code>Accounts</code>.
+            </CardDescription>
+          </div>
+          <StatusPill label={auth?.loginLabel || 'Sin datos'} tone={stateTone} />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {identity?.planType ? (
+            <StatusPill label={`Plan: ${identity.planType}`} tone="neutral" />
+          ) : null}
+          {identity?.defaultOrganization?.titleMasked ? (
+            <StatusPill
+              label={`Org: ${identity.defaultOrganization.titleMasked}`}
+              tone="neutral"
+            />
+          ) : null}
+          {identity?.defaultOrganization?.role ? (
+            <StatusPill label={`Rol: ${identity.defaultOrganization.role}`} tone="neutral" />
+          ) : null}
+          {identity?.emailVerified !== null && identity?.emailVerified !== undefined ? (
+            <StatusPill
+              label={identity.emailVerified ? 'Email verificado' : 'Email sin verificar'}
+              tone={identity.emailVerified ? 'success' : 'warning'}
+            />
+          ) : null}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {auth?.isAuthenticated ? (
+          identity ? (
+            <>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <SummaryRow label="Cuenta" value={identity.accountIdMasked} />
+                <SummaryRow label="Correo" value={identity.emailMasked} />
+                <SummaryRow label="Perfil" value={identity.displayNameMasked} />
+                <SummaryRow label="Usuario" value={identity.userIdMasked} />
+                <SummaryRow label="Proveedor auth" value={identity.authProvider} />
+                <SummaryRow
+                  label="Callback localhost"
+                  value={formatBooleanLabel(identity.localhostCallback)}
+                />
+                <SummaryRow
+                  label="Organizaciones"
+                  value={
+                    identity.organizationCount !== null && identity.organizationCount !== undefined
+                      ? String(identity.organizationCount)
+                      : null
+                  }
+                />
+                <SummaryRow label="Platform host" value={identity.platformUrlHost} />
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-3">
+                <div className="rounded-lg border p-4">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                    <Mail className="h-4 w-4" />
+                    Sesion
+                  </div>
+                  <div className="space-y-3">
+                    <SummaryRow label="Ultimo refresh" value={formatTimestampLabel(auth.lastRefresh)} />
+                    <SummaryRow
+                      label="Expira id_token"
+                      value={formatTimestampLabel(identity.idTokenExpiresAt)}
+                    />
+                    <SummaryRow
+                      label="Expira access_token"
+                      value={formatTimestampLabel(identity.accessTokenExpiresAt)}
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-lg border p-4">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                    <Building2 className="h-4 w-4" />
+                    Organizacion detectada
+                  </div>
+                  <div className="space-y-3">
+                    <SummaryRow
+                      label="Organizacion por defecto"
+                      value={identity.defaultOrganization?.titleMasked}
+                    />
+                    <SummaryRow label="Rol" value={identity.defaultOrganization?.role} />
+                    <SummaryRow
+                      label="Es default"
+                      value={formatBooleanLabel(identity.defaultOrganization?.isDefault)}
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-lg border p-4">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                    <BadgeCheck className="h-4 w-4" />
+                    Suscripcion
+                  </div>
+                  <div className="space-y-3">
+                    <SummaryRow label="Plan" value={identity.planType} />
+                    <SummaryRow
+                      label="Activa desde"
+                      value={formatTimestampLabel(identity.subscription?.activeStart)}
+                    />
+                    <SummaryRow
+                      label="Activa hasta"
+                      value={formatTimestampLabel(identity.subscription?.activeUntil)}
+                    />
+                    <SummaryRow
+                      label="Ultima verificacion"
+                      value={formatTimestampLabel(identity.subscription?.lastChecked)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="text-muted-foreground rounded-lg border border-dashed p-4 text-sm">
+              Hay una sesion autenticada, pero el estado local no incluye suficientes claims seguros
+              para pintar una tarjeta enriquecida.
+            </div>
+          )
+        ) : (
+          <div className="text-muted-foreground rounded-lg border border-dashed p-4 text-sm">
+            Aun no se detecta una sesion local de ChatGPT/Codex en <code>~/.codex</code>.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 function CodexPage() {
@@ -400,6 +576,8 @@ function CodexPage() {
           <span className="font-medium"> Refrescar</span>.
         </p>
       </div>
+
+      <CodexIdentityCard auth={data?.auth} />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card>
