@@ -279,6 +279,11 @@ function buildQueryDiagnostics(url: URL) {
   const isLocalhostCallback = LOCALHOST_HOSTS.has(url.hostname) && url.pathname === '/success';
   const isAuthorizeUrl =
     url.hostname === 'auth.openai.com' && url.pathname.startsWith('/oauth/authorize');
+  const flowType: CodexCallbackDiagnostics['queryFlags']['flowType'] = isLocalhostCallback
+    ? 'localhost-callback'
+    : isAuthorizeUrl
+      ? 'authorize-url'
+      : 'unknown';
 
   for (const key of sensitiveParams) {
     normalizedUrl.searchParams.set(key, '[REDACTED]');
@@ -309,11 +314,7 @@ function buildQueryDiagnostics(url: URL) {
     sensitiveParams,
     normalizedUrl: normalizedUrl.toString(),
     queryFlags: {
-      flowType: isLocalhostCallback
-        ? 'localhost-callback'
-        : isAuthorizeUrl
-          ? 'authorize-url'
-          : 'unknown',
+      flowType,
       needsSetup: url.searchParams.has('needs_setup')
         ? url.searchParams.get('needs_setup') === 'true'
         : null,
