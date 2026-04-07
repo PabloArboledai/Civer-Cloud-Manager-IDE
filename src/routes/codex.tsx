@@ -99,7 +99,7 @@ function CodexPage() {
   const pollTimeoutRef = useRef<number | null>(null);
   const [pollWindowActive, setPollWindowActive] = useState(false);
   const { data, isLoading, isError, error, refetch } = useCodexStatus(
-    pollWindowActive && !data?.auth.isAuthenticated ? 3000 : false,
+    pollWindowActive ? 3000 : false,
   );
   const loginMutation = useOpenCodexLogin();
   const logoutMutation = useLogoutCodex();
