@@ -349,6 +349,16 @@ function CodexPage() {
         </div>
       </div>
 
+      <div className="bg-muted/40 rounded-lg border border-dashed p-4">
+        <div className="text-sm font-semibold">Codex y ChatGPT se gestionan aqui, no en Accounts</div>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Antigravity detecta el estado compartido de <code className="font-mono">~/.codex</code>,
+          incluyendo sesiones creadas por el CLI oficial y por la extension oficial de VS Code /
+          VS Code Insiders. Si completas el login fuera de esta ventana, vuelve aqui y pulsa
+          <span className="font-medium"> Refrescar</span>.
+        </p>
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-3">
         <Card>
           <CardHeader className="space-y-2">
@@ -553,10 +563,12 @@ function CodexPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <SearchCode className="h-4 w-4" />
-                Diagnostico seguro del callback localhost
+                Diagnostico seguro del login Codex
               </CardTitle>
               <CardDescription>
-                Pega la URL o solo la query string del callback `localhost` para estudiar su forma sin exponer tokens.
+                Pega la URL de autorizacion de <code className="font-mono">auth.openai.com</code>,
+                la URL del callback <code className="font-mono">localhost</code> o solo la query
+                string para estudiar el flujo sin exponer secretos.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -567,7 +579,7 @@ function CodexPage() {
                   className="border-input bg-background min-h-36 w-full rounded-md border px-3 py-2 text-sm"
                   value={callbackInput}
                   onChange={(event) => setCallbackInput(event.target.value)}
-                  placeholder="http://localhost:1455/success?... o solo needs_setup=false&id_token=..."
+                  placeholder="https://auth.openai.com/oauth/authorize?... o http://localhost:1455/success?... o solo needs_setup=false&id_token=..."
                 />
               </div>
               <Button onClick={handleAnalyzeCallback} disabled={analyzeMutation.isPending || !callbackInput.trim()}>
@@ -586,10 +598,11 @@ function CodexPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Resultado del analisis</CardTitle>
-                  <CardDescription>Vista normalizada y sin secretos del callback.</CardDescription>
+                  <CardDescription>Vista normalizada y sin secretos de la URL analizada.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                   <SummaryRow label="Valido" value={callbackDiagnostics.valid ? 'si' : 'no'} />
+                  <SummaryRow label="Tipo de flujo" value={callbackDiagnostics.queryFlags.flowType} />
                   <SummaryRow label="Host" value={callbackDiagnostics.host} />
                   <SummaryRow label="Puerto" value={callbackDiagnostics.port?.toString()} />
                   <SummaryRow label="Ruta" value={callbackDiagnostics.path} />
@@ -605,6 +618,18 @@ function CodexPage() {
                   <SummaryRow
                     label="Plan / needs_setup"
                     value={`${callbackDiagnostics.queryFlags.planType || 'N/D'} / ${callbackDiagnostics.queryFlags.needsSetup === null ? 'N/D' : callbackDiagnostics.queryFlags.needsSetup ? 'true' : 'false'}`}
+                  />
+                  <SummaryRow
+                    label="redirect_uri host"
+                    value={callbackDiagnostics.queryFlags.redirectUriHost}
+                  />
+                  <SummaryRow
+                    label="originator"
+                    value={callbackDiagnostics.queryFlags.originator}
+                  />
+                  <SummaryRow
+                    label="state / challenge"
+                    value={`${callbackDiagnostics.queryFlags.hasState ? 'si' : 'no'} / ${callbackDiagnostics.queryFlags.hasCodeChallenge ? 'si' : 'no'}`}
                   />
                 </CardContent>
               </Card>

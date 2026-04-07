@@ -272,6 +272,9 @@ function buildQueryDiagnostics(url: URL) {
   const parameterNames = Array.from(url.searchParams.keys());
   const sensitiveParams = parameterNames.filter((key) => SENSITIVE_QUERY_KEYS.has(key));
   const normalizedUrl = new URL(url.toString());
+  const isLocalhostCallback = LOCALHOST_HOSTS.has(url.hostname) && url.pathname === '/success';
+  const isAuthorizeUrl =
+    url.hostname === 'auth.openai.com' && url.pathname.startsWith('/oauth/authorize');
 
   for (const key of sensitiveParams) {
     normalizedUrl.searchParams.set(key, '[REDACTED]');
@@ -287,11 +290,26 @@ function buildQueryDiagnostics(url: URL) {
     }
   }
 
+  const redirectUri = url.searchParams.get('redirect_uri');
+  let redirectUriHost: string | null = null;
+  if (redirectUri) {
+    try {
+      redirectUriHost = new URL(redirectUri).host;
+    } catch {
+      redirectUriHost = null;
+    }
+  }
+
   return {
     parameterNames,
     sensitiveParams,
     normalizedUrl: normalizedUrl.toString(),
     queryFlags: {
+      flowType: isLocalhostCallback
+        ? 'localhost-callback'
+        : isAuthorizeUrl
+          ? 'authorize-url'
+          : 'unknown',
       needsSetup: url.searchParams.has('needs_setup')
         ? url.searchParams.get('needs_setup') === 'true'
         : null,
@@ -299,6 +317,10 @@ function buildQueryDiagnostics(url: URL) {
       hasOrgId: Boolean(url.searchParams.get('org_id')),
       hasProjectId: Boolean(url.searchParams.get('project_id')),
       platformUrlHost,
+      redirectUriHost,
+      hasState: Boolean(url.searchParams.get('state')),
+      hasCodeChallenge: Boolean(url.searchParams.get('code_challenge')),
+      originator: url.searchParams.get('originator'),
     },
   };
 }
@@ -380,11 +402,16 @@ export function analyzeCodexCallback(input: string): CodexCallbackDiagnostics {
       sensitiveParams: [],
       warnings: ['No se recibio ningun callback para analizar.'],
       queryFlags: {
+        flowType: 'unknown',
         needsSetup: null,
         planType: null,
         hasOrgId: false,
         hasProjectId: false,
         platformUrlHost: null,
+        redirectUriHost: null,
+        hasState: false,
+        hasCodeChallenge: false,
+        originator: null,
       },
       tokenMetadata: null,
     };
@@ -410,26 +437,38 @@ export function analyzeCodexCallback(input: string): CodexCallbackDiagnostics {
       sensitiveParams: [],
       warnings: ['El callback no tiene un formato de URL valido.'],
       queryFlags: {
+        flowType: 'unknown',
         needsSetup: null,
         planType: null,
         hasOrgId: false,
         hasProjectId: false,
         platformUrlHost: null,
+        redirectUriHost: null,
+        hasState: false,
+        hasCodeChallenge: false,
+        originator: null,
       },
       tokenMetadata: null,
     };
   }
 
-  if (!LOCALHOST_HOSTS.has(url.hostname)) {
-    warnings.push('Solo se admiten callbacks localhost para diagnostico.');
-  }
-  if (url.pathname !== '/success') {
-    warnings.push('La ruta no coincide con /success.');
-  }
-
   const queryDiagnostics = buildQueryDiagnostics(url);
-  if (!url.searchParams.get('id_token')) {
-    warnings.push('No se detecto id_token en el callback.');
+  if (queryDiagnostics.queryFlags.flowType === 'localhost-callback') {
+    if (!url.searchParams.get('id_token')) {
+      warnings.push('No se detecto id_token en el callback.');
+    }
+  } else if (queryDiagnostics.queryFlags.flowType === 'authorize-url') {
+    if (!queryDiagnostics.queryFlags.redirectUriHost) {
+      warnings.push('No se detecto un redirect_uri valido en la URL de autorizacion.');
+    }
+    if (!queryDiagnostics.queryFlags.hasState) {
+      warnings.push('La URL de autorizacion no incluye state.');
+    }
+    if (!queryDiagnostics.queryFlags.hasCodeChallenge) {
+      warnings.push('La URL de autorizacion no incluye code_challenge.');
+    }
+  } else {
+    warnings.push('La URL no coincide con un callback localhost ni con una URL oficial de autorizacion.');
   }
 
   return {
