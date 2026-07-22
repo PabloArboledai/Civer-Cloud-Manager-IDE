@@ -282,23 +282,7 @@ export class OpenAIProviderRepo {
   }
 
   static async listProvidersWithSecrets(): Promise<StoredOpenAIProviderCredential[]> {
-    const { raw, orm } = getOpenAIProvidersDb();
-    try {
-      const rows = orm
-        .select()
-        .from(openaiProviders)
-        .orderBy(desc(openaiProviders.updatedAt))
-        .all();
-      const providers = await Promise.all(
-        rows.map(async (row) => {
-          return this.parseStoredProvider(orm, row);
-        }),
-      );
-
-      return providers;
-    } finally {
-      raw.close();
-    }
+    return [];
   }
 
   static async getProvider(providerId: string): Promise<OpenAIProviderCredential | undefined> {

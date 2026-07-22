@@ -33,6 +33,7 @@ export async function bootstrapNestServer(config: ProxyConfig): Promise<boolean>
     logger.info(`NestJS Proxy Server running on http://localhost:${port}`);
     return true;
   } catch (error) {
+    console.error('Failed to start NestJS server - REAL ERROR:', error);
     logger.error('Failed to start NestJS server', error);
     return false;
   }
