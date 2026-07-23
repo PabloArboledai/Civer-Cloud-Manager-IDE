@@ -8,6 +8,7 @@ pub mod server;
 pub mod token_manager;
 
 // 新架构模块
+pub mod syncthing_controller; // [NEW] Syncthing Engine Controller
 pub mod cdp_controller; // [NEW] Autopilot CDP Controller
 pub mod audio; // 音频处理模块
 pub mod cache_manager; // Context Cache 管理 (前缀哈希 → cache_id 映射)

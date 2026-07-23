@@ -451,6 +451,19 @@ pub fn run() {
             // 立即启动管理服务器 (8045)，以便 Web 端能访问
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
+                // [P2P Mirroring Phase 1] Bootstrapper (Auto-Provisioning)
+                if let Err(e) = crate::utils::bootstrapper::run_bootstrap().await {
+                    error!("Bootstrapper failed: {}", e);
+                }
+                
+                // [P2P Mirroring Phase 2] Start Syncthing Engine
+                let syncthing = crate::proxy::syncthing_controller::SyncthingController::new();
+                if let Err(e) = syncthing.start_daemon().await {
+                    error!("Syncthing failed to start: {}", e);
+                } else if let Err(e) = syncthing.configure_brain_sync().await {
+                    error!("Syncthing brain sync configuration failed: {}", e);
+                }
+                
                 // Load config
                 if let Ok(config) = modules::config::load_app_config() {
                     let state = handle.state::<commands::proxy::ProxyServiceState>();

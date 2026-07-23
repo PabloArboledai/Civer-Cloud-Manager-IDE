@@ -8,7 +8,15 @@ const CDP_HOST: &str = "http://127.0.0.1:9222";
 
 pub fn start_listener(tx: tokio::sync::broadcast::Sender<crate::proxy::handlers::ws_mesh::MeshMessage>) {
     let mut rx = tx.subscribe();
+    let tx_clone = tx.clone();
     tokio::spawn(async move {
+        // [P2P Mirroring Phase 3] Inject UI Event Mirror listeners into the local IDE
+        // Wait a few seconds for IDE to be ready
+        tokio::time::sleep(Duration::from_secs(5)).await;
+        if let Err(e) = inject_ui_mirror_listeners().await {
+            tracing::warn!("Failed to inject UI mirror listeners: {}", e);
+        }
+        
         tracing::info!("CDP Autopilot listener started");
         while let Ok(msg) = rx.recv().await {
             if msg.msg_type == "CDP_ALERT" {
@@ -17,12 +25,25 @@ pub fn start_listener(tx: tokio::sync::broadcast::Sender<crate::proxy::handlers:
                         let old_acc = payload.get("old").and_then(|v| v.as_str()).unwrap_or("");
                         let new_acc = payload.get("new").and_then(|v| v.as_str()).unwrap_or("");
                         
-                        // Fire and forget the CDP trigger
                         let old_acc_owned = old_acc.to_string();
                         let new_acc_owned = new_acc.to_string();
                         tokio::spawn(async move {
                             if let Err(e) = trigger_ide_reload_and_resume(&old_acc_owned, &new_acc_owned).await {
                                 tracing::error!("CDP Autopilot injection failed: {}", e);
+                            }
+                        });
+                    }
+                }
+            } else if msg.msg_type == "UI_EVENT" {
+                // Ignore events we just sent ourselves by tracking a basic identifier if needed,
+                // but for now, replay the remote UI event
+                if let Ok(payload) = serde_json::from_str::<Value>(&msg.payload) {
+                    // Only dispatch if it has remote flag (prevent echo loop)
+                    if payload.get("remote").and_then(|v| v.as_bool()).unwrap_or(false) {
+                        let p = payload.clone();
+                        tokio::spawn(async move {
+                            if let Err(e) = dispatch_remote_ui_event(&p).await {
+                                tracing::error!("Failed to dispatch remote UI event: {}", e);
                             }
                         });
                     }
@@ -129,4 +150,124 @@ pub async fn trigger_ide_reload_and_resume(old_account: &str, new_account: &str)
     }
     
     Err("Failed to reconnect to Antigravity IDE after reload".into())
+}
+
+// [P2P Mirroring Phase 3] Inject UI Mirror Scripts
+pub async fn inject_ui_mirror_listeners() -> Result<(), Box<dyn std::error::Error>> {
+    tracing::info!("Injecting UI Event Mirror scripts via CDP");
+    
+    let get_ide_ws_url = || async {
+        let targets_url = format!("{}/json", CDP_HOST);
+        let client = reqwest::Client::new();
+        if let Ok(response) = client.get(&targets_url).timeout(Duration::from_secs(2)).send().await {
+            if let Ok(targets) = response.json::<Vec<Value>>().await {
+                if let Some(target) = targets.into_iter().find(|t| {
+                    let title = t.get("title").and_then(|v| v.as_str()).unwrap_or("");
+                    let url = t.get("url").and_then(|v| v.as_str()).unwrap_or("");
+                    title.contains("Antigravity") || url.contains("localhost:") || url.contains("127.0.0.1:") || url.contains("antigravity")
+                }) {
+                    return target.get("webSocketDebuggerUrl").and_then(|v| v.as_str()).map(|s| s.to_string());
+                }
+            }
+        }
+        None
+    };
+
+    if let Some(ws_url) = get_ide_ws_url().await {
+        if let Ok((mut ws_stream, _)) = connect_async(&ws_url).await {
+            let script = r#"
+                (function() {
+                    if (window.__antigravity_ui_mirror_injected) return;
+                    window.__antigravity_ui_mirror_injected = true;
+                    console.log('Antigravity UI Mirror injected!');
+                    
+                    let ws = new WebSocket("ws://127.0.0.1:8045/ws/mesh");
+                    
+                    document.addEventListener('input', (e) => {
+                        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
+                            if (!e.isTrusted) return; // ignore simulated events
+                            ws.send(JSON.stringify({
+                                msg_type: "UI_EVENT",
+                                payload: JSON.stringify({
+                                    event: "input",
+                                    value: e.target.value,
+                                    remote: true // Set to true so when others receive it, they know it came from remote
+                                })
+                            }));
+                        }
+                    }, true);
+                })();
+            "#;
+
+            let msg = serde_json::json!({
+                "id": 10,
+                "method": "Runtime.evaluate",
+                "params": {
+                    "expression": script,
+                    "returnByValue": true
+                }
+            });
+            let _ = ws_stream.send(Message::Text(msg.to_string().into())).await;
+            let _ = ws_stream.close(None).await;
+            return Ok(());
+        }
+    }
+    
+    Err("IDE WebSocket not found for UI mirroring".into())
+}
+
+pub async fn dispatch_remote_ui_event(payload: &Value) -> Result<(), Box<dyn std::error::Error>> {
+    let get_ide_ws_url = || async {
+        let targets_url = format!("{}/json", CDP_HOST);
+        let client = reqwest::Client::new();
+        if let Ok(response) = client.get(&targets_url).timeout(Duration::from_secs(2)).send().await {
+            if let Ok(targets) = response.json::<Vec<Value>>().await {
+                if let Some(target) = targets.into_iter().find(|t| {
+                    let title = t.get("title").and_then(|v| v.as_str()).unwrap_or("");
+                    let url = t.get("url").and_then(|v| v.as_str()).unwrap_or("");
+                    title.contains("Antigravity") || url.contains("localhost:") || url.contains("127.0.0.1:") || url.contains("antigravity")
+                }) {
+                    return target.get("webSocketDebuggerUrl").and_then(|v| v.as_str()).map(|s| s.to_string());
+                }
+            }
+        }
+        None
+    };
+
+    if let Some(ws_url) = get_ide_ws_url().await {
+        if let Ok((mut ws_stream, _)) = connect_async(&ws_url).await {
+            let event_type = payload.get("event").and_then(|v| v.as_str()).unwrap_or("");
+            let value = payload.get("value").and_then(|v| v.as_str()).unwrap_or("");
+            
+            if event_type == "input" {
+                let script = format!(r#"
+                    (function() {{
+                        let input = document.querySelector('textarea') || document.querySelector('input[type="text"]');
+                        if (input) {{
+                            let nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set ||
+                                                         Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+                            if (nativeInputValueSetter) {{
+                                nativeInputValueSetter.call(input, `{}`);
+                                input.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                            }}
+                        }}
+                    }})();
+                "#, value.replace('`', "\\`").replace('$', "\\$"));
+
+                let msg = serde_json::json!({
+                    "id": 11,
+                    "method": "Runtime.evaluate",
+                    "params": {
+                        "expression": script,
+                        "returnByValue": true
+                    }
+                });
+                let _ = ws_stream.send(Message::Text(msg.to_string().into())).await;
+            }
+            let _ = ws_stream.close(None).await;
+            return Ok(());
+        }
+    }
+    
+    Err("IDE WebSocket not found for UI dispatch".into())
 }
