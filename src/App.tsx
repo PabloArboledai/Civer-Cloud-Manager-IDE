@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
 import Settings from './pages/Settings';
 import ApiProxy from './pages/ApiProxy';
+import NetworkMonitor from './pages/NetworkMonitor';
 import Monitor from './pages/Monitor';
 import TokenStats from './pages/TokenStats';
 import ThemeManager from './components/common/ThemeManager';
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: 'api-proxy',
         element: <ApiProxy />,
+      },
+      {
+        path: 'network-monitor',
+        element: <NetworkMonitor />,
       },
       {
         path: 'monitor',

@@ -81,10 +81,7 @@ impl SyncthingController {
         let folders: Vec<Value> = config_res.json().await.unwrap_or_default();
         let brain_id = "antigravity-brain-mesh";
         
-        if folders.iter().any(|f| f["id"] == brain_id) {
-            tracing::info!("Brain folder is already configured in Syncthing.");
-            return Ok(());
-        }
+        // Removed early return to ensure all folders (brain and accounts) are checked and added
 
         // Folder Path
         let app_dir = std::env::var("USERPROFILE").unwrap_or_else(|_| "C:\\Users\\Administrator".to_string());
@@ -106,8 +103,59 @@ impl SyncthingController {
             }
         });
 
+        // [FIX] Phase 5: Add accounts database (.antigravity_tools) to the mesh synchronization
+        let accounts_id = "antigravity-accounts-mesh";
+        let accounts_path = format!(r"{}\.antigravity_tools", app_dir);
+        let accounts_folder = json!({
+            "id": accounts_id,
+            "label": "Antigravity Accounts",
+            "path": accounts_path,
+            "type": "sendreceive",
+            "rescanIntervalS": 5, // Faster rescan for accounts
+            "fsWatcherEnabled": true,
+            "fsWatcherDelayS": 1,
+            "ignorePerms": true,
+            "autoNormalize": true,
+            "versioning": {
+                "type": "simple",
+                "params": { "keep": "10" } // Keep more backup versions of the accounts DB
+            }
+        });
+
+        // [NEW] Sincronización del Código Fuente (Phase 6)
+        let source_id = "antigravity-source-mesh";
+        let source_path = std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_else(|_| String::from(r"C:\Users\Administrator\Desktop\Antigravity-Manager"));
+            
+        let source_folder = json!({
+            "id": source_id,
+            "label": "Antigravity Source Code",
+            "path": source_path,
+            "type": "sendreceive",
+            "rescanIntervalS": 30, // Normal rescan
+            "fsWatcherEnabled": true,
+            "fsWatcherDelayS": 2,
+            "ignorePerms": true,
+            "autoNormalize": true,
+            "versioning": {
+                "type": "trashcan",
+                "params": { "cleanoutDays": "7" }
+            }
+        });
+
         let mut all_folders = folders;
-        all_folders.push(new_folder);
+        
+        // Only push if they don't exist
+        if !all_folders.iter().any(|f| f["id"] == brain_id) {
+            all_folders.push(new_folder);
+        }
+        if !all_folders.iter().any(|f| f["id"] == accounts_id) {
+            all_folders.push(accounts_folder);
+        }
+        if !all_folders.iter().any(|f| f["id"] == source_id) {
+            all_folders.push(source_folder);
+        }
 
         // Update config
         let set_url = format!("{}/config", SYNCTHING_API_URL);
@@ -134,6 +182,7 @@ impl SyncthingController {
         }
 
         self.apply_stignore(brain_id, &brain_path).await?;
+        self.apply_source_stignore(source_id, &source_path).await?;
         Ok(())
     }
 
@@ -143,6 +192,15 @@ impl SyncthingController {
         
         std::fs::write(&ignore_path, ignore_content).map_err(|e| e.to_string())?;
         tracing::info!("Wrote .stignore to exclude heavy logs from Syncthing.");
+        Ok(())
+    }
+
+    async fn apply_source_stignore(&self, _folder_id: &str, folder_path: &str) -> Result<(), String> {
+        let ignore_path = PathBuf::from(folder_path).join(".stignore");
+        let ignore_content = "(?d)node_modules/\n(?d)src-tauri/target/\n(?d).git/\n(?d)dist/\n(?d)build/\n(?d)*.log\n";
+        
+        std::fs::write(&ignore_path, ignore_content).map_err(|e| e.to_string())?;
+        tracing::info!("Wrote .stignore for source code to exclude build artifacts.");
         Ok(())
     }
 }
