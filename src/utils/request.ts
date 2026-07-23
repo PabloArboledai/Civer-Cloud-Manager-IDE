@@ -185,6 +185,11 @@ export async function request<T>(cmd: string, args?: any): Promise<T> {
   }
 
   let url = mapping.url;
+  // [FIX] Si estamos en localhost web, apuntar al puerto del proxy directamente
+  if (!isTauri && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    url = `http://127.0.0.1:8045${url}`;
+  }
+
   // [FIX] 创建 args 副本，用于移除已使用的路径参数
   let bodyArgs = args ? { ...args } : undefined;
 
@@ -204,16 +209,20 @@ export async function request<T>(cmd: string, args?: any): Promise<T> {
 
   const apiKey = typeof window !== 'undefined' ? sessionStorage.getItem('abv_admin_api_key') : null;
 
+  // Determine if we have an actual body to send
+  const hasBody = (mapping.method === 'POST' || mapping.method === 'PATCH') && bodyArgs && Object.keys(bodyArgs).length > 0;
+
   const options: RequestInit = {
     method: mapping.method,
     headers: {
-      'Content-Type': 'application/json',
+      ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
       ...(apiKey ? {
         'Authorization': `Bearer ${apiKey}`,
         'x-api-key': apiKey
       } : {}),
     },
   };
+
 
   if ((mapping.method === 'GET' || mapping.method === 'DELETE') && args) {
     const params = new URLSearchParams();

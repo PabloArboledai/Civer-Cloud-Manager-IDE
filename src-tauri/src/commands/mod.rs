@@ -1219,3 +1219,43 @@ pub async fn query_transit_info(url: String, key: String) -> Result<String, Stri
         Err(format!("HTTP {}: {}", status, text))
     }
 }
+
+#[tauri::command]
+pub async fn uninstall_program(app_handle: tauri::AppHandle) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        let script_path = std::env::temp_dir().join("uninstall_antigravity.ps1");
+        let script = r#"
+Stop-Process -Name "antigravity_tools" -Force -ErrorAction SilentlyContinue
+Stop-Process -Name "antigravity.civer.cloud" -Force -ErrorAction SilentlyContinue
+Start-Sleep -Seconds 2
+Remove-Item -Path "$env:LOCALAPPDATA\cloud.civer.antigravity" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "$env:APPDATA\cloud.civer.antigravity" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "$env:USERPROFILE\Desktop\Antigravity*.lnk" -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Antigravity" -Force -Recurse -ErrorAction SilentlyContinue
+$script_path = $MyInvocation.MyCommand.Path
+Remove-Item -Path $script_path -Force -ErrorAction SilentlyContinue
+"#;
+        std::fs::write(&script_path, script).map_err(|e| e.to_string())?;
+
+        let args = format!(
+            "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"{}\"",
+            script_path.display()
+        );
+
+        std::process::Command::new("powershell")
+            .arg("-WindowStyle")
+            .arg("Hidden")
+            .arg("-Command")
+            .arg(&format!("Start-Process powershell -ArgumentList '{}'", args))
+            .spawn()
+            .map_err(|e| format!("Failed to launch uninstaller: {}", e))?;
+        
+        app_handle.exit(0);
+        Ok(())
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        Err("Uninstall only supported on Windows".into())
+    }
+}

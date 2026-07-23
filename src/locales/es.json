@@ -308,6 +308,7 @@
   },
   "settings": {
     "save": "Guardar Configuración",
+    "web_mode_limitation": "(No soportado en modo Web)",
     "tabs": {
       "general": "General",
       "account": "Cuenta",
@@ -429,6 +430,13 @@
       "open_btn": "Abrir",
       "data_dir": "Directorio de Datos",
       "data_dir_desc": "Ubicación de datos de cuenta y archivo de configuración",
+      "antigravity_cli_path": "Ruta de Antigravity CLI (agy)",
+      "antigravity_cli_path_placeholder": "No establecido (Usará detección automática)",
+      "antigravity_cli_path_desc": "Establezca la ruta del ejecutable de su cliente de línea de comandos (agy) para eliminar las restricciones de cuenta con un solo clic.",
+      "patch_eligibility_title": "Eliminar Restricciones de Acceso a la Cuenta",
+      "patch_eligibility_desc": "El nuevo binario agy bloquea las cuentas no autorizadas. Esta operación omite la verificación local con un clic.",
+      "patch_eligibility_req": " (Debe configurar o detectar la ruta arriba primero)",
+      "patch_btn": "Desbloquear en un clic",
       "antigravity_path": "Ruta de Antigravity",
       "antigravity_path_placeholder": "No establecido (Usará detección automática)",
       "antigravity_path_desc": "Si instaló Antigravity en una ubicación no estándar, puede especificar manualmente la ruta del ejecutable aquí (Apunta a .app en MacOS).",
@@ -491,9 +499,10 @@
       "tech_stack": "Stack Tecnológico",
       "author": "Autor",
       "wechat": "WeChat",
+      "telegram": "Canal de Telegram",
       "github": "GitHub",
       "view_code": "Ver Código",
-      "copyright": "Copyright © 2025-2026 Antigravity. Todos los derechos reservados.",
+      "copyright": "Copyright © 2025-2026 Antigravity Civer Cloud. Todos los derechos reservados.",
       "check_update": "Buscar Actualizaciones",
       "checking_update": "Verificando...",
       "latest_version": "Estás actualizado",
@@ -502,7 +511,7 @@
       "update_check_failed": "Error al verificar actualizaciones",
       "support_btn": "Apoyar al Autor",
       "support_title": "Donación y Apoyo",
-      "support_desc": "Si encuentras útil este proyecto, ¡siéntete libre de invitarme un café! Tu apoyo es la mayor motivación para mantener este proyecto.",
+      "support_desc": "Si encuentras útil este proyecto, ¡siéntete libre de apoyar su desarrollo! Tu apoyo es la mayor motivación para mantener este proyecto.",
       "support_alipay": "Alipay",
       "support_wechat": "WeChat Pay",
       "support_buymeacoffee": "Buy Me a Coffee"
@@ -541,6 +550,10 @@
       "placeholder": "Ingrese las instrucciones globales del sistema...\nEjemplo: Eres un desarrollador full-stack senior experto en React y Rust. Responde en español.",
       "char_count": "{{count}} caracteres",
       "long_prompt_warning": "Las instrucciones son muy largas (más de 2000 caracteres) y pueden consumir mucho espacio del contexto."
+    },
+    "branding": {
+      "title": "Antigravity Civer Cloud",
+      "subtitle": "Gestión Profesional de Cuentas"
     }
   },
   "tray": {

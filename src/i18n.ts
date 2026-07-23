@@ -84,7 +84,8 @@ i18n
                 translation: my,
             },
         },
-        fallbackLng: "en",
+        fallbackLng: "es",
+        lng: "es",
         debug: false, // Set to true for development
 
         interpolation: {

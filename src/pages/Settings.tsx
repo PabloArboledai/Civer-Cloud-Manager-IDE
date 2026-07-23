@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Github, User, MessageCircle, ExternalLink, RefreshCw, Heart, Coffee, LayoutDashboard, Users, Network, Activity, BarChart3, Settings as SettingsIcon, Lock, CheckCircle2, Globe, Send } from 'lucide-react';
+import { Save, User, ExternalLink, RefreshCw, Heart, LayoutDashboard, Users, Network, Activity, BarChart3, Settings as SettingsIcon, CheckCircle2, Globe, Send } from 'lucide-react';
 import { request as invoke } from '../utils/request';
 import { open } from '@tauri-apps/plugin-dialog';
 import { useConfigStore } from '../stores/useConfigStore';
@@ -17,15 +17,16 @@ import { relaunch } from '@tauri-apps/plugin-process';
 
 import DebugConsole from '../components/debug/DebugConsole';
 import ProxyPoolSettings from '../components/settings/ProxyPoolSettings';
-
+import CiverLogo from '../assets/civer/images/tiger-logo.png';
 
 function Settings() {
+
     const { t, i18n } = useTranslation();
     const { config, loadConfig, saveConfig, updateLanguage, updateTheme } = useConfigStore();
     const { enable, disable, isEnabled } = useDebugConsole();
     const [activeTab, setActiveTab] = useState<'general' | 'account' | 'proxy' | 'advanced' | 'debug' | 'about'>('general');
     const [formData, setFormData] = useState<AppConfig>({
-        language: 'zh',
+        language: 'es',
         theme: 'system',
         auto_refresh: false,
         refresh_interval: 15,
@@ -479,16 +480,8 @@ function Settings() {
                                         updateLanguage(newLang);
                                     }}
                                 >
-                                    <option value="zh">简体中文</option>
-                                    <option value="zh-TW">繁體中文</option>
+                                    <option value="es">Español</option>
                                     <option value="en">English</option>
-                                    <option value="ja">日本語</option>
-                                    <option value="tr">Türkçe</option>
-                                    <option value="vi">Tiếng Việt</option>
-                                    <option value="pt">Português</option>
-                                    <option value="ko">한국어</option>
-                                    <option value="ru">Русский</option>
-                                    <option value="ar">العربية</option>
                                 </select>
                             </div>
 
@@ -618,7 +611,6 @@ function Settings() {
                                             { path: '/monitor', label: t('nav.call_records'), icon: Activity },
                                             { path: '/token-stats', label: t('nav.token_stats'), icon: BarChart3 },
                                             { path: '/user-token', label: t('nav.user_token', 'User Tokens'), icon: Users },
-                                            { path: '/security', label: t('nav.security'), icon: Lock },
                                             { path: '/settings', label: t('nav.settings'), icon: SettingsIcon },
                                         ].map((item) => {
                                             const hiddenItems = formData.hidden_menu_items || [];
@@ -1015,7 +1007,7 @@ function Settings() {
                                             </h4>
                                             <p className={`text-xs mt-0.5 ${formData.antigravity_cli_executable ? 'text-blue-700 dark:text-blue-300/80' : 'text-gray-400 dark:text-gray-500'}`}>
                                                 {t('settings.advanced.patch_eligibility_desc', '新版 agy 二进制强制拦截未授权账号，此操作一键跳过本地准入拦截检查。')}
-                                                {!formData.antigravity_cli_executable && " (需先在上方设置或探测路径)"}
+                                                {!formData.antigravity_cli_executable && t('settings.advanced.patch_eligibility_req', ' (需先在上方设置或探测路径)')}
                                             </p>
                                         </div>
                                         <button
@@ -1225,6 +1217,37 @@ function Settings() {
                                 </div>
 
                             </div>
+
+                            {/* Zona de Peligro - Desinstalar */}
+                            <div className="border border-red-200 dark:border-red-800/40 rounded-2xl p-6 bg-red-50/50 dark:bg-red-900/10 mt-6">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <span className="text-xl">⚠️</span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-red-700 dark:text-red-400 text-base mb-1">
+                                            Desinstalar Antigravity
+                                        </h3>
+                                        <p className="text-sm text-red-600/80 dark:text-red-400/70 mb-4 leading-relaxed">
+                                            Esta acción eliminará completamente el programa, sus datos locales, configuraciones y accesos directos. <strong>No se puede deshacer.</strong>
+                                        </p>
+                                        <button
+                                            onClick={async () => {
+                                                if (window.confirm('¿Estás COMPLETAMENTE seguro de que quieres desinstalar Antigravity?\n\nEsto borrará todos los datos y configuraciones. Esta acción no se puede deshacer.')) {
+                                                    try {
+                                                        await invoke('uninstall_program');
+                                                    } catch (e) {
+                                                        showToast(`Error al desinstalar: ${e}`, 'error');
+                                                    }
+                                                }
+                                            }}
+                                            className="px-5 py-2.5 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2 text-sm"
+                                        >
+                                            🗑️ Desinstalar Completamente
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </>
                     )}
 
@@ -1396,14 +1419,14 @@ function Settings() {
                                     <div className="relative inline-block group">
                                         <div className="absolute inset-0 bg-blue-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
                                         <img
-                                            src="/icon.png"
-                                            alt="Antigravity Logo"
-                                            className="relative w-24 h-24 rounded-3xl shadow-2xl transform group-hover:scale-105 transition-all duration-500 rotate-3 group-hover:rotate-6 object-cover bg-white dark:bg-black"
+                                            src={CiverLogo}
+                                            alt="Civer Cloud Logo"
+                                            className="relative w-24 h-24 rounded-3xl shadow-2xl transform group-hover:scale-105 transition-all duration-500 rotate-3 group-hover:rotate-6 object-contain bg-white dark:bg-black p-1"
                                         />
                                     </div>
 
                                     <div>
-                                        <h3 className="text-3xl font-black text-gray-900 dark:text-base-content tracking-tight mb-2">{t('common.app_name', 'Antigravity Tools')}</h3>
+                                        <h3 className="text-3xl font-black text-gray-900 dark:text-base-content tracking-tight mb-2">{t('settings.branding.title', 'Antigravity Civer Cloud')}</h3>
                                         <div className="flex items-center justify-center gap-2 text-sm">
                                             v4.4.7
                                             <span className="text-gray-400 dark:text-gray-600">•</span>
@@ -1412,8 +1435,8 @@ function Settings() {
                                     </div>
                                 </div>
 
-                                {/* Cards Grid - Now 5 columns */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full max-w-6xl px-4">
+                                {/* Cards Grid - 4 columns */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-4xl px-4">
                                     {/* Author Card */}
                                     <div className="bg-white dark:bg-base-100 p-4 rounded-2xl border border-gray-100 dark:border-base-300 shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all group flex flex-col items-center text-center gap-3">
                                         <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl group-hover:scale-110 transition-transform duration-300">
@@ -1421,24 +1444,29 @@ function Settings() {
                                         </div>
                                         <div>
                                             <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">{t('settings.about.author')}</div>
-                                            <div className="font-bold text-gray-900 dark:text-base-content">Ctrler</div>
+                                            <div className="font-bold text-gray-900 dark:text-base-content">Fer Eduardo CR</div>
                                         </div>
                                     </div>
 
                                     {/* WeChat Card */}
-                                    <div className="bg-white dark:bg-base-100 p-4 rounded-2xl border border-gray-100 dark:border-base-300 shadow-sm hover:shadow-md hover:border-green-200 dark:hover:border-green-800 transition-all group flex flex-col items-center text-center gap-3">
+                                    <a
+                                        href="https://antigravity.civer.cloud/"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="bg-white dark:bg-base-100 p-4 rounded-2xl border border-gray-100 dark:border-base-300 shadow-sm hover:shadow-md hover:border-green-200 dark:hover:border-green-800 transition-all group flex flex-col items-center text-center gap-3 cursor-pointer"
+                                    >
                                         <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl group-hover:scale-110 transition-transform duration-300">
-                                            <MessageCircle className="w-6 h-6 text-green-500" />
+                                            <img src={CiverLogo} alt="Civer" className="w-6 h-6 object-contain" />
                                         </div>
                                         <div>
-                                            <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">{t('settings.about.wechat')}</div>
-                                            <div className="font-bold text-gray-900 dark:text-base-content">Ctrler</div>
+                                            <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">CIVER CLOUD</div>
+                                            <div className="font-bold text-gray-900 dark:text-base-content">antigravity.civer.cloud</div>
                                         </div>
-                                    </div>
+                                    </a>
 
                                     {/* Telegram Card */}
                                     <a
-                                        href="https://t.me/AntigravityManager"
+                                        href="https://t.me/AntigravityCiverCloudBot"
                                         target="_blank"
                                         rel="noreferrer"
                                         className="bg-white dark:bg-base-100 p-4 rounded-2xl border border-gray-100 dark:border-base-300 shadow-sm hover:shadow-md hover:border-sky-200 dark:hover:border-sky-800 transition-all group flex flex-col items-center text-center gap-3 cursor-pointer"
@@ -1448,26 +1476,7 @@ function Settings() {
                                         </div>
                                         <div>
                                             <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">{t('settings.about.telegram')}</div>
-                                            <div className="font-bold text-gray-900 dark:text-base-content whitespace-nowrap overflow-hidden text-ellipsis w-full">Channel</div>
-                                        </div>
-                                    </a>
-
-                                    {/* GitHub Card */}
-                                    <a
-                                        href="https://github.com/lbjlaq/Antigravity-Manager"
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="bg-white dark:bg-base-100 p-4 rounded-2xl border border-gray-100 dark:border-base-300 shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all group flex flex-col items-center text-center gap-3 cursor-pointer"
-                                    >
-                                        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl group-hover:scale-110 transition-transform duration-300">
-                                            <Github className="w-6 h-6 text-gray-900 dark:text-white" />
-                                        </div>
-                                        <div>
-                                            <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">{t('settings.about.github')}</div>
-                                            <div className="flex items-center gap-1 font-bold text-gray-900 dark:text-base-content">
-                                                <span>{t('settings.about.view_code')}</span>
-                                                <ExternalLink className="w-3 h-3 text-gray-400" />
-                                            </div>
+                                            <div className="font-bold text-gray-900 dark:text-base-content whitespace-nowrap overflow-hidden text-ellipsis w-full">@AntigravityBot</div>
                                         </div>
                                     </a>
 
@@ -1686,7 +1695,7 @@ function Settings() {
                     <div className="modal-box relative max-w-2xl bg-white dark:bg-base-100 shadow-2xl rounded-3xl p-0 overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-300">
                         <div className="flex flex-col items-center p-8">
                             <div className="w-16 h-16 bg-pink-50 dark:bg-pink-900/20 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                <Coffee className="w-8 h-8 text-pink-500" />
+                                <Heart className="w-8 h-8 text-pink-500 fill-pink-500" />
                             </div>
 
                             <h3 className="text-2xl font-black text-gray-900 dark:text-base-content mb-3">{t('settings.about.support_title')}</h3>
@@ -1694,30 +1703,31 @@ function Settings() {
                                 {t('settings.about.support_desc')}
                             </p>
 
-                            {/* QR Codes Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-8">
-                                {/* Alipay */}
-                                <div className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-gray-50 dark:bg-base-200 border border-gray-100 dark:border-base-300">
-                                    <div className="w-full aspect-square relative bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
-                                        <img src="/images/donate/alipay.png" alt="Alipay" className="w-full h-full object-contain" />
+                            {/* Stori CLABE Section */}
+                            <div className="w-full max-w-md mb-8">
+                                <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-2xl border border-pink-100 dark:border-pink-800 p-6 flex flex-col items-center gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-white dark:bg-base-300 rounded-xl flex items-center justify-center shadow-sm">
+                                            <span className="text-xl">🏦</span>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Transferencia Stori</div>
+                                            <div className="text-sm font-bold text-gray-900 dark:text-base-content">Civer Cloud Open Source</div>
+                                        </div>
                                     </div>
-                                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{t('settings.about.support_alipay')}</span>
-                                </div>
-
-                                {/* WeChat */}
-                                <div className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-gray-50 dark:bg-base-200 border border-gray-100 dark:border-base-300">
-                                    <div className="w-full aspect-square relative bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
-                                        <img src="/images/donate/wechat.png" alt="WeChat" className="w-full h-full object-contain" />
+                                    <div className="w-full bg-white dark:bg-base-300 rounded-xl p-4 flex items-center justify-between gap-3 border border-gray-100 dark:border-base-300">
+                                        <div>
+                                            <div className="text-xs text-gray-400 mb-1">CLABE Interbancaria</div>
+                                            <div className="font-mono font-bold text-gray-900 dark:text-base-content tracking-wider text-lg">646180402343759246</div>
+                                        </div>
+                                        <button
+                                            onClick={() => { navigator.clipboard.writeText('646180402343759246'); }}
+                                            className="flex-shrink-0 px-3 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-lg transition-all active:scale-95"
+                                        >
+                                            Copiar
+                                        </button>
                                     </div>
-                                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{t('settings.about.support_wechat')}</span>
-                                </div>
-
-                                {/* Buy Me a Coffee */}
-                                <div className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-gray-50 dark:bg-base-200 border border-gray-100 dark:border-base-300">
-                                    <div className="w-full aspect-square relative bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
-                                        <img src="/images/donate/coffee.png" alt="Buy Me A Coffee" className="w-full h-full object-contain" />
-                                    </div>
-                                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{t('settings.about.support_buymeacoffee')}</span>
+                                    <p className="text-xs text-gray-400 text-center">Banco Stori · CLABE · Sin comisión desde cualquier banco mexicano</p>
                                 </div>
                             </div>
 

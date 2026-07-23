@@ -2,8 +2,8 @@
 name = "antigravity_tools"
 
 version = "4.4.7"
-description = "Antigravity Tools"
-authors = ["you"]
+description = "Antigravity Civer Cloud"
+authors = ["pablo arboleadi"]
 license = "CC-BY-NC-SA-4.0"
 edition = "2021"
 
@@ -76,9 +76,13 @@ machine-uid = "0.5.4"
 plist = "1.7"
 rquest = { version = "5.1.0", features = ["json", "stream", "socks", "cookies"] }
 rquest-util = "2.2.1"
+tokio-tungstenite = "0.30.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 gtk = "0.18"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-global-shortcut = "2"
 
 [features]
 default = ["custom-protocol"]

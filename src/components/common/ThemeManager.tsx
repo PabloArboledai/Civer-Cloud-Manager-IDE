@@ -2,8 +2,7 @@
 import { useEffect } from 'react';
 import { useConfigStore } from '../../stores/useConfigStore';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-
-import { isLinux } from '../../utils/env';
+import { isLinux, isTauri } from '../../utils/env';
 
 export default function ThemeManager() {
     const { config, loadConfig } = useConfigStore();
@@ -14,7 +13,7 @@ export default function ThemeManager() {
             await loadConfig();
             // Show window after a short delay to ensure React has painted
             setTimeout(async () => {
-                if (typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__) {
+                if (isTauri()) {
                     await getCurrentWindow().show();
                 }
             }, 100);
@@ -33,7 +32,7 @@ export default function ThemeManager() {
             // Set Tauri window background color
             // Skip on Linux due to crash with transparent windows + softbuffer
             try {
-                if (!isLinux() && (window as any).__TAURI_INTERNALS__) {
+                if (!isLinux() && isTauri()) {
                     const bgColor = isDark ? '#1d232a' : '#FAFBFC';
                     // Don't await this, let it happen in background to avoid blocking React render
                     getCurrentWindow().setBackgroundColor(bgColor).catch(e =>

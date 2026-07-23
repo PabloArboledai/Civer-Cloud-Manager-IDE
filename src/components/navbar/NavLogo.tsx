@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import LogoIcon from '../../../src-tauri/icons/icon.png';
+
+import LogoIcon from '../../assets/civer/icons/icon.png';
 
 export function NavLogo() {
-    const { t } = useTranslation();
-
+    
     return (
         <Link to="/" draggable="false" className="flex w-full min-w-0 items-center gap-2 text-xl font-semibold text-gray-900 dark:text-base-content">
             <div className="relative flex items-center justify-center">
@@ -16,8 +15,7 @@ export function NavLogo() {
                 />
             </div>
 
-            {/* 父容器宽度 < 200px 隐藏 */}
-            <span className="hidden @[200px]/logo:inline text-nowrap">{t('common.app_name', 'Antigravity Tools')}</span>
+            <span className="hidden @[200px]/logo:inline text-nowrap">antigravity.civer.cloud</span>
         </Link>
     );
 }

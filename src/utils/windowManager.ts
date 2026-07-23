@@ -12,7 +12,7 @@ export const enterMiniMode = async (contentHeight: number, shouldCenter: boolean
         const win = getCurrentWindow();
 
         // Hide window decorations (title bar) first to ensure accurate sizing
-        await win.setDecorations(false);
+        // removed setDecorations(false) to prevent Windows glitch
 
         // Set window size: width 300, height = content height 
         await win.setSize(new LogicalSize(300, contentHeight+2));
@@ -43,8 +43,8 @@ export const exitMiniMode = async () => {
         await win.setSize(new LogicalSize(1200, 800));
         await win.setAlwaysOnTop(false);
         await win.center();
-        // Restore window decorations (title bar)
-        await win.setDecorations(true);
+        // Keep custom title bar (no native decorations)
+        // removed setDecorations(false) to prevent Windows glitch
         // Re-enable resizing
         await win.setResizable(true);
     } catch (error) {
@@ -66,10 +66,13 @@ export const ensureFullViewState = async () => {
             await win.setSize(new LogicalSize(1200, 800));
             await win.center();
         }
-        // Always enforce standard window properties for Full View
-        await win.setDecorations(true);
         await win.setResizable(true);
+        // Always maximize on full view
+        await win.maximize();
         await win.setAlwaysOnTop(false);
+        // Make sure window is visible
+        await win.show();
+        await win.setFocus();
     } catch (error) {
         console.error('Failed to ensure full view state:', error);
     }

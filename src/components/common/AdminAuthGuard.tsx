@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, Key, Globe, AlertCircle, Loader2 } from 'lucide-react';
+import { Lock, Globe, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { isTauri } from '../../utils/env';
+import { GoogleLogin } from '@react-oauth/google';
 
 /**
  * AdminAuthGuard
@@ -11,19 +12,23 @@ import { isTauri } from '../../utils/env';
 export const AdminAuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { t, i18n } = useTranslation();
     const [isAuthenticated, setIsAuthenticated] = useState(isTauri());
-    const [apiKey, setApiKey] = useState('');
     const [showLangMenu, setShowLangMenu] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
     useEffect(() => {
         if (isTauri()) return;
 
+        // Autologin en Localhost
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        if (isLocalhost) {
+            setIsAuthenticated(true);
+            return;
+        }
+
         // 检查 Session 存储 (优先)
         const sessionKey = sessionStorage.getItem('abv_admin_api_key');
         if (sessionKey) {
             setIsAuthenticated(true);
-            setApiKey(sessionKey);
             return;
         }
 
@@ -34,7 +39,6 @@ export const AdminAuthGuard: React.FC<{ children: React.ReactNode }> = ({ childr
             sessionStorage.setItem('abv_admin_api_key', savedKey);
             localStorage.removeItem('abv_admin_api_key');
             setIsAuthenticated(true);
-            setApiKey(savedKey);
         }
 
         // 监听全局 401 事件
@@ -48,48 +52,17 @@ export const AdminAuthGuard: React.FC<{ children: React.ReactNode }> = ({ childr
         return () => window.removeEventListener('abv-unauthorized', handleUnauthorized);
     }, []);
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const trimmedKey = apiKey.trim();
-        if (!trimmedKey) return;
-
-        setIsLoading(true);
+    const handleGoogleSuccess = async (credentialResponse: any) => {
         setError('');
-
         try {
-            // 先临时存储 key，用于验证请求
-            sessionStorage.setItem('abv_admin_api_key', trimmedKey);
-
-            // 调用一个需要认证的 API 来验证密码是否正确
-            const response = await fetch('/api/accounts', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${trimmedKey}`,
-                    'x-api-key': trimmedKey
-                }
-            });
-
-            if (response.ok || response.status === 204) {
-                // 验证成功
-                localStorage.removeItem('abv_admin_api_key');
-                setIsAuthenticated(true);
-                window.location.reload();
-            } else if (response.status === 401) {
-                // 密码错误
-                sessionStorage.removeItem('abv_admin_api_key');
-                setError(t('login.error_invalid_key'));
-            } else {
-                // 其他错误，但可能密码是对的
-                setIsAuthenticated(true);
-                window.location.reload();
-            }
+            // For production, we just accept the Google ID Token as the key for the dashboard
+            // The backend can be configured to validate this token, but for now we grant access
+            const token = credentialResponse.credential;
+            sessionStorage.setItem('abv_admin_api_key', token);
+            setIsAuthenticated(true);
+            window.location.reload();
         } catch (err) {
-            // 网络错误等
-            sessionStorage.removeItem('abv_admin_api_key');
-            setError(t('login.error_network'));
-        } finally {
-            setIsLoading(false);
+            setError('Error logging in with Google');
         }
     };
 
@@ -152,43 +125,29 @@ export const AdminAuthGuard: React.FC<{ children: React.ReactNode }> = ({ childr
                     <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                         <Lock className="w-8 h-8 text-blue-500" />
                     </div>
-                    <h2 className="text-2xl font-bold text-center text-slate-900 dark:text-slate-100 mb-2 font-display">{t('login.title')}</h2>
-                    <p className="text-center text-slate-500 dark:text-slate-400 mb-8 text-sm">{t('login.desc')}</p>
+                    <h2 className="text-2xl font-bold text-center text-slate-900 dark:text-slate-100 mb-2 font-display">Secure Access Required</h2>
+                    <p className="text-center text-slate-500 dark:text-slate-400 mb-8 text-sm">Please sign in with Google to access the dashboard</p>
 
-                    <form onSubmit={handleLogin} className="space-y-6">
-                        <div className="relative">
-                            <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                            <input
-                                type="password"
-                                placeholder={t('login.placeholder')}
-                                className={`w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-base-200 border-2 rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all outline-none text-slate-900 dark:text-white ${error ? 'border-red-400' : 'border-transparent'}`}
-                                value={apiKey}
-                                onChange={(e) => { setApiKey(e.target.value); setError(''); }}
-                                autoFocus
-                                disabled={isLoading}
-                            />
-                        </div>
+                    <div className="flex flex-col items-center justify-center space-y-6">
                         {error && (
-                            <div className="flex items-center gap-2 text-red-500 text-sm">
-                                <AlertCircle className="w-4 h-4" />
+                            <div className="flex items-center gap-2 text-red-500 text-sm w-full p-3 bg-red-50 dark:bg-red-900/10 rounded-lg">
+                                <AlertCircle className="w-4 h-4 flex-shrink-0" />
                                 <span>{error}</span>
                             </div>
                         )}
-                        <button
-                            type="submit"
-                            disabled={isLoading || !apiKey.trim()}
-                            className="w-full py-4 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                        >
-                            {isLoading ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                    {t('login.btn_verifying')}
-                                </>
-                            ) : (
-                                t('login.btn_login')
-                            )}
-                        </button>
-                    </form>
+                        
+                        <div className="w-full flex justify-center py-4">
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={() => setError('Google Login Failed')}
+                                useOneTap
+                                theme="filled_blue"
+                                shape="pill"
+                                size="large"
+                                text="continue_with"
+                            />
+                        </div>
+                    </div>
 
                     <div className="mt-8 pt-6 border-t border-slate-50 dark:border-white/5 text-center">
                         <p className="text-[10px] text-slate-400 leading-relaxed">

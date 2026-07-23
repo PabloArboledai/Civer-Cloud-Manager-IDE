@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .glass-card {
+    @apply bg-white/70 dark:bg-gray-900/50 backdrop-blur-md border border-white/20 dark:border-gray-700/30;
+  }
+}
+
+/* Hide scrollbar globally but allow scrolling */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+  background: transparent;
+}
+* {
+  scrollbar-width: none; /* Firefox */
+}
+
 /* 禁止过度滚动和橡皮筋效果 */
 html,
 body {
@@ -15,7 +31,7 @@ body {
 }
 
 html {
-  background-color: #FAFBFC;
+  background-color: #faf8f5;
 }
 
 html.dark {
@@ -30,7 +46,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #FAFBFC;
+  background-color: #faf8f5;
+  color: #3d4a5c;
 }
 
 /* Dark mode override for body strictly */
@@ -59,24 +76,68 @@ a {
 
 /* 滚动条优化 - 彻底隐藏但保留功能 */
 ::-webkit-scrollbar {
-  width: 0px;
-  background: transparent;
+  display: none;
 }
 
-::-webkit-scrollbar-track {
-  background-color: transparent;
+/* =============================================
+   LIGHT MODE - Paleta crema cálida
+   Inspirada en Notion, Linear, Bear App
+   Fondo: crema suave | Texto: gris azulado
+============================================= */
+
+/* Convertir todos los fondos blancos puros a crema suave */
+html:not(.dark) .bg-white {
+  background-color: #faf8f5 !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 99px;
-  border: 3px solid transparent;
-  background-clip: content-box;
-  transition: background-color 0.2s;
+/* Cards y secciones secundarias (base-100) */
+html:not(.dark) .bg-gray-50 {
+  background-color: #f5f1ea !important;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.3);
+/* Bordes sutiles calidos en lugar de gris frío */
+html:not(.dark) .border-gray-100 {
+  border-color: #e8e0d5 !important;
+}
+
+html:not(.dark) .border-gray-200 {
+  border-color: #dfd5c8 !important;
+}
+
+/* Texto principal - gris azulado cálido, no negro puro */
+html:not(.dark) .text-gray-900 {
+  color: #3d4a5c !important;
+}
+
+html:not(.dark) .text-gray-800 {
+  color: #4a5568 !important;
+}
+
+/* Secundario */
+html:not(.dark) .text-gray-700 {
+  color: #5a6477 !important;
+}
+
+html:not(.dark) .text-gray-600 {
+  color: #6b7585 !important;
+}
+
+/* Tab activo / seleccionado */
+html:not(.dark) .bg-gray-200 {
+  background-color: #e8e0d5 !important;
+}
+
+html:not(.dark) .bg-gray-100 {
+  background-color: #f2ede6 !important;
+}
+
+/* Sombras: reducir la frialdad */
+html:not(.dark) .shadow-sm {
+  box-shadow: 0 1px 3px 0 rgba(100, 80, 50, 0.08), 0 1px 2px -1px rgba(100, 80, 50, 0.06);
+}
+
+html:not(.dark) .shadow {
+  box-shadow: 0 2px 6px 0 rgba(100, 80, 50, 0.10), 0 1px 4px -1px rgba(100, 80, 50, 0.08);
 }
 
 /* View Transitions API 主题切换动画 */
@@ -102,7 +163,20 @@ a {
   z-index: 1;
 }
 
-/* 暗色模式下 select 下拉菜单样式 */
+/* Light mode: select dropdown styles */
+select,
+select option,
+select optgroup {
+  background-color: #faf8f5;
+  color: #3d4a5c;
+}
+
+select option:checked {
+  background-color: #5b7ff1;
+  color: white;
+}
+
+/* Dark mode select styles */
 .dark select,
 .dark select option,
 .dark select optgroup {

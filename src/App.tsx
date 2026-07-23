@@ -7,10 +7,9 @@ import Settings from './pages/Settings';
 import ApiProxy from './pages/ApiProxy';
 import Monitor from './pages/Monitor';
 import TokenStats from './pages/TokenStats';
-import Security from './pages/Security';
 import ThemeManager from './components/common/ThemeManager';
 import UserToken from './pages/UserToken';
-import { ApiKeyFun } from './pages/ApiKeyFun';
+import Downloads from './pages/Downloads';
 import { UpdateNotification } from './components/UpdateNotification';
 import DebugConsole from './components/debug/DebugConsole';
 import { useEffect, useState } from 'react';
@@ -52,12 +51,8 @@ const router = createBrowserRouter([
         element: <UserToken />,
       },
       {
-        path: 'apikey-fun',
-        element: <ApiKeyFun />,
-      },
-      {
-        path: 'security',
-        element: <Security />,
+        path: 'downloads',
+        element: <Downloads />,
       },
       {
         path: 'settings',
@@ -158,14 +153,16 @@ function App() {
   }, []);
 
   return (
-    <AdminAuthGuard>
+    <>
       <ThemeManager />
-      <DebugConsole />
-      {showUpdateNotification && (
-        <UpdateNotification onClose={() => setShowUpdateNotification(false)} />
-      )}
-      <RouterProvider router={router} />
-    </AdminAuthGuard>
+      <AdminAuthGuard>
+        <DebugConsole />
+        {showUpdateNotification && (
+          <UpdateNotification onClose={() => setShowUpdateNotification(false)} />
+        )}
+        <RouterProvider router={router} />
+      </AdminAuthGuard>
+    </>
   );
 }
 

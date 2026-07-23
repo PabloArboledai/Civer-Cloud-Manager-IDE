@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Antigravity Tools",
+  "productName": "antigravity.civer.cloud",
   "version": "4.4.7",
-  "identifier": "com.lbjlaq.antigravity-tools",
+  "identifier": "cloud.civer.antigravity",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -13,12 +13,12 @@
     "withGlobalTauri": false,
     "windows": [
       {
-        "title": "Antigravity Tools",
+        "title": "antigravity.civer.cloud",
         "width": 1024,
         "height": 700,
-        "titleBarStyle": "Overlay",
-        "hiddenTitle": true,
-        "transparent": true,
+        "decorations": true,
+        "transparent": false,
+        "maximized": true,
         "visible": false
       }
     ],
@@ -45,7 +45,7 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "https://github.com/lbjlaq/Antigravity-Manager/releases/latest/download/updater.json"
+        "https://github.com/pablo-arboleadi/Antigravity-Manager/releases/latest/download/updater.json"
       ],
       "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJFRjVDRjdCREE1Rjg2NkYKUldSdmhsL2FlOC8xdnJuTzBtaTRhZkk1VWJ1cW5QWGU3ZWEwU20yZHRlZStxMnRWcUIzc3FwT2IK"

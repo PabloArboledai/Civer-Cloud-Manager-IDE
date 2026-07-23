@@ -549,7 +549,7 @@
       "telegram": "Telegram Channel",
       "github": "GitHub",
       "view_code": "View Code",
-      "copyright": "Copyright © 2025-2026 Antigravity. All rights reserved.",
+      "copyright": "Copyright © 2025-2026 Antigravity Civer Cloud. All rights reserved.",
       "check_update": "Check for Updates",
       "checking_update": "Checking...",
       "latest_version": "You're up to date",
@@ -623,7 +623,7 @@
       "long_prompt_warning": "Prompt is quite long (over 2000 chars) and may consume significant context space."
     },
     "branding": {
-      "title": "Antigravity Tools",
+      "title": "Antigravity Civer Cloud",
       "subtitle": "Professional Account Management"
     }
   },

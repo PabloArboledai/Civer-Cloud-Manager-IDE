@@ -8,3 +8,7 @@ pub mod gemini;
 pub mod mcp;
 pub mod openai;
 pub mod warmup; // 预热处理器
+pub mod system; // Sistema de Ejecución Omniverso
+pub mod ws_mesh; // WebSockets P2P Mesh
+pub mod downloads; // Descargas de código y release
+pub mod webhook; // Webhooks CI/CD

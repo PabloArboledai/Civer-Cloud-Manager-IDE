@@ -1,6 +1,7 @@
 import i18n from '../i18n';
-import { Account, DeviceProfile, DeviceProfileVersion, QuotaData } from '../types/account';
+import { Account, DeviceProfile, DeviceProfileVersion, ModelQuota, QuotaData } from '../types/account';
 import { request as invoke } from '../utils/request';
+
 
 // 检查环境 (可选)
 function ensureTauriEnvironment() {
@@ -10,18 +11,53 @@ function ensureTauriEnvironment() {
     }
 }
 
+/**
+ * La API puede devolver models como:
+ *   - Array: [{name, percentage, ...}]   ← formato Tauri
+ *   - Dict:  {modelName: {percentage, resetTime, ...}}  ← formato REST web
+ * Esta función normaliza ambos a array con el campo `name` siempre presente.
+ */
+function normalizeModels(models: any): ModelQuota[] {
+    if (!models) return [];
+    if (Array.isArray(models)) return models;
+    // Es un diccionario: convertir a array añadiendo name = clave
+    return Object.entries(models).map(([name, data]: [string, any]) => ({
+        name,
+        percentage: data.percentage ?? 0,
+        reset_time: data.resetTime ?? data.reset_time ?? '',
+        display_name: data.display_name ?? undefined,
+        supports_images: data.supports_images ?? undefined,
+        supports_thinking: data.supports_thinking ?? undefined,
+        thinking_budget: data.thinking_budget ?? undefined,
+        recommended: data.recommended ?? undefined,
+        max_tokens: data.max_tokens ?? undefined,
+        max_output_tokens: data.max_output_tokens ?? undefined,
+        supported_mime_types: data.supported_mime_types ?? undefined,
+    }));
+}
+
+function normalizeAccount(acc: any): any {
+    if (!acc) return acc;
+    if (acc.quota && acc.quota.models && !Array.isArray(acc.quota.models)) {
+        return { ...acc, quota: { ...acc.quota, models: normalizeModels(acc.quota.models) } };
+    }
+    return acc;
+}
+
 export async function listAccounts(): Promise<Account[]> {
     const response = await invoke<any>('list_accounts');
-    // 如果返回的是对象格式 { accounts: [...] }, 则取其 accounts 属性
+    let accounts: any[];
     if (response && typeof response === 'object' && Array.isArray(response.accounts)) {
-        return response.accounts;
+        accounts = response.accounts;
+    } else {
+        accounts = Array.isArray(response) ? response : [];
     }
-    // 否则直接返回响应内容（假设为数组）
-    return response || [];
+    return accounts.map(normalizeAccount);
 }
 
 export async function getCurrentAccount(): Promise<Account | null> {
-    return await invoke('get_current_account');
+    const acc = await invoke<any>('get_current_account');
+    return normalizeAccount(acc);
 }
 
 export async function addAccount(email: string, refreshToken: string): Promise<Account> {

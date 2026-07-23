@@ -62,6 +62,9 @@ pub struct TokenManager {
     /// 支持优雅关闭时主动 abort 后台任务
     auto_cleanup_handle: Arc<tokio::sync::Mutex<Option<tokio::task::JoinHandle<()>>>>,
     cancel_token: CancellationToken,
+    
+    // [NEW] WebSocket P2P Mesh Channel
+    mesh_tx: Arc<tokio::sync::RwLock<Option<tokio::sync::broadcast::Sender<crate::proxy::handlers::ws_mesh::MeshMessage>>>>,
 }
 
 impl TokenManager {
@@ -84,7 +87,13 @@ impl TokenManager {
             load_code_assist_inflight: Arc::new(DashMap::new()), // 初始化 inflight 表
             auto_cleanup_handle: Arc::new(tokio::sync::Mutex::new(None)),
             cancel_token: CancellationToken::new(),
+            mesh_tx: Arc::new(tokio::sync::RwLock::new(None)),
         }
+    }
+    
+    /// Establece el canal de Mesh P2P
+    pub async fn set_mesh_tx(&self, tx: tokio::sync::broadcast::Sender<crate::proxy::handlers::ws_mesh::MeshMessage>) {
+        *self.mesh_tx.write().await = Some(tx);
     }
 
     /// 启动限流记录自动清理后台任务（每15秒检查并清除过期记录）
@@ -1289,11 +1298,21 @@ impl TokenManager {
                 return tier_cmp;
             }
 
-            // Priority 1: 目标模型的 quota (higher is better) -> 保护低配额账号
-            // 经过过滤，key 肯定存在
+            // Priority 0.5: Hard 10% Threshold Penalty (Auto-Swap out of depleted accounts)
+            // If an account has < 10% quota remaining, it is pushed to the bottom.
             let quota_a = a.model_quotas.get(&normalized_target).copied().unwrap_or(0);
             let quota_b = b.model_quotas.get(&normalized_target).copied().unwrap_or(0);
 
+            let a_is_depleted = quota_a < 10;
+            let b_is_depleted = quota_b < 10;
+
+            if a_is_depleted && !b_is_depleted {
+                return std::cmp::Ordering::Greater; // a is worse
+            } else if !a_is_depleted && b_is_depleted {
+                return std::cmp::Ordering::Less; // a is better
+            }
+
+            // Priority 1: 目标模型的 quota (higher is better) -> 保护低配额账号
             let quota_cmp = quota_b.cmp(&quota_a);
             if quota_cmp != std::cmp::Ordering::Equal {
                 return quota_cmp;
@@ -2023,6 +2042,24 @@ impl TokenManager {
             if let Some((new_account_id, new_time)) = need_update_last_used {
                 if quota_group != "image_gen" {
                     let mut last_used = self.last_used_account.lock().await;
+                    
+                    // [NEW] Detección de Rotación para CDP Autopilot
+                    if let Some((old_account_id, _)) = last_used.as_ref() {
+                        if old_account_id != &new_account_id && !new_account_id.is_empty() {
+                            tracing::info!("🔄 [CDP_ALERT] Account rotated from {} to {}", old_account_id, new_account_id);
+                            if let Some(tx) = self.mesh_tx.read().await.as_ref() {
+                                let _ = tx.send(crate::proxy::handlers::ws_mesh::MeshMessage {
+                                    msg_type: "CDP_ALERT".to_string(),
+                                    target: None,
+                                    payload: format!(
+                                        "{{\"action\":\"ACCOUNT_ROTATED\",\"old\":\"{}\",\"new\":\"{}\"}}",
+                                        old_account_id, new_account_id
+                                    ),
+                                });
+                            }
+                        }
+                    }
+
                     if new_account_id.is_empty() {
                         // 空字符串表示需要清除锁定
                         *last_used = None;

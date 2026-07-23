@@ -375,6 +375,16 @@ pub fn run() {
         ))
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(|app, _shortcut, event| {
+                    if event.state == tauri_plugin_global_shortcut::ShortcutState::Pressed {
+                        tracing::info!("Global shortcut triggered (Ctrl+Shift+Alt+A), restarting...");
+                        app.restart();
+                    }
+                })
+                .build(),
+        )
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             let _ = app.get_webview_window("main").map(|window| {
@@ -393,6 +403,18 @@ pub fn run() {
 
             // Initialize log bridge with app handle for debug console
             modules::log_bridge::init_log_bridge(app.handle().clone());
+
+            // Register global shortcut Ctrl+Shift+Alt+A to restart the app
+            #[cfg(desktop)]
+            {
+                use tauri_plugin_global_shortcut::GlobalShortcutExt;
+                use std::str::FromStr;
+                if let Ok(shortcut) = tauri_plugin_global_shortcut::Shortcut::from_str("Super+Control+Alt+Shift+A") {
+                    let _ = app.handle().global_shortcut().register(shortcut);
+                } else if let Ok(shortcut) = tauri_plugin_global_shortcut::Shortcut::from_str("Control+Alt+Shift+A") {
+                    let _ = app.handle().global_shortcut().register(shortcut);
+                }
+            }
 
             // Linux: Workaround for transparent window crash/freeze
             // The transparent window feature is unstable on Linux with WebKitGTK
@@ -672,6 +694,7 @@ pub fn run() {
             commands::user_token::get_token_ip_bindings,
             commands::user_token::get_user_token_summary,
             commands::query_transit_info,
+            commands::uninstall_program,
             // Patch commands
             commands::patch_agy_binary,
         ])

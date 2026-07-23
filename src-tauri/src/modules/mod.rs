@@ -24,6 +24,9 @@ pub mod tray;
 pub mod update_checker;
 pub mod user_token_db;
 pub mod version;
+pub mod vpn;
+pub mod installer;
+pub mod sync;
 
 use crate::models;
 

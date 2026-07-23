@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Network, Activity, BarChart3, Settings, Lock, KeyRound } from 'lucide-react';
+import { LayoutDashboard, Users, Network, Activity, BarChart3, Settings, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useConfigStore } from '../../stores/useConfigStore';
 import { isTauri, isLinux } from '../../utils/env';
@@ -22,11 +22,10 @@ function Navbar() {
         { path: '/', label: t('nav.dashboard'), icon: LayoutDashboard, priority: 'high' },
         { path: '/accounts', label: t('nav.accounts'), icon: Users, priority: 'high' },
         { path: '/api-proxy', label: t('nav.proxy'), icon: Network, priority: 'high' },
-        { path: '/apikey-fun', label: t('nav.apikey_fun', '中转站'), icon: KeyRound, priority: 'high' },
         { path: '/monitor', label: t('nav.call_records'), icon: Activity, priority: 'medium' },
-        { path: '/token-stats', label: t('nav.token_stats', 'Token 统计'), icon: BarChart3, priority: 'low' },
-        { path: '/user-token', label: t('nav.user_token', 'User Tokens'), icon: Users, priority: 'low' },
-        { path: '/security', label: t('nav.security'), icon: Lock, priority: 'low' },
+        { path: '/token-stats', label: t('nav.token_stats', 'Estadísticas de Tokens'), icon: BarChart3, priority: 'low' },
+        { path: '/user-token', label: t('nav.user_token', 'Tokens de Usuario'), icon: Users, priority: 'low' },
+        { path: '/downloads', label: t('nav.downloads', 'Descargas'), icon: Download, priority: 'high' },
         { path: '/settings', label: t('nav.settings'), icon: Settings, priority: 'high' },
     ];
 
@@ -95,8 +94,7 @@ function Navbar() {
 
     return (
         <nav
-            style={{ position: 'sticky', top: 0, zIndex: 50 }}
-            className="pt-9 transition-all duration-200 bg-[#FAFBFC] dark:bg-base-300"
+            className="transition-all duration-200 bg-[#faf8f5] dark:bg-base-300 z-40 relative flex-shrink-0 border-b border-[#e8e0d5] dark:border-base-200"
         >
             {/* 窗口拖拽区域 - Tauri 专用 */}
             {isTauri() && (

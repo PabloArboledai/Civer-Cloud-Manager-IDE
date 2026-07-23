@@ -112,6 +112,7 @@ pub struct AppState {
     pub port: u16,                     // [NEW] 本地监听端口 (v4.0.8 修复)
     pub proxy_pool_state: Arc<tokio::sync::RwLock<crate::proxy::config::ProxyPoolConfig>>, // [FIX Web Mode]
     pub proxy_pool_manager: Arc<crate::proxy::proxy_pool::ProxyPoolManager>, // [FIX Web Mode]
+    pub mesh_tx: tokio::sync::broadcast::Sender<crate::proxy::handlers::ws_mesh::MeshMessage>, // [NEW] P2P Mesh Channel
 }
 
 // 为 AppState 实现 FromRef，以便中间件提取 security 状态
@@ -381,9 +382,16 @@ impl AxumServer {
         let debug_logging_state = Arc::new(RwLock::new(debug_logging));
         let is_running_state = Arc::new(RwLock::new(false));
 
+        let (mesh_tx, _) = tokio::sync::broadcast::channel(100);
+        token_manager.set_mesh_tx(mesh_tx.clone()).await;
+        
+        // Iniciar el listener de CDP Autopilot en background
+        crate::proxy::cdp_controller::start_listener(mesh_tx.clone());
+
         let state = AppState {
             token_manager: token_manager.clone(),
             custom_mapping: custom_mapping_state.clone(),
+            mesh_tx,
             request_timeout: 300, // 5分钟超时
             thought_signature_map: Arc::new(tokio::sync::Mutex::new(
                 std::collections::HashMap::new(),
@@ -520,7 +528,19 @@ impl AxumServer {
 
         // 2. 构建管理 API (强制鉴权)
         let admin_routes = Router::new()
+            .nest("/downloads", handlers::downloads::router())
+            .nest("/webhook", handlers::webhook::router())
             .route("/health", get(health_check_handler))
+            .route("/system/exec", post(handlers::system::admin_system_exec))
+            .route("/mesh/connect", get(handlers::ws_mesh::ws_mesh_handler))
+            .route("/vpn/tailscale/install", post(crate::modules::vpn::tailscale::install_tailscale))
+            .route("/vpn/tailscale/up", post(crate::modules::vpn::tailscale::up_tailscale))
+            .route("/vpn/cloudflared/install", post(crate::modules::vpn::cloudflared::install_cloudflared))
+            .route("/vpn/wireguard/install", post(crate::modules::vpn::wireguard::install_wireguard))
+            .route("/install/python", post(crate::modules::installer::python::install_python_env))
+            .route("/install/sdk", post(crate::modules::installer::sdk::install_antigravity_sdk))
+            .route("/install/ide", post(crate::modules::installer::ide::install_ide))
+            .route("/sync/brain", post(crate::modules::sync::engine::configure_syncthing_brain))
             .route(
                 "/accounts",
                 get(admin_list_accounts).post(admin_add_account),
@@ -833,6 +853,11 @@ impl AxumServer {
             proxy_pool_state,
             proxy_pool_manager,
         };
+
+        // Iniciar Daemon de Auto-Sanación y Descargas
+        tokio::spawn(async move {
+            crate::modules::sync::auto_healer::start_auto_healer_loop().await;
+        });
 
         // 在新任务中启动服务器
         let handle = tokio::spawn(async move {
