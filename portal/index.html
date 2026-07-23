@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Omni-Network | Civer Cloud</title>
+    <meta name="description" content="Descarga Antigravity Manager, el orquestador P2P definitivo con Swarm Intelligence.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --primary: #00ffcc;
+            --secondary: #ff007f;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --glass-bg: rgba(20, 20, 20, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 255, 204, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(255, 0, 127, 0.08), transparent 25%);
+        }
+
+        /* Ambient Glow Background */
+        .glow-orb {
+            position: absolute;
+            width: 40vw;
+            height: 40vw;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 60%);
+            opacity: 0.15;
+            filter: blur(100px);
+            animation: float 20s infinite alternate;
+            z-index: -1;
+        }
+        .glow-orb.two {
+            background: radial-gradient(circle, var(--secondary) 0%, transparent 60%);
+            right: -10vw;
+            bottom: -10vw;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(10vw, 10vh); }
+        }
+
+        /* Header */
+        header {
+            padding: 2rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Hero Section */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 5rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            animation: fadeInDown 1s ease-out forwards;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin-bottom: 3rem;
+            font-weight: 300;
+            animation: fadeInUp 1s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        /* Download Card - Glassmorphism */
+        .download-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+            max-width: 600px;
+            width: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .download-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 40px 80px rgba(0,255,204,0.1), inset 0 1px 0 rgba(255,255,255,0.2);
+            border-color: rgba(0, 255, 204, 0.3);
+        }
+
+        .download-title {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: rgba(0, 255, 204, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(0, 255, 204, 0.2);
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--primary) 0%, #00b38f 100%);
+            color: #000;
+            text-decoration: none;
+            padding: 1.2rem 3rem;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 10px 20px rgba(0, 255, 204, 0.2);
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(0, 255, 204, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .btn-secondary {
+            display: inline-block;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            margin-top: 1rem;
+        }
+
+        .btn-secondary:hover {
+            color: var(--text-main);
+            text-decoration: underline;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Features */
+        .features {
+            display: flex;
+            gap: 2rem;
+            margin-top: 4rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeInUp 1s ease-out 0.6s forwards;
+            opacity: 0;
+        }
+
+        .feature-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
+            padding: 2rem;
+            border-radius: 16px;
+            width: 300px;
+            text-align: left;
+            transition: background 0.3s;
+        }
+
+        .feature-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .feature-item h3 {
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .feature-item p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="glow-orb"></div>
+    <div class="glow-orb two"></div>
+
+    <header>
+        <div class="logo">ANTIGRAVITY</div>
+        <div style="font-size: 0.9rem; color: var(--text-muted);">Civer Cloud Ecosistema</div>
+    </header>
+
+    <main>
+        <h1>El Futuro de la <br>Mente Colmena P2P</h1>
+        <p class="subtitle">Instala Antigravity Manager y únete a la red P2P global con 20 capas de supervivencia extrema, IA descentralizada y sincronización cuántica.</p>
+        
+        <div class="download-card">
+            <h2 class="download-title">Antigravity Manager</h2>
+            <div class="version-badge">Versión Oficial (Segura)</div>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                <a href="/Antigravity_Setup.msi" class="btn-primary" onclick="handleDownload()" style="margin-bottom: 0;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Windows (.msi)
+                </a>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <a href="https://github.com/pablo-arboleadi/Antigravity-Manager/releases/latest" class="btn-primary" style="flex: 1; padding: 1rem; font-size: 1rem; background: rgba(0, 255, 204, 0.1); border: 1px solid rgba(0, 255, 204, 0.3); color: var(--primary); margin-bottom: 0; box-shadow: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Linux (.deb)
+                    </a>
+                    <a href="https://github.com/pablo-arboleadi/Antigravity-Manager/releases/latest" class="btn-primary" style="flex: 1; padding: 1rem; font-size: 1rem; background: rgba(255, 0, 127, 0.1); border: 1px solid rgba(255, 0, 127, 0.3); color: var(--secondary); margin-bottom: 0; box-shadow: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                        Android (.apk)
+                    </a>
+                </div>
+            </div>
+            
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+                Windows 10/11, Ubuntu 22+, y Android 10+.<br>Actualización automática en tiempo real garantizada.
+            </p>
+        </div>
+
+        <div class="features">
+            <div class="feature-item">
+                <h3>Auto-Actualizable</h3>
+                <p>El núcleo comprueba activamente los repositorios de GitHub. Si hay una nueva versión, el sistema de Enjambre te preguntará si deseas actualizar al instante.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Omni-Network Mesh</h3>
+                <p>Equipado con 20 capas de conexión, incluyendo I2P, Yggdrasil, WebRTC, y MFT Indexing. Inmune a caídas nacionales de internet.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Swarm Intelligence</h3>
+                <p>Las IAs instaladas en la red delegan cargas de GPU, comparten perfiles y mutan su código sincronizando a través de Supabase y Syncthing.</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function handleDownload() {
+            // Trigger feedback to indicate that if an older version is installed, it will prompt to update
+            console.log("Descarga iniciada. Antigravity detectará si ya está instalado y ofrecerá actualizar el sistema en caliente.");
+        }
+    </script>
+</body>
+</html>
