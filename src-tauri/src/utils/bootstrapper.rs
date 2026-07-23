@@ -22,6 +22,26 @@ pub async fn run_bootstrap() -> Result<(), String> {
         tracing::error!("Failed to bootstrap Syncthing: {}", e);
     }
     
+    // 4. [Omni-Network Layer 1] Install Tailscale if missing
+    if !is_installed("tailscale") {
+        tracing::warn!("Tailscale not found. Attempting to install via winget...");
+        install_via_winget("Tailscale.Tailscale").await?;
+    }
+    
+    // 5. [Omni-Network Layer 2] Install Cloudflared if missing
+    if !is_installed("cloudflared") {
+        tracing::warn!("Cloudflared not found. Attempting to install via winget...");
+        install_via_winget("Cloudflare.cloudflared").await?;
+    }
+
+    // 6. [Omni-Network Layer 4] Install ZeroTier if missing
+    if !is_installed("zerotier-cli") {
+        tracing::warn!("ZeroTier not found. Attempting to install via winget...");
+        install_via_winget("ZeroTier.ZeroTierOne").await?;
+    }
+    
+    // Note: Tor (Layer 5) needs a custom download script, we'll assume it's pre-packaged for now or add it later to the download logic.
+    
     tracing::info!("Bootstrapper completed successfully.");
     Ok(())
 }
