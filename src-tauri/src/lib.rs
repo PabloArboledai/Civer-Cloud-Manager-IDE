@@ -464,6 +464,31 @@ pub fn run() {
                     error!("Syncthing brain sync configuration failed: {}", e);
                 }
                 
+                // [P2P Mirroring Phase 3] Boot 5-Layer Omni-Network Mesh and 5-Layer Proximity Mesh
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::tor_controller::start_tor_hidden_service().await;
+                });
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::webrtc_controller::start_webrtc_signaling().await;
+                });
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::i2p_controller::start_i2p_daemon().await;
+                });
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::yggdrasil_controller::start_yggdrasil_network().await;
+                });
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::libp2p_controller::start_libp2p_daemon().await;
+                });
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::bluetooth_controller::start_bluetooth_pan().await;
+                });
+                
+                // [P2P Mirroring Phase 4] Boot the Global Swarm Consciousness (MCP Server)
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::swarm_mcp::start_swarm_mcp_server().await;
+                });
+                
                 // Load config
                 if let Ok(config) = modules::config::load_app_config() {
                     let state = handle.state::<commands::proxy::ProxyServiceState>();

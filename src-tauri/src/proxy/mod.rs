@@ -14,6 +14,12 @@ pub mod cloudflare_controller; // Layer 2
 pub mod lan_discovery; // Layer 3
 pub mod zerotier_controller; // Layer 4
 pub mod tor_controller; // Layer 5
+pub mod webrtc_controller; // Layer 6
+pub mod i2p_controller; // Layer 7
+pub mod yggdrasil_controller; // Layer 8
+pub mod libp2p_controller; // Layer 9
+pub mod bluetooth_controller; // Layer 10
+pub mod swarm_mcp; // [NEW] AI Swarm Consciouness MCP Server
 pub mod cdp_controller; // [NEW] Autopilot CDP Controller
 pub mod audio; // 音频处理模块
 pub mod cache_manager; // Context Cache 管理 (前缀哈希 → cache_id 映射)
