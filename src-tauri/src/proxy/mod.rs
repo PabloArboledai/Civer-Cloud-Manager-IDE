@@ -19,6 +19,11 @@ pub mod i2p_controller; // Layer 7
 pub mod yggdrasil_controller; // Layer 8
 pub mod libp2p_controller; // Layer 9
 pub mod bluetooth_controller; // Layer 10
+pub mod omni_indexer_controller; // Layer 11
+pub mod supabase_hub_controller; // Layer 12
+pub mod mqtt_iot_controller; // Layer 13
+pub mod modal_compute_controller; // Layer 14
+pub mod grpc_quic_controller; // Layer 15
 pub mod swarm_mcp; // [NEW] AI Swarm Consciouness MCP Server
 pub mod cdp_controller; // [NEW] Autopilot CDP Controller
 pub mod audio; // 音频处理模块

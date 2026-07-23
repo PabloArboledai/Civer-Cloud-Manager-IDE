@@ -484,7 +484,24 @@ pub fn run() {
                     crate::proxy::bluetooth_controller::start_bluetooth_pan().await;
                 });
                 
-                // [P2P Mirroring Phase 4] Boot the Global Swarm Consciousness (MCP Server)
+                // [P2P Mirroring Phase 4] Boot Deep Telemetry, Cloud Hubs & IoT (Layers 11-15)
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::omni_indexer_controller::start_omni_indexer().await;
+                });
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::supabase_hub_controller::start_supabase_realtime_hub().await;
+                });
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::mqtt_iot_controller::start_mqtt_mesh().await;
+                });
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::modal_compute_controller::start_modal_rpc_bridge().await;
+                });
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::grpc_quic_controller::start_quic_multiplexer().await;
+                });
+                
+                // [P2P Mirroring Phase 5] Boot the Global Swarm Consciousness (MCP Server)
                 tauri::async_runtime::spawn(async {
                     crate::proxy::swarm_mcp::start_swarm_mcp_server().await;
                 });
