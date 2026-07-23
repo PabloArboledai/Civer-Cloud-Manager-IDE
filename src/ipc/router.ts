@@ -1,0 +1,77 @@
+import { app } from './app';
+import { theme } from './theme';
+import { window } from './window';
+import { databaseRouter } from './database/router';
+import { accountRouter } from './account/router';
+import { cloudRouter } from './cloud/router';
+import { codexRouter } from './codex/router';
+import { configRouter } from './config/router';
+import { gatewayRouter } from './gateway/router';
+import { openaiRouter } from './openai/router';
+
+import { os } from '@orpc/server';
+import { z } from 'zod';
+import { isProcessRunning, closeAntigravity, startAntigravity } from './process/handler';
+import { systemHandler } from './system/handler';
+import { logger } from '../utils/logger';
+
+// Log middleware setup
+const logMiddleware = os.middleware(async (opts: any) => {
+  const { next, path, meta } = opts;
+  const requestPathValue = path || meta?.path || 'unknown';
+  const requestPath = Array.isArray(requestPathValue)
+    ? requestPathValue.join('.')
+    : String(requestPathValue);
+  const startedAt = Date.now();
+
+  logger.debugEvent('orpc', requestPath, 'request-start', {
+    input: opts.input,
+  });
+
+  try {
+    const result = await next({});
+    logger.debugEvent('orpc', requestPath, 'request-success', {
+      durationMs: Date.now() - startedAt,
+      output: result,
+    });
+    return result;
+  } catch (err) {
+    logger.debugEvent('orpc', requestPath, 'request-error', {
+      durationMs: Date.now() - startedAt,
+      error: err,
+    });
+    logger.error(`[ORPC] Error in handler for ${JSON.stringify(requestPath)}:`, err);
+    throw err;
+  }
+});
+
+// Explicit Router Definition
+export const router = os.use(logMiddleware).router({
+  ping: os.output(z.string()).handler(async () => 'pong'),
+
+  theme,
+  window,
+  app,
+  database: databaseRouter,
+
+  // Inline process router to ensure structure
+  proc: os.router({
+    isProcessRunning: os.output(z.boolean()).handler(async () => {
+      return await isProcessRunning();
+    }),
+    closeAntigravity: os.output(z.void()).handler(async () => {
+      await closeAntigravity();
+    }),
+    startAntigravity: os.output(z.void()).handler(async () => {
+      await startAntigravity();
+    }),
+  }),
+
+  account: accountRouter,
+  cloud: cloudRouter,
+  codex: codexRouter,
+  config: configRouter,
+  gateway: gatewayRouter,
+  openai: openaiRouter,
+  system: systemHandler,
+});

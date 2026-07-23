@@ -1,0 +1,1 @@
+Consulta siempre `@AGENTS.md`.
