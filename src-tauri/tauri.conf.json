@@ -47,8 +47,7 @@
       "endpoints": [
         "https://github.com/pablo-arboleadi/Antigravity-Manager/releases/latest/download/updater.json"
       ],
-      "dialog": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJFRjVDRjdCREE1Rjg2NkYKUldSdmhsL2FlOC8xdnJuTzBtaTRhZkk1VWJ1cW5QWGU3ZWEwU20yZHRlZStxMnRWcUIzc3FwT2IK"
+      "dialog": true
     },
     "process": null,
     "fs": null,

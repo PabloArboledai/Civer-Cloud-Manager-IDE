@@ -21,23 +21,28 @@ export default function Downloads() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Release Download Card */}
-                <div className="bg-surface border border-border/50 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-indigo-500/30 transition-all">
+                <div className="bg-surface border border-indigo-500/50 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-indigo-400 transition-all">
                     <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
                         <Terminal className="w-32 h-32 text-indigo-500" />
                     </div>
-                    <h2 className="text-2xl font-semibold mb-2 flex items-center gap-2">
-                        <ShieldCheck className="w-6 h-6 text-green-400" />
-                        Release Estable
-                    </h2>
-                    <p className="text-content-subtle mb-6">
-                        Descarga el binario compilado (antigravity_tools.exe) listo para ejecutarse en cualquier computadora Windows.
+                    <div className="flex justify-between items-start mb-2">
+                        <h2 className="text-2xl font-semibold flex items-center gap-2">
+                            <ShieldCheck className="w-6 h-6 text-green-400" />
+                            Instalador Inteligente (.msi)
+                        </h2>
+                        <span className="bg-indigo-500/20 text-indigo-300 text-xs px-2 py-1 rounded-full border border-indigo-500/30">
+                            Recomendado
+                        </span>
+                    </div>
+                    <p className="text-content-subtle mb-4">
+                        Descarga el instalador oficial para Windows. <b>Nunca tendrás que volver a descargarlo manualmente:</b> el motor cuenta con Auto-Updater en tiempo real integrado.
                     </p>
                     <a 
-                        href={`${API_BASE}/downloads/release`}
+                        href="https://github.com/pablo-arboleadi/Antigravity-Manager/releases/latest/download/antigravity.civer.cloud_4.4.7_x64_en-US.msi"
                         className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-all hover:scale-105 shadow-lg shadow-indigo-500/25"
                     >
                         <Download className="w-5 h-5" />
-                        Descargar Ejecutable
+                        Descargar Instalador (MSI)
                     </a>
                 </div>
 
