@@ -404,6 +404,18 @@ pub fn run() {
             // Initialize log bridge with app handle for debug console
             modules::log_bridge::init_log_bridge(app.handle().clone());
 
+            // [Phase 7] Initialize Command Runner Database & Auto-Connector Engine
+            if let Err(e) = modules::command_runner_db::init_db() {
+                error!("Failed to initialize command runner database: {}", e);
+            } else {
+                info!("Command runner database initialized.");
+            }
+            
+            let app_handle_for_nodes = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                modules::node_manager::start_reconnection_loop(app_handle_for_nodes).await;
+            });
+
             // Register global shortcut Ctrl+Shift+Alt+A to restart the app
             #[cfg(desktop)]
             {

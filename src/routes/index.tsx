@@ -7,9 +7,12 @@ import { RefreshCw } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { NodeMonitor } from '@/components/mesh/NodeMonitor';
+
 function HomePage() {
   return (
-    <div className="container mx-auto max-w-4xl p-6">
+    <div className="container mx-auto max-w-5xl p-6 space-y-8">
+      <NodeMonitor />
       <CloudAccountList />
     </div>
   );
