@@ -199,6 +199,77 @@ pub async fn export_accounts(account_ids: Vec<String>) -> Result<AccountExportRe
         .unwrap_or_else(|_| Err("Task panicked".to_string()))
 }
 
+#[tauri::command]
+pub async fn export_full_state() -> Result<String, String> {
+    use crate::models::account::MeshFullStateExport;
+    let accounts = modules::account::list_accounts().unwrap_or_default();
+    
+    // Configs are optional for now, but we can load them if needed.
+    let app_config = crate::modules::config::load_app_config().ok();
+    
+    let export = MeshFullStateExport {
+        version: "1.0".to_string(),
+        timestamp: chrono::Utc::now().timestamp(),
+        accounts,
+        app_config,
+    };
+
+    serde_json::to_string(&export).map_err(|e| format!("Serialization error: {}", e))
+}
+
+#[tauri::command]
+pub async fn import_full_state(
+    app: tauri::AppHandle,
+    proxy_state: tauri::State<'_, crate::commands::proxy::ProxyServiceState>,
+    payload: String
+) -> Result<usize, String> {
+    use crate::models::account::MeshFullStateExport;
+    let export: MeshFullStateExport = serde_json::from_str(&payload)
+        .map_err(|e| format!("Deserialization error: {}", e))?;
+        
+    let mut imported_count = 0;
+    for mut account in export.accounts {
+        match modules::account::save_account(&account) {
+            Ok(_) => {
+                imported_count += 1;
+                // Add to index
+                if let Ok(mut index) = modules::account::load_account_index() {
+                    let summary = crate::models::AccountSummary {
+                        id: account.id.clone(),
+                        email: account.email.clone(),
+                        name: account.name.clone(),
+                        disabled: account.disabled,
+                        proxy_disabled: account.proxy_disabled,
+                        protected_models: account.protected_models.clone(),
+                        created_at: account.created_at,
+                        last_used: account.last_used,
+                    };
+                    if let Some(existing) = index.accounts.iter_mut().find(|a| a.id == account.id) {
+                        *existing = summary;
+                    } else {
+                        index.accounts.push(summary);
+                    }
+                    let _ = modules::account::save_account_index(&index);
+                }
+            },
+            Err(e) => crate::modules::logger::log_warn(&format!("Failed to import account {}: {}", account.email, e)),
+        }
+    }
+    
+    // Save App Config if present
+    if let Some(app_config) = export.app_config {
+        let _ = crate::modules::config::save_app_config(&app_config);
+    }
+
+    // Reload token pool
+    let _ = crate::commands::proxy::reload_proxy_accounts(proxy_state).await;
+    
+    // Notify frontend to refresh
+    crate::modules::log_bridge::emit_accounts_refreshed();
+    
+    Ok(imported_count)
+}
+
 /// 内部辅助功能：在添加或导入账号后自动刷新一次额度
 async fn internal_refresh_account_quota(
     app: &tauri::AppHandle,

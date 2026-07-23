@@ -101,8 +101,62 @@ async fn download_source() -> Result<impl IntoResponse, StatusCode> {
     Ok((headers, body))
 }
 
+async fn download_github_msi() -> Result<impl IntoResponse, StatusCode> {
+    let url = "https://github.com/PabloArboledai/draculabo-antigravity-manager-private-backup/releases/latest/download/Antigravity_Manager_4.4.7_x64_en-US.msi";
+    
+    let client = reqwest::Client::new();
+    let res = client
+        .get(url)
+        .header(reqwest::header::AUTHORIZATION, "token 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")
+        .header(reqwest::header::USER_AGENT, "AntigravityManager")
+        .send()
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to fetch GitHub MSI: {}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
+
+    if !res.status().is_success() {
+        tracing::error!("GitHub returned error status: {}", res.status());
+        return Err(StatusCode::BAD_GATEWAY);
+    }
+
+    let stream = res.bytes_stream();
+    let body = Body::from_stream(stream);
+
+    let headers = [
+        (header::CONTENT_TYPE, "application/octet-stream"),
+        (
+            header::CONTENT_DISPOSITION,
+            "attachment; filename=\"Antigravity_Manager_4.4.7_x64_en-US.msi\"",
+        ),
+    ];
+
+    Ok((headers, body))
+}
+
 pub fn router() -> Router<crate::proxy::server::AppState> {
     Router::new()
         .route("/source", get(download_source))
         .route("/release", get(download_release))
+        .route("/github_msi", get(download_github_msi))
+        .route("/sync_mesh", axum::routing::post(sync_mesh))
+}
+
+async fn sync_mesh(body: String) -> Result<impl axum::response::IntoResponse, axum::http::StatusCode> {
+    use crate::models::account::MeshFullStateExport;
+    let export: MeshFullStateExport = serde_json::from_str(&body).map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    
+    for account in export.accounts {
+        let _ = crate::modules::account::save_account(&account);
+    }
+    
+    if let Some(app_config) = export.app_config {
+        let _ = crate::modules::config::save_app_config(&app_config);
+    }
+    
+    // Trigger a refresh event globally
+    crate::modules::log_bridge::emit_accounts_refreshed();
+    
+    Ok(axum::http::StatusCode::OK)
 }

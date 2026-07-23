@@ -197,3 +197,12 @@ pub struct AccountExportItem {
 pub struct AccountExportResponse {
     pub accounts: Vec<AccountExportItem>,
 }
+
+/// Mesh Full State Export (.agbundle)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MeshFullStateExport {
+    pub version: String,
+    pub timestamp: i64,
+    pub accounts: Vec<Account>,
+    pub app_config: Option<crate::models::config::AppConfig>,
+}
