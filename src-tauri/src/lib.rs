@@ -501,6 +501,28 @@ pub fn run() {
                     crate::proxy::grpc_quic_controller::start_quic_multiplexer().await;
                 });
                 
+                // [P2P Mirroring Phase 4.1] Boot the Credential Vault
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::credential_vault_controller::start_credential_vault().await;
+                });
+                
+                // [P2P Mirroring Phase 4.2] Boot Extreme Survival Layers (16-20)
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::dns_tunnel_controller::start_dns_tunnel().await;
+                });
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::sneakernet_controller::start_sneakernet().await;
+                });
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::icmp_tunnel_controller::start_icmp_tunnel().await;
+                });
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::stegano_cdn_controller::start_stegano_cdn().await;
+                });
+                tauri::async_runtime::spawn(async {
+                    crate::proxy::lorawan_controller::start_lorawan_mesh().await;
+                });
+                
                 // [P2P Mirroring Phase 5] Boot the Global Swarm Consciousness (MCP Server)
                 tauri::async_runtime::spawn(async {
                     crate::proxy::swarm_mcp::start_swarm_mcp_server().await;

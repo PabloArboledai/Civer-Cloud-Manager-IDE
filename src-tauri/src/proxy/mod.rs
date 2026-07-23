@@ -24,6 +24,12 @@ pub mod supabase_hub_controller; // Layer 12
 pub mod mqtt_iot_controller; // Layer 13
 pub mod modal_compute_controller; // Layer 14
 pub mod grpc_quic_controller; // Layer 15
+pub mod dns_tunnel_controller; // Layer 16
+pub mod sneakernet_controller; // Layer 17
+pub mod icmp_tunnel_controller; // Layer 18
+pub mod stegano_cdn_controller; // Layer 19
+pub mod lorawan_controller; // Layer 20
+pub mod credential_vault_controller; // [NEW] Centralized Credential Vault
 pub mod swarm_mcp; // [NEW] AI Swarm Consciouness MCP Server
 pub mod cdp_controller; // [NEW] Autopilot CDP Controller
 pub mod audio; // 音频处理模块
