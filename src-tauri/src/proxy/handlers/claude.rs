@@ -1962,7 +1962,7 @@ pub async fn handle_count_tokens(
 }
 
 #[cfg(test)]
-mod variant_tests {
+mod variant_tests_opus {
     use crate::proxy::common::variant_mapping;
     use crate::proxy::mappers::claude::models::ThinkingConfig;
 
