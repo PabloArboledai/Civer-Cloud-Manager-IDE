@@ -5,6 +5,7 @@ mod models;
 mod modules;
 mod proxy; // Proxy service module
 mod utils;
+pub mod qa;
 
 use modules::logger;
 use std::sync::Arc;
@@ -403,6 +404,11 @@ pub fn run() {
 
             // Initialize log bridge with app handle for debug console
             modules::log_bridge::init_log_bridge(app.handle().clone());
+            
+            // [Phase 8] Extract AI Brain to User Directory
+            if let Err(e) = crate::utils::bootstrapper::extract_ai_brain(app.handle()) {
+                error!("Failed to extract AI Brain: {}", e);
+            }
 
             // [Phase 7] Initialize Command Runner Database & Auto-Connector Engine
             if let Err(e) = modules::command_runner_db::init_db() {
