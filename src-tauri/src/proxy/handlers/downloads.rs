@@ -102,9 +102,11 @@ async fn download_source() -> Result<impl IntoResponse, StatusCode> {
 }
 
 async fn download_github_msi() -> Result<impl IntoResponse, StatusCode> {
-    let url = "https://github.com/PabloArboledai/draculabo-antigravity-manager-private-backup/releases/latest/download/Antigravity_Manager_4.4.7_x64_en-US.msi";
+    // The URL is updated to point to the new white-labeled MSI filename
+    let url = "https://github.com/PabloArboledai/draculabo-antigravity-manager-private-backup/releases/latest/download/Antigravity%20Civer%20Cloud%20IDE_4.4.7_x64_en-US.msi";
     
     let client = reqwest::Client::new();
+    // Injected GitHub token so the download never fails even if the repo is private
     let res = client
         .get(url)
         .header(reqwest::header::AUTHORIZATION, "token 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")
@@ -128,7 +130,7 @@ async fn download_github_msi() -> Result<impl IntoResponse, StatusCode> {
         (header::CONTENT_TYPE, "application/octet-stream"),
         (
             header::CONTENT_DISPOSITION,
-            "attachment; filename=\"Antigravity_Manager_4.4.7_x64_en-US.msi\"",
+            "attachment; filename=\"Antigravity Civer Cloud IDE_4.4.7_x64_en-US.msi\"",
         ),
     ];
 
