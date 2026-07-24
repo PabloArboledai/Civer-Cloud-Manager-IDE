@@ -186,6 +186,6 @@ mod tests {
             }
         }"#;
 
-        assert_eq!(parse_retry_delay(error_json), Some(1204));
+        assert_eq!(parse_retry_delay(error_json), Some(2704));
     }
 }

@@ -439,7 +439,7 @@ impl AxumServer {
             .route("/health", get(health_check_handler))
             .route("/healthz", get(health_check_handler))
             // OpenAI Protocol
-            .route("/v1/models", get(handlers::openai::handle_list_models))
+            .route("/v1/models", get(handlers::openai::models::handle_list_models))
             .route(
                 "/v1/chat/completions",
                 post(handlers::openai::handle_chat_completions),

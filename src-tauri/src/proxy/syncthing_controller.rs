@@ -144,6 +144,25 @@ impl SyncthingController {
             }
         });
 
+        // [NEW] CDP for Global AI Config (Phase 7)
+        let config_id = "antigravity-config-mesh";
+        let config_path = format!(r"{}\.gemini\config", app_dir);
+        let config_folder = json!({
+            "id": config_id,
+            "label": "Antigravity Global Config",
+            "path": config_path,
+            "type": "sendreceive",
+            "rescanIntervalS": 60,
+            "fsWatcherEnabled": true,
+            "fsWatcherDelayS": 5,
+            "ignorePerms": true,
+            "autoNormalize": true,
+            "versioning": {
+                "type": "trashcan",
+                "params": { "cleanoutDays": "30" }
+            }
+        });
+
         let mut all_folders = folders;
         
         // Only push if they don't exist
@@ -155,6 +174,9 @@ impl SyncthingController {
         }
         if !all_folders.iter().any(|f| f["id"] == source_id) {
             all_folders.push(source_folder);
+        }
+        if !all_folders.iter().any(|f| f["id"] == config_id) {
+            all_folders.push(config_folder);
         }
 
         // Update config

@@ -1,3 +1,6 @@
+pub mod p2c;
+pub mod failover;
+pub mod queue;
 // 移除冗余的顶层导入，因为这些在代码中已由 full path 或局部导入处理
 use dashmap::DashMap;
 use std::collections::{HashMap, HashSet};
@@ -4278,3 +4281,4 @@ mod tests {
         );
     }
 }
+

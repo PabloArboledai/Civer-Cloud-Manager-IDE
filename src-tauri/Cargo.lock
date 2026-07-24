@@ -113,6 +113,7 @@ dependencies = [
  "hyper",
  "hyper-util",
  "image",
+ "lazy_static",
  "libc",
  "machine-uid",
  "once_cell",

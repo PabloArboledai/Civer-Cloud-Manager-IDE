@@ -1075,8 +1075,10 @@ pub fn transform_openai_request(
 
     // Removed auto-inject since we handle it above now if Codex passes it.
 
+    let mut tool_list = Vec::new();
+
     if !function_declarations.is_empty() {
-        inner_request["tools"] = json!([{ "functionDeclarations": function_declarations }]);
+        tool_list.push(json!({ "functionDeclarations": function_declarations }));
 
         let mut mode = "VALIDATED";
         if let Some(tool_choice) = &request.tool_choice {
@@ -1095,6 +1097,15 @@ pub fn transform_openai_request(
         inner_request["toolConfig"] = json!({
             "functionCallingConfig": { "mode": mode }
         });
+    }
+
+    // [FIX] Inject Google Search tool if requested via -online suffix
+    if config.inject_google_search {
+        tool_list.push(json!({ "googleSearch": {} }));
+    }
+
+    if !tool_list.is_empty() {
+        inner_request["tools"] = json!(tool_list);
     }
 
     // Fallback identity only. Codex system/developer prompts are preserved by
@@ -1478,7 +1489,7 @@ mod tests {
         let budget = gen_config["thinkingConfig"]["thinkingBudget"]
             .as_u64()
             .unwrap();
-        // Should use user budget (16000) or capped valid default
+        // [FIX #1592] Since it's < 24576, it should be kept as 16000
         assert_eq!(budget, 16000);
     }
     #[test]
@@ -1640,7 +1651,7 @@ mod tests {
             transform_openai_request(&req, "test-v", mapped_model, None);
 
         // Extract the tool call part from contents
-        let contents = result["contents"].as_array().unwrap();
+        let contents = result["request"]["contents"].as_array().unwrap();
         // Identify the part with functionCall
         let parts = contents[0]["parts"].as_array().unwrap();
         let tool_part = parts

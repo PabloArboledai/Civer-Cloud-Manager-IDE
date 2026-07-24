@@ -358,16 +358,6 @@ impl RateLimitTracker {
             }
         };
 
-        let mut retry_sec = retry_sec;
-        if retry_sec > 300 {
-            tracing::info!(
-                "Capping retry lockout time for {} from {}s to 300s (5 minutes)",
-                account_id,
-                retry_sec
-            );
-            retry_sec = 300;
-        }
-
         let info = RateLimitInfo {
             reset_time: SystemTime::now() + Duration::from_secs(retry_sec),
             retry_after_sec: retry_sec,

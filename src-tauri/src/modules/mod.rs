@@ -27,6 +27,8 @@ pub mod version;
 pub mod vpn;
 pub mod installer;
 pub mod sync;
+pub mod command_runner_db;
+pub mod node_manager;
 
 use crate::models;
 

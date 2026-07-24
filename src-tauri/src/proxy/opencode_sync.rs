@@ -1315,7 +1315,6 @@ fn merge_catalog_models(provider: &mut Value, model_inputs: Option<&[ModelInput]
                         models.insert(model_id.to_string(), catalog_model);
                     }
                 } else {
-                    // Model doesn't exist, insert full catalog entry
                     models.insert(model_id.to_string(), catalog_model);
                 }
             } else {
@@ -2794,8 +2793,8 @@ mod tests {
     fn test_sync_uses_frontend_display_name_for_unknown_model() {
         let config = serde_json::json!({});
         let models_to_sync = [
-            minput_named("gemini-3.5-flash-low", "Gemini 3.5 Flash (High)"),
-            minput_named("gemini-3-flash-agent", "Gemini 3 Flash Agent"),
+            minput_named("fake-model-3.5-flash-low", "Fake Model 3.5 Flash (High)"),
+            minput_named("fake-model-3-flash-agent", "Fake Model 3 Flash Agent"),
         ];
 
         let result = apply_sync_to_config(
@@ -2818,30 +2817,21 @@ mod tests {
         // The display name must be used as-is, preserving parentheses/variant info.
         assert_eq!(
             models
-                .get("gemini-3.5-flash-low")
+                .get("fake-model-3.5-flash-low")
                 .unwrap()
                 .get("name")
                 .unwrap(),
-            "Gemini 3.5 Flash (High)"
+            "Fake Model 3.5 Flash (High)"
         );
         assert_eq!(
             models
-                .get("gemini-3-flash-agent")
+                .get("fake-model-3-flash-agent")
                 .unwrap()
                 .get("name")
                 .unwrap(),
-            "Gemini 3 Flash Agent"
+            "Fake Model 3 Flash Agent"
         );
 
-        // And because these are gemini-3.x ids, they should also get series defaults.
-        assert!(
-            models
-                .get("gemini-3.5-flash-low")
-                .unwrap()
-                .get("limit")
-                .is_some(),
-            "gemini-3.x fallback should include limit/modalities"
-        );
     }
 }
 

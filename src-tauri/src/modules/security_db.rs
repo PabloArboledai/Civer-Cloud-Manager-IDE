@@ -64,10 +64,18 @@ pub struct IpRanking {
     pub is_blocked: bool,
 }
 
-/// 获取安全数据库路径
+#[cfg(not(test))]
 pub fn get_security_db_path() -> Result<PathBuf, String> {
     let data_dir = crate::modules::account::get_data_dir()?;
     Ok(data_dir.join("security.db"))
+}
+
+#[cfg(test)]
+pub fn get_security_db_path() -> Result<PathBuf, String> {
+    let data_dir = crate::modules::account::get_data_dir()?;
+    let thread_id = format!("{:?}", std::thread::current().id());
+    let thread_id_clean = thread_id.replace("ThreadId(", "").replace(")", "");
+    Ok(data_dir.join(format!("security_test_{}.db", thread_id_clean)))
 }
 
 /// 连接数据库

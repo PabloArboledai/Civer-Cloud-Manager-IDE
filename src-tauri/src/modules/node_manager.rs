@@ -5,71 +5,98 @@ use crate::modules::logger;
 use std::process::Command;
 use tauri::{AppHandle, Emitter};
 
-// A simple abstraction to represent our target nodes (e.g. HP One, Modal, VPS)
-const HP_ONE_IP: &str = "192.168.1.93"; // Local or Tailscale IP
+// A list of known peer nodes in our Mesh Network
+const KNOWN_PEERS: &[(&str, &str, &str)] = &[
+    ("192.168.1.93", "hp-one-ubuntu", "SSH/HTTP"),
+    ("100.96.218.12", "laptop-thinkpad", "WinRM/HTTP"),
+];
 
 #[derive(Clone, serde::Serialize)]
 struct MeshNodeEvent {
     node_name: String,
+    ip: String,
     status: String,
     latency_ms: u32,
     bandwidth_mbps: u32,
+    protocol: String,
+    sync_status: String,
+}
+
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::collections::HashMap;
+use std::sync::Mutex;
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref PEER_SYNC_HASHES: Mutex<HashMap<String, usize>> = Mutex::new(HashMap::new());
 }
 
 pub async fn start_reconnection_loop(app_handle: AppHandle) {
     logger::log_info("Starting Auto-Connector and Durable Command Engine...");
     
     loop {
-        // Step 1: Ping the nodes to detect connection status and latency
-        let start_ping = std::time::Instant::now();
-        let is_connected = check_ssh_connection(HP_ONE_IP).await;
-        let latency = start_ping.elapsed().as_millis() as u32;
-        
-        let _ = app_handle.emit("mesh-telemetry", MeshNodeEvent {
-            node_name: "hp-one-ubuntu".to_string(),
-            status: if is_connected { "ONLINE".to_string() } else { "OFFLINE".to_string() },
-            latency_ms: if is_connected { latency } else { 0 },
-            bandwidth_mbps: if is_connected { 120 } else { 0 } // Simulated bandwidth cap
-        });
-        
-        // Also emit local VPS status 
+        // Emit local VPS status 
         let _ = app_handle.emit("mesh-telemetry", MeshNodeEvent {
             node_name: "vps-windows-core".to_string(),
+            ip: "localhost".to_string(),
             status: "ONLINE".to_string(),
-            latency_ms: 12, // Minimal loopback latency
-            bandwidth_mbps: 850 // Internal hypervisor link
+            latency_ms: 12,
+            bandwidth_mbps: 850,
+            protocol: "Local Loopback".to_string(),
+            sync_status: "Synced".to_string(),
         });
 
-        if is_connected {
-            logger::log_info(&format!("Node {} is ONLINE", HP_ONE_IP));
+        for &(ip, name, protocol) in KNOWN_PEERS {
+            // Step 1: Ping the nodes to detect connection status and latency
+            let start_ping = std::time::Instant::now();
+            let is_connected = check_ssh_connection(ip, name).await;
+            let latency = start_ping.elapsed().as_millis() as u32;
             
-            // Step 2: Handle commands that were running when we previously disconnected
-            let _ = recover_disconnected_commands(HP_ONE_IP).await;
-            
-            // Step 3: Run pending commands
-            let _ = process_pending_commands(HP_ONE_IP).await;
-
             // Step 4: Real-time P2P Mesh Synchronization
-            let _ = sync_mesh_state(HP_ONE_IP).await;
-        } else {
-            // Node is offline, mark any running commands for this node as disconnected
-            let _ = command_runner_db::mark_running_as_disconnected(HP_ONE_IP);
+            let mut sync_status = "Desynchronized".to_string();
+            if is_connected {
+                logger::log_info(&format!("Node {} ({}) is ONLINE", name, ip));
+                
+                // Step 2: Handle commands that were running when we previously disconnected
+                let _ = recover_disconnected_commands(ip, name).await;
+                
+                // Step 3: Run pending commands
+                let _ = process_pending_commands(ip, name).await;
+
+                // Sync Mesh state
+                if sync_mesh_state(ip).await.is_ok() {
+                    sync_status = "Synced".to_string();
+                }
+            } else {
+                // Node is offline, mark any running commands for this node as disconnected
+                let _ = command_runner_db::mark_running_as_disconnected(ip);
+            }
+
+            let _ = app_handle.emit("mesh-telemetry", MeshNodeEvent {
+                node_name: name.to_string(),
+                ip: ip.to_string(),
+                status: if is_connected { "ONLINE".to_string() } else { "OFFLINE".to_string() },
+                latency_ms: if is_connected { latency } else { 0 },
+                bandwidth_mbps: if is_connected { 120 } else { 0 },
+                protocol: protocol.to_string(),
+                sync_status,
+            });
         }
         
-        // Wait 3 seconds before next ping to update the real-time helicopter UI rapidly
+        // Wait 3 seconds before next ping
         sleep(Duration::from_secs(3)).await;
     }
 }
 
-async fn check_ssh_connection(ip: &str) -> bool {
-    // This uses the native Windows SSH client with a 3-second timeout
-    let status = Command::new("C:\\Windows\\System32\\OpenSSH\\ssh.exe")
-        .arg("-o")
-        .arg("StrictHostKeyChecking=no")
-        .arg("-o")
-        .arg("ConnectTimeout=3")
-        .arg(&format!("miguel@{}", ip))
-        .arg("echo 1")
+async fn check_ssh_connection(ip: &str, name: &str) -> bool {
+    // If it's a Windows node (thinkpad), we might not have SSH enabled, but for pinging, we can use a basic network ping
+    // Since we use WinRM for laptop, and SSH for ubuntu, let's do a basic ping to check if it's reachable.
+    let status = Command::new("ping")
+        .arg("-n")
+        .arg("1")
+        .arg("-w")
+        .arg("1000") // 1000ms timeout
+        .arg(ip)
         .output();
         
     match status {
@@ -78,17 +105,16 @@ async fn check_ssh_connection(ip: &str) -> bool {
     }
 }
 
-async fn process_pending_commands(ip: &str) -> Result<(), String> {
+async fn process_pending_commands(ip: &str, name: &str) -> Result<(), String> {
     let pending = command_runner_db::get_commands_by_status("PENDING")?;
     
     for cmd in pending {
         if cmd.node_ip == ip {
-            logger::log_info(&format!("Running pending command [{}] on node {}", cmd.id, ip));
+            logger::log_info(&format!("Running pending command [{}] on node {}", cmd.id, name));
             
-            // Mark as running
             command_runner_db::update_command_status(&cmd.id, "RUNNING", None, None)?;
             
-            // Execute the command remotely
+            // For simplicity, assuming SSH for all remote execution in this prototype
             let output = Command::new("C:\\Windows\\System32\\OpenSSH\\ssh.exe")
                 .arg("-o")
                 .arg("StrictHostKeyChecking=no")
@@ -100,22 +126,11 @@ async fn process_pending_commands(ip: &str) -> Result<(), String> {
                 Ok(out) => {
                     let stdout = String::from_utf8_lossy(&out.stdout).to_string();
                     let stderr = String::from_utf8_lossy(&out.stderr).to_string();
-                    
                     let new_status = if out.status.success() { "COMPLETED" } else { "FAILED" };
-                    command_runner_db::update_command_status(
-                        &cmd.id, 
-                        new_status, 
-                        Some(&stdout), 
-                        Some(&stderr)
-                    )?;
+                    command_runner_db::update_command_status(&cmd.id, new_status, Some(&stdout), Some(&stderr))?;
                 },
                 Err(e) => {
-                    command_runner_db::update_command_status(
-                        &cmd.id, 
-                        "FAILED", 
-                        None, 
-                        Some(&e.to_string())
-                    )?;
+                    command_runner_db::update_command_status(&cmd.id, "FAILED", None, Some(&e.to_string()))?;
                 }
             }
         }
@@ -124,18 +139,12 @@ async fn process_pending_commands(ip: &str) -> Result<(), String> {
     Ok(())
 }
 
-async fn recover_disconnected_commands(ip: &str) -> Result<(), String> {
-    // These are commands that were in "RUNNING" state when the ping loop detected a disconnection.
-    // Instead of re-running them (which is unsafe), we mark them as FAILED for manual intervention
-    // or try to fetch their logs from the remote node if we implement remote log files in the future.
+async fn recover_disconnected_commands(ip: &str, name: &str) -> Result<(), String> {
     let disconnected = command_runner_db::get_commands_by_status("DISCONNECTED")?;
     
     for cmd in disconnected {
         if cmd.node_ip == ip {
-            logger::log_info(&format!("Recovering disconnected command [{}] on node {}", cmd.id, ip));
-            
-            // Currently, we simply mark them as failed to prevent double-execution of destructive commands.
-            // Future implementation: SSH into the box and read a log file.
+            logger::log_info(&format!("Recovering disconnected command [{}] on node {}", cmd.id, name));
             command_runner_db::update_command_status(
                 &cmd.id, 
                 "FAILED", 
@@ -148,12 +157,7 @@ async fn recover_disconnected_commands(ip: &str) -> Result<(), String> {
     Ok(())
 }
 
-use std::sync::atomic::{AtomicUsize, Ordering};
-static LAST_SYNC_HASH: AtomicUsize = AtomicUsize::new(0);
-
 async fn sync_mesh_state(ip: &str) -> Result<(), String> {
-    // We only push if our state has changed or we just started up
-    // Generate the state payload
     let payload_result = crate::commands::export_full_state().await;
     
     if let Ok(payload) = payload_result {
@@ -162,10 +166,12 @@ async fn sync_mesh_state(ip: &str) -> Result<(), String> {
         payload.hash(&mut hasher);
         let current_hash = hasher.finish() as usize;
         
-        let last_hash = LAST_SYNC_HASH.load(Ordering::SeqCst);
+        let last_hash = {
+            let map = PEER_SYNC_HASHES.lock().unwrap();
+            map.get(ip).copied().unwrap_or(0)
+        };
         
         if current_hash != last_hash {
-            // State changed, push it
             logger::log_info(&format!("Local mesh state changed (hash: {}), syncing with node {}", current_hash, ip));
             
             let client = reqwest::Client::builder()
@@ -182,18 +188,23 @@ async fn sync_mesh_state(ip: &str) -> Result<(), String> {
                 .await {
                 Ok(resp) if resp.status().is_success() => {
                     logger::log_info(&format!("Successfully synced state to node {}", ip));
-                    LAST_SYNC_HASH.store(current_hash, Ordering::SeqCst);
+                    let mut map = PEER_SYNC_HASHES.lock().unwrap();
+                    map.insert(ip.to_string(), current_hash);
+                    return Ok(());
                 }
                 Ok(resp) => {
                     logger::log_warn(&format!("Failed to sync state to node {}: HTTP {}", ip, resp.status()));
+                    return Err(format!("HTTP {}", resp.status()));
                 }
                 Err(e) => {
-                    // Node's HTTP server might not be up yet, that's fine, we'll try next tick since we didn't update LAST_SYNC_HASH
                     logger::log_warn(&format!("Node {} API offline during state sync: {}", ip, e));
+                    return Err(e.to_string());
                 }
             }
+        } else {
+            return Ok(()); // Already synced
         }
     }
     
-    Ok(())
+    Err("Failed to generate export payload".to_string())
 }

@@ -35,7 +35,7 @@ export default function TitleBar() {
     >
       <div data-tauri-drag-region className="flex-1 flex items-center pl-4 h-full">
         <span data-tauri-drag-region className="text-xs font-medium text-gray-500 dark:text-gray-400">
-          antigravity.civer.cloud
+          Civer Cloud IDE
         </span>
       </div>
       

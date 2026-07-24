@@ -14,6 +14,7 @@ import Downloads from './pages/Downloads';
 import { UpdateNotification } from './components/UpdateNotification';
 import DebugConsole from './components/debug/DebugConsole';
 import { useEffect, useState } from 'react';
+import { Toaster } from 'sonner';
 import { useConfigStore } from './stores/useConfigStore';
 import { useAccountStore } from './stores/useAccountStore';
 import { useTranslation } from 'react-i18next';
@@ -162,6 +163,7 @@ function App() {
       <ThemeManager />
       <AdminAuthGuard>
         <DebugConsole />
+        <Toaster position="top-right" richColors expand={true} />
         {showUpdateNotification && (
           <UpdateNotification onClose={() => setShowUpdateNotification(false)} />
         )}

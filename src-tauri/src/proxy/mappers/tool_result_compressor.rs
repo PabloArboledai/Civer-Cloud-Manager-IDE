@@ -298,8 +298,11 @@ pub fn sanitize_tool_result_blocks(blocks: &mut Vec<Value>) {
         if let Some(text) = block.get("text").and_then(|v| v.as_str()) {
             let remaining = MAX_TOOL_RESULT_CHARS.saturating_sub(used_chars);
             if remaining == 0 {
-                debug!("[ToolCompressor] Reached character limit, stopping");
-                break;
+                debug!("[ToolCompressor] Reached character limit, skipping text block");
+                let mut new_block = block.clone();
+                new_block["text"] = Value::String("... [Truncated due to token limit] ...".to_string());
+                cleaned_blocks.push(new_block);
+                continue;
             }
 
             let compacted = compact_tool_result_text(text, remaining);
@@ -309,18 +312,14 @@ pub fn sanitize_tool_result_blocks(blocks: &mut Vec<Value>) {
             used_chars += compacted.len();
 
             debug!(
-                "[ToolCompressor] Compacted text block: {} → {} chars",
+                "[ToolCompressor] Compacted text block: {} -> {} chars",
                 text.len(),
                 compacted.len()
             );
         } else {
-            // 保留其他类型的块 (例如图片), 但受总长度块数限制, 此处不单独截断
+            // 保留其他类型的块 (例如图片), 但块总长度受限制, 此处不单独截断
             cleaned_blocks.push(block.clone());
             used_chars += 100; // 估算非文本块大小
-        }
-
-        if used_chars >= MAX_TOOL_RESULT_CHARS {
-            break;
         }
     }
 

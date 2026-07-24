@@ -38,7 +38,7 @@ export default function Downloads() {
                         Descarga el instalador oficial para Windows. <b>Nunca tendrás que volver a descargarlo manualmente:</b> el motor cuenta con Auto-Updater en tiempo real integrado.
                     </p>
                     <a 
-                        href="https://github.com/PabloArboledai/draculabo-antigravity-manager-private-backup/releases/latest/download/Antigravity_Manager_4.4.7_x64_en-US.msi"
+                        href={`${API_BASE}/downloads/github_msi`}
                         className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-all hover:scale-105 shadow-lg shadow-indigo-500/25"
                     >
                         <Download className="w-5 h-5" />

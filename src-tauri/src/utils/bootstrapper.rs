@@ -102,3 +102,44 @@ async fn ensure_syncthing() -> Result<(), String> {
     }
     Ok(())
 }
+
+pub fn extract_ai_brain(app: &tauri::AppHandle) -> Result<(), String> {
+    use tauri::Manager;
+    use std::io::Write;
+    tracing::info!("Extracting AI Brain (Civer Cloud) to global config...");
+
+    let app_dir = std::env::var("USERPROFILE").unwrap_or_else(|_| "C:\\Users\\Administrator".to_string());
+    let dest_dir = PathBuf::from(format!(r"{}\.gemini\config", app_dir));
+
+    if !dest_dir.exists() {
+        if let Err(e) = fs::create_dir_all(&dest_dir) {
+            tracing::error!("Failed to create global config directory: {}", e);
+            return Err(e.to_string());
+        }
+    }
+
+    if let Ok(resource_path) = app.path().resolve("assets/ai_brain", tauri::path::BaseDirectory::Resource) {
+        tracing::info!("Found AI brain resources at: {:?}", resource_path);
+        
+        let script = format!(
+            r#"Copy-Item -Path "{}\*" -Destination "{}" -Recurse -Force"#,
+            resource_path.display(),
+            dest_dir.display()
+        );
+        let output = Command::new("powershell")
+            .args(&["-NoProfile", "-Command", &script])
+            .output();
+            
+        if let Ok(out) = output {
+            if !out.status.success() {
+                tracing::error!("Failed to copy AI brain assets: {}", String::from_utf8_lossy(&out.stderr));
+            } else {
+                tracing::info!("Successfully extracted AI Brain to {:?}", dest_dir);
+            }
+        }
+    } else {
+        tracing::warn!("AI Brain resources not found in the bundle. Skipping extraction.");
+    }
+    
+    Ok(())
+}

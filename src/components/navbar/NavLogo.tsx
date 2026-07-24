@@ -15,7 +15,7 @@ export function NavLogo() {
                 />
             </div>
 
-            <span className="hidden @[200px]/logo:inline text-nowrap">antigravity.civer.cloud</span>
+            <span className="hidden @[200px]/logo:inline text-nowrap">Civer Cloud IDE</span>
         </Link>
     );
 }
