@@ -91,13 +91,16 @@ pub async fn start_reconnection_loop(app_handle: AppHandle) {
 async fn check_ssh_connection(ip: &str, name: &str) -> bool {
     // If it's a Windows node (thinkpad), we might not have SSH enabled, but for pinging, we can use a basic network ping
     // Since we use WinRM for laptop, and SSH for ubuntu, let's do a basic ping to check if it's reachable.
-    let status = Command::new("ping")
-        .arg("-n")
-        .arg("1")
-        .arg("-w")
-        .arg("1000") // 1000ms timeout
-        .arg(ip)
-        .output();
+    let mut cmd = Command::new("ping");
+    cmd.arg("-n").arg("1").arg("-w").arg("1000").arg(ip);
+        
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+    }
+    
+    let status = cmd.output();
         
     match status {
         Ok(output) => output.status.success(),
@@ -115,12 +118,19 @@ async fn process_pending_commands(ip: &str, name: &str) -> Result<(), String> {
             command_runner_db::update_command_status(&cmd.id, "RUNNING", None, None)?;
             
             // For simplicity, assuming SSH for all remote execution in this prototype
-            let output = Command::new("C:\\Windows\\System32\\OpenSSH\\ssh.exe")
-                .arg("-o")
+            let mut cmd_exec = Command::new("C:\\Windows\\System32\\OpenSSH\\ssh.exe");
+            cmd_exec.arg("-o")
                 .arg("StrictHostKeyChecking=no")
                 .arg(&format!("miguel@{}", ip))
-                .arg(&cmd.command_text)
-                .output();
+                .arg(&cmd.command_text);
+                
+            #[cfg(target_os = "windows")]
+            {
+                use std::os::windows::process::CommandExt;
+                cmd_exec.creation_flags(0x08000000); // CREATE_NO_WINDOW
+            }
+            
+            let output = cmd_exec.output();
                 
             match output {
                 Ok(out) => {

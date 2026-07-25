@@ -11,6 +11,11 @@ pub async fn start_cloudflare_tunnel() {
     
     let mut cmd = Command::new("cloudflared");
     
+    // FORZAR HTTP2 SOBRE TCP: Fundamental para que el sitio cargue correctamente en 
+    // redes móviles (Datos) y fuera de la VPS. El protocolo por defecto (QUIC/UDP) 
+    // a menudo es bloqueado.
+    cmd.arg("--protocol").arg("http2");
+
     if !token.is_empty() {
         cmd.arg("tunnel").arg("run").arg("--token").arg(token);
     } else {
