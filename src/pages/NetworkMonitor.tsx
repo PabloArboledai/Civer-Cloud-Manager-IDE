@@ -5,6 +5,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { useConfigStore } from '../stores/useConfigStore';
 import { listen } from '@tauri-apps/api/event';
 import { toast } from 'sonner';
+import { NodeControlPanel } from '../components/NodeControlPanel';
 
 interface Node {
   id: string;
@@ -28,7 +29,7 @@ interface GraphData {
   links: Link[];
 }
 
-interface TelemetryEvent {
+export interface TelemetryEvent {
   node_name: string;
   ip: string;
   status: string;
@@ -36,6 +37,10 @@ interface TelemetryEvent {
   bandwidth_mbps: number;
   protocol: string;
   sync_status: string;
+  app_installed?: boolean;
+  app_running?: boolean;
+  os_type?: string;
+  supported_protocols?: string[];
 }
 
 export default function NetworkMonitor() {
@@ -45,6 +50,7 @@ export default function NetworkMonitor() {
   
   const [telemetry, setTelemetry] = useState<Record<string, TelemetryEvent>>({});
   const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
+  const [selectedNode, setSelectedNode] = useState<TelemetryEvent | null>(null);
   const [metrics, setMetrics] = useState({
     activeNodes: 0,
     meshTraffic: 0,
@@ -151,7 +157,17 @@ export default function NetworkMonitor() {
       }
     });
 
-    setGraphData({ nodes, links });
+    const newGraphData = { nodes, links };
+    
+    // Check if graph already exists and mutate it directly to avoid complete re-renders (anti-lag)
+    if (graphRef.current) {
+        // Just update graphData on the imperative instance
+        graphRef.current.graphData(newGraphData);
+    } else {
+        // Initial set if the graph component hasn't mounted yet
+        setGraphData(newGraphData);
+    }
+
     setMetrics({
       activeNodes: onlineCount,
       meshTraffic: onlineCount * 45, // Simulate traffic 
@@ -260,7 +276,20 @@ export default function NetworkMonitor() {
                   ctx.fillText(node.ip, node.x, node.y + node.val / 2 + 4 + fontSize * 1.5);
                 }
               }}
+              onNodeClick={(node: any) => {
+                const telemetryData = telemetry[node.ip];
+                if (telemetryData) {
+                  setSelectedNode(telemetryData);
+                }
+              }}
             />
+          )}
+          {selectedNode && (
+             <NodeControlPanel 
+               node={selectedNode} 
+               onClose={() => setSelectedNode(null)}
+               isDark={isDark}
+             />
           )}
         </div>
 
@@ -281,11 +310,19 @@ export default function NetworkMonitor() {
               <div key={idx} className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm bg-gray-50/50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-bold text-lg dark:text-gray-200">{tel.node_name}</h3>
-                  {tel.status === 'ONLINE' ? (
-                    <span className="badge badge-success gap-1"><CheckCircle2 size={14}/> ONLINE</span>
-                  ) : (
-                    <span className="badge badge-error gap-1"><XCircle size={14}/> OFFLINE</span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {tel.status === 'ONLINE' ? (
+                      <span className="badge badge-success gap-1"><CheckCircle2 size={14}/> ONLINE</span>
+                    ) : (
+                      <span className="badge badge-error gap-1"><XCircle size={14}/> OFFLINE</span>
+                    )}
+                    <button 
+                      onClick={() => setSelectedNode(tel)}
+                      className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-lg transition-all"
+                    >
+                      Acciones
+                    </button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>

@@ -20,6 +20,11 @@ struct MeshNodeEvent {
     bandwidth_mbps: u32,
     protocol: String,
     sync_status: String,
+    // Nuevos campos de telemetría extendida
+    app_installed: bool,
+    app_running: bool,
+    os_type: String,
+    supported_protocols: Vec<String>,
 }
 
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -44,6 +49,10 @@ pub async fn start_reconnection_loop(app_handle: AppHandle) {
             bandwidth_mbps: 850,
             protocol: "Local Loopback".to_string(),
             sync_status: "Synced".to_string(),
+            app_installed: true,
+            app_running: true,
+            os_type: "Windows Server".to_string(),
+            supported_protocols: vec!["RDP".to_string(), "SSH".to_string()],
         });
 
         for &(ip, name, protocol) in KNOWN_PEERS {
@@ -52,6 +61,29 @@ pub async fn start_reconnection_loop(app_handle: AppHandle) {
             let is_connected = check_ssh_connection(ip, name).await;
             let latency = start_ping.elapsed().as_millis() as u32;
             
+            // Detección de OS
+            let is_windows = name.to_lowercase().contains("windows") || name.to_lowercase().contains("thinkpad");
+            let is_ubuntu = name.to_lowercase().contains("ubuntu");
+            
+            let os_type = if is_windows {
+                "Windows 11"
+            } else if is_ubuntu {
+                "Ubuntu Linux"
+            } else {
+                "Unknown"
+            }.to_string();
+
+            let mut supported_protocols = vec![];
+            if is_windows { supported_protocols.push("RDP".to_string()); }
+            supported_protocols.push("SSH".to_string());
+            supported_protocols.push("FTP".to_string());
+
+            // Simularemos la detección de la app (En un caso real se usa ssh para comprobar que exista la ruta y el proceso)
+            // Por defecto diremos que si está conectado, y tiene SSH/WinRM, la app está instalada, pero podría no estar corriendo
+            let app_installed = true; 
+            // Si responde rápido (latency < 200) asumimos corriendo
+            let app_running = is_connected && latency < 200;
+
             // Step 4: Real-time P2P Mesh Synchronization
             let mut sync_status = "Desynchronized".to_string();
             if is_connected {
@@ -80,6 +112,10 @@ pub async fn start_reconnection_loop(app_handle: AppHandle) {
                 bandwidth_mbps: if is_connected { 120 } else { 0 },
                 protocol: protocol.to_string(),
                 sync_status,
+                app_installed,
+                app_running,
+                os_type,
+                supported_protocols,
             });
         }
         

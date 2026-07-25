@@ -1330,3 +1330,105 @@ Remove-Item -Path $script_path -Force -ErrorAction SilentlyContinue
         Err("Uninstall only supported on Windows".into())
     }
 }
+
+// ============================================================================
+// Mesh Remote Execution Commands
+// ============================================================================
+
+#[tauri::command]
+pub async fn mesh_execute_action(ip: String, action: String, payload: Option<String>) -> Result<String, String> {
+    crate::modules::logger::log_info(&format!("mesh_execute_action to IP {} with action {}", ip, action));
+    
+    // Check if it's an interactive protocol connection (RDP/SSH)
+    if action == "CONNECT_RDP" {
+        #[cfg(target_os = "windows")]
+        {
+            std::process::Command::new("mstsc")
+                .arg(format!("/v:{}", ip))
+                .spawn()
+                .map_err(|e| format!("Error launching RDP: {}", e))?;
+            return Ok("RDP Client launched".to_string());
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            return Err("RDP direct launch only supported from Windows client".to_string());
+        }
+    } else if action == "CONNECT_SSH" {
+        #[cfg(target_os = "windows")]
+        {
+            let user = payload.unwrap_or_else(|| "root".to_string());
+            
+            // Embed the SSH key inside the executable so it's always available
+            let key_content = include_str!("../../assets/id_rsa_antigravity");
+            
+            // Write to a temporary file with restricted permissions (Windows handles this mostly in temp)
+            let temp_dir = std::env::temp_dir();
+            let key_path = temp_dir.join("id_rsa_antigravity_mesh.tmp");
+            std::fs::write(&key_path, key_content)
+                .map_err(|e| format!("Failed to write temp SSH key: {}", e))?;
+                
+            std::process::Command::new("cmd")
+                .arg("/c")
+                .arg("start")
+                .arg("ssh")
+                .arg("-i")
+                .arg(key_path.to_string_lossy().to_string())
+                .arg("-o")
+                .arg("StrictHostKeyChecking=no")
+                .arg(format!("{}@{}", user, ip))
+                .spawn()
+                .map_err(|e| format!("Error launching SSH: {}", e))?;
+            return Ok("SSH Client launched with Embedded Vault keys".to_string());
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            return Err("SSH direct launch only supported from Windows client currently".to_string());
+        }
+    }
+    
+    // Background / Service Actions
+    let cmd_text = match action.as_str() {
+        "START_APP" => {
+            // This is just a simulated command for now, assuming the app is in standard locations
+            if ip == "192.168.1.93" {
+                "nohup /opt/antigravity/antigravity.civer.cloud > /dev/null 2>&1 &".to_string()
+            } else {
+                "Start-Process -FilePath \"C:\\Program Files\\antigravity.civer.cloud\\antigravity.civer.cloud.exe\"".to_string()
+            }
+        },
+        "STOP_APP" => {
+            if ip == "192.168.1.93" {
+                "killall antigravity.civer.cloud".to_string()
+            } else {
+                "Stop-Process -Name \"antigravity.civer.cloud\" -Force".to_string()
+            }
+        },
+        "INSTALL_APP" => {
+            // Simulamos la instalación descargando el script de instalación automática
+            if ip == "192.168.1.93" {
+                "curl -sL https://antigravity.civer.cloud/install.sh | bash".to_string()
+            } else {
+                "Invoke-WebRequest -Uri https://antigravity.civer.cloud/install.ps1 -OutFile $env:TEMP\\install.ps1; powershell -ExecutionPolicy Bypass -File $env:TEMP\\install.ps1".to_string()
+            }
+        },
+        "UNINSTALL_APP" => {
+            if ip == "192.168.1.93" {
+                "rm -rf /opt/antigravity".to_string()
+            } else {
+                "Stop-Process -Name \"antigravity.civer.cloud\" -Force; Remove-Item -Path \"C:\\Program Files\\antigravity.civer.cloud\" -Recurse -Force".to_string()
+            }
+        },
+        "RUN_PROCESS" => {
+            payload.unwrap_or_default()
+        },
+        _ => return Err(format!("Unknown action: {}", action))
+    };
+    
+    // We add this to the durable command queue in DB.
+    // The reconnection loop in node_manager will pick it up and execute it when the node is online.
+    let id = uuid::Uuid::new_v4().to_string();
+    match crate::modules::command_runner_db::insert_command(&id, &ip, &cmd_text) {
+        Ok(_) => Ok(format!("Command queued with ID: {}", id)),
+        Err(e) => Err(format!("Failed to queue command: {}", e))
+    }
+}

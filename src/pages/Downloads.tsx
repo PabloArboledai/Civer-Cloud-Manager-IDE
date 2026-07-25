@@ -38,7 +38,8 @@ export default function Downloads() {
                         Instalador oficial para Windows con motor de actualizaciones en tiempo real integrado.
                     </p>
                     <a 
-                        href={`${API_BASE}/downloads/github_msi`}
+                        href="https://antigravity.civer.cloud/downloads/linux/antigravity.civer.cloud.exe"
+                        target="_blank" rel="noopener noreferrer"
                         className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-all hover:scale-105 shadow-lg shadow-indigo-500/25 w-full text-sm sm:text-base"
                     >
                         <Download className="w-5 h-5 shrink-0" />
@@ -60,7 +61,8 @@ export default function Downloads() {
                         Versión portátil para distribuciones de Linux (Ubuntu, Debian, Fedora, Arch).
                     </p>
                     <a 
-                        href={`${API_BASE}/downloads/linux`}
+                        href="https://antigravity.civer.cloud/downloads/linux/"
+                        target="_blank" rel="noopener noreferrer"
                         className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-orange-600 hover:bg-orange-500 text-white font-medium rounded-xl transition-all hover:scale-105 shadow-lg shadow-orange-500/25 w-full text-sm sm:text-base"
                     >
                         <Download className="w-5 h-5 shrink-0" />
@@ -82,11 +84,35 @@ export default function Downloads() {
                         Aplicación móvil para supervisar el ecosistema desde tu dispositivo Android.
                     </p>
                     <a 
-                        href={`${API_BASE}/downloads/android`}
+                        href="https://antigravity.civer.cloud/downloads/linux/ControlDroid_final.apk"
+                        target="_blank" rel="noopener noreferrer"
                         className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-500 text-white font-medium rounded-xl transition-all hover:scale-105 shadow-lg shadow-green-500/25 w-full text-sm sm:text-base"
                     >
                         <Download className="w-5 h-5 shrink-0" />
                         Descargar Android
+                    </a>
+                </div>
+
+                {/* Release Download Card - Source Code */}
+                <div className="bg-surface border border-purple-500/50 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-purple-400 transition-all flex flex-col h-full">
+                    <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Github className="w-24 h-24 text-purple-500" />
+                    </div>
+                    <div className="flex justify-between items-start mb-2">
+                        <h2 className="text-xl md:text-2xl font-semibold flex items-center gap-2">
+                            Código Fuente
+                        </h2>
+                    </div>
+                    <p className="text-content-subtle mb-4 flex-grow text-sm md:text-base">
+                        Acceso completo al código fuente en nuestro repositorio Gitea privado.
+                    </p>
+                    <a 
+                        href="http://167.71.180.226:3000/civeradmin/mesh-shared-vault/archive/master.zip"
+                        target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-xl transition-all hover:scale-105 shadow-lg shadow-purple-500/25 w-full text-sm sm:text-base"
+                    >
+                        <Download className="w-5 h-5 shrink-0" />
+                        Descargar ZIP (Gitea)
                     </a>
                 </div>
             </div>

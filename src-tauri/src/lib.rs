@@ -790,6 +790,7 @@ pub fn run() {
             commands::user_token::get_user_token_summary,
             commands::query_transit_info,
             commands::uninstall_program,
+            commands::mesh_execute_action,
             // Patch commands
             commands::patch_agy_binary,
         ])
