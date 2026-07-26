@@ -34,7 +34,7 @@ type GeminiModelMetadata = {
   version: string;
 };
 
-@Controller('v1beta')
+@Controller(['v1beta', 'v1alpha', 'v1'])
 @UseGuards(ProxyGuard)
 export class GeminiController {
   constructor(
