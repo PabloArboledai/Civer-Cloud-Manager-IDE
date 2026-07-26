@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Network, Activity, BarChart3, Settings, Download, Radar } from 'lucide-react';
+import { LayoutDashboard, Users, Network, Activity, BarChart3, Settings, Download, Radar, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useConfigStore } from '../../stores/useConfigStore';
 import { isTauri, isLinux } from '../../utils/env';
@@ -20,6 +20,7 @@ function Navbar() {
     // 创建导航项(包含翻译后的标签)
     const navItems: NavItem[] = [
         { path: '/', label: t('nav.dashboard'), icon: LayoutDashboard, priority: 'high' },
+        { path: '/chat', label: t('nav.chat_civer', 'Chat Civer Cloud'), icon: MessageSquare, priority: 'high' },
         { path: '/accounts', label: t('nav.accounts'), icon: Users, priority: 'high' },
         { path: '/api-proxy', label: t('nav.proxy'), icon: Network, priority: 'high' },
         { path: '/network-monitor', label: t('nav.network_monitor', 'Mesh Radar'), icon: Radar, priority: 'high' },
