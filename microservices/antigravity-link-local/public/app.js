@@ -1,0 +1,2186 @@
+const chatContainer = document.getElementById('chatContainer');
+const chatContent = document.getElementById('chatContent');
+const messageInput = document.getElementById('messageInput');
+const sendBtn = document.getElementById('sendBtn');
+const uploadBtn = document.getElementById('uploadBtn');
+const fileInput = document.getElementById('fileInput');
+const micBtn = document.getElementById('micBtn');
+const audioBtn = document.getElementById('audioBtn');
+const ideCmdBtn = document.getElementById('ideCmdBtn');
+const scrollToBottomBtn = document.getElementById('scrollToBottom');
+let uploadTargetSelector = localStorage.getItem('ag_upload_target') || '';
+
+// Auth elements
+const loginModal = document.getElementById('loginModal');
+const tokenInput = document.getElementById('tokenInput');
+const loginBtn = document.getElementById('loginBtn');
+
+let userIsScrolling = false;
+let lastSnapshotData = null; // Most-recently received snapshot for on-demand menu detection
+let ws = null;
+let pendingMessage = null; // Track message waiting for visual confirmation
+let initialScrollDone = false;
+let authToken = localStorage.getItem('ag_auth_token') || '';
+const sendBtnOriginalIcon = sendBtn.innerHTML;
+let suppressReconnectOnce = false;
+let mirrorHost = null;
+let mirrorRoot = null;
+let mirrorStyleSignature = '';
+const boundClickRoots = new WeakSet();
+const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+const CHAT_SURFACE_SELECTOR = '#cascade, #conversation, #chat, [data-testid="cascade-root"], [data-testid="conversation-root"], [data-testid="chat-root"], [id^="cascade"], [id*="cascade"], [id^="conversation"], [id*="conversation"], [id^="chat"], [id*="chat"]';
+const CHAT_SURFACE = `:is(${CHAT_SURFACE_SELECTOR})`;
+
+function normalizeInlineText(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function toFallbackLabel(value) {
+    const label = normalizeInlineText(value).toLowerCase();
+    if (!label) return '';
+    if (/(thumb|like|good|up)/.test(label)) return 'Up';
+    if (/(down|dislike|bad)/.test(label)) return 'Down';
+    if (/(copy|duplicate)/.test(label)) return 'Copy';
+    if (/(typescript|type script|\bts\b)/.test(label)) return 'TS';
+    if (/(retry|regenerate|refresh)/.test(label)) return 'Retry';
+    if (/(open)/.test(label)) return 'Open';
+    if (/(close)/.test(label)) return 'Close';
+    return label.split(' ').slice(0, 2).join(' ').slice(0, 12);
+}
+
+function applyIconFallbacks(root) {
+    if (!root) return;
+    const targets = root.querySelectorAll('button, [role="button"]');
+    targets.forEach((el) => {
+        const text = normalizeInlineText(el.innerText || el.textContent || '');
+        const aria = normalizeInlineText(el.getAttribute('aria-label') || el.getAttribute('title') || '');
+        const hasGraphicChild = !!el.querySelector('svg, img, [class*="icon"], [class*="codicon"]');
+        const looksBroken = text && /^[\u25A0-\u25FF\uFFFD\uE000-\uF8FF\s]+$/.test(text);
+        // Only replace buttons whose text is entirely PUA/codicon characters.
+        // The previous (!text && hasGraphicChild) branch incorrectly targeted clean
+        // Lucide SVG icon-only buttons (chevrons, etc.), hiding their SVG content.
+        const shouldFallback = looksBroken && !!aria;
+
+        if (!el.hasAttribute('data-ag-original-text')) {
+            el.setAttribute('data-ag-original-text', text);
+        }
+
+        if (shouldFallback) {
+            const shortLabel = toFallbackLabel(aria);
+            if (shortLabel) {
+                el.classList.add('ag-fallback-label');
+                el.setAttribute('data-ag-fallback-label', shortLabel);
+            }
+        } else {
+            el.classList.remove('ag-fallback-label');
+            el.removeAttribute('data-ag-fallback-label');
+        }
+    });
+}
+
+function normalizeAssetUrl(value) {
+    return String(value || '')
+        .trim()
+        .replace(/^['"]|['"]$/g, '')
+        .replace(/\\/g, '/');
+}
+
+function isLocalAssetUrl(value) {
+    const url = normalizeAssetUrl(value).toLowerCase();
+    if (!url) return false;
+    return (
+        url.startsWith('vscode-file://') ||
+        /^file:\/\/\/[a-z]:\//i.test(url) ||
+        /^\/[a-z]:\//i.test(url) ||
+        /^[a-z]:\//i.test(url)
+    );
+}
+
+function sanitizeSnapshotCss(cssText) {
+    if (!cssText) return '';
+    return String(cssText).replace(/url\(([^)]+)\)/gi, (full, rawValue) => {
+        const raw = String(rawValue || '').trim();
+        if (!isLocalAssetUrl(raw)) return full;
+        return `url("${TRANSPARENT_PIXEL}")`;
+    });
+}
+
+function sanitizeSnapshotHtml(htmlText) {
+    if (!htmlText) return '';
+    let out = String(htmlText);
+
+    out = out.replace(/\b(src|href)\s*=\s*(['"])([^'"]+)\2/gi, (full, attr, quote, value) => {
+        if (!isLocalAssetUrl(value)) return full;
+        return `${attr}=${quote}${TRANSPARENT_PIXEL}${quote}`;
+    });
+
+    out = out.replace(/style\s*=\s*(['"])([\s\S]*?)\1/gi, (full, quote, styleValue) => {
+        const safeStyle = sanitizeSnapshotCss(styleValue);
+        return `style=${quote}${safeStyle}${quote}`;
+    });
+
+    out = out.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, (full, cssBody) => {
+        return `<style>${sanitizeSnapshotCss(cssBody)}</style>`;
+    });
+
+    return out;
+}
+
+function buildMirrorStyles(data, bodyColor) {
+    const sourceCss = String(data.css || '');
+    // `:root` inside a Shadow DOM <style> targets the main document root, not the
+    // shadow host, so --vscode-* custom properties defined there never reach shadow
+    // children.  Remap every bare `:root` selector to `:host` so variables are
+    // declared on the shadow host and inherit normally into all shadow children.
+    const hoistedCss = sourceCss.replace(/:root\b/g, ':host');
+    const scheme = String(data.colorScheme || 'dark');
+    const fg = bodyColor || '#e0e0e0';
+    return `
+                :host {
+                    display: block;
+                    width: 100%;
+                    overflow-x: hidden;
+                    color: ${fg};
+                    background: transparent;
+                    color-scheme: ${scheme};
+                }
+
+                /* ── Tailwind preflight recovery ─────────────────────────────────────────
+                   MUST be BEFORE hoistedCss. Tailwind's preflight sets border-width:0 +
+                   border-style:solid, but that rule lives inside a CSS nesting block (& *)
+                   which has no parent context after extraction via cssText.  Browsers then
+                   default to border-width:medium (3px) + border-style:none, so .border
+                   elements (which only add border-width:1px) show no border.  By setting the
+                   baseline here (before hoistedCss), .border { border-width: 1px } that
+                   arrives later in the cascade can correctly override the 0 to 1px. */
+                :host, :host *, :host *::before, :host *::after {
+                    box-sizing: border-box;
+                    border-width: 0;
+                    border-style: solid;
+                    border-color: rgb(229, 231, 235);
+                }
+
+                ${hoistedCss}
+
+                /* ── Skeleton loading placeholders ───────────────────────────────────────
+                   Antigravity virtualises old messages out of the viewport and replaces them
+                   with sized gray boxes (class bg-gray-500/10, inline height).  In the mirror
+                   there is no viewport constraint so these placeholders create large blank
+                   scroll regions above the actual conversation.  Hide them. */
+                .bg-gray-500\\/10[style*="height"],
+                .bg-gray-500\\/15[style*="height"],
+                .bg-gray-500\\/20[style*="height"] {
+                    display: none !important;
+                }
+
+                /* ── Collapse flex layout inside the cascade ─────────────────────────────
+                   In the VS Code workbench the cascade lives in a full-viewport flex stack.
+                   .grow / .flex-1 children expand to fill the remaining screen height, and
+                   overflow-y-auto inner containers create fixed-height scroll areas.
+                   In the mobile mirror we want natural document flow — collapse all of these
+                   so no blank space is added below the actual conversation content. */
+                ${CHAT_SURFACE} .grow,
+                ${CHAT_SURFACE} .flex-1,
+                ${CHAT_SURFACE} [class~="flex-1"],
+                ${CHAT_SURFACE} [class~="grow"] {
+                    flex-grow: 0 !important;
+                    flex-shrink: 0 !important;
+                    flex-basis: auto !important;
+                }
+
+                ${CHAT_SURFACE} .h-full,
+                ${CHAT_SURFACE} .min-h-full,
+                ${CHAT_SURFACE} .min-h-screen,
+                ${CHAT_SURFACE} .h-screen {
+                    height: auto !important;
+                    min-height: 0 !important;
+                }
+
+                /* Inner overflow-y-auto scroll containers would create a fixed-height
+                   scrollable area inside the mirror; let the outer mobile scroll handle it. */
+                ${CHAT_SURFACE} .overflow-y-auto,
+                ${CHAT_SURFACE} .overflow-auto {
+                    overflow: visible !important;
+                    height: auto !important;
+                    max-height: none !important;
+                }
+
+                ${CHAT_SURFACE} {
+                    max-width: 100%;
+                }
+
+                ${CHAT_SURFACE} img,
+                ${CHAT_SURFACE} svg,
+                ${CHAT_SURFACE} video {
+                    max-width: 100%;
+                }
+
+                ${CHAT_SURFACE} pre,
+                ${CHAT_SURFACE} code,
+                ${CHAT_SURFACE} table {
+                    max-width: 100%;
+                }
+
+                ${CHAT_SURFACE} pre {
+                    overflow: auto;
+                    -webkit-overflow-scrolling: touch;
+                }
+
+                ${CHAT_SURFACE} table {
+                    display: block;
+                    overflow-x: auto;
+                }
+
+                ${CHAT_SURFACE} button,
+                ${CHAT_SURFACE} [role="button"] {
+                    touch-action: manipulation;
+                }
+
+                ${CHAT_SURFACE} button svg,
+                ${CHAT_SURFACE} [role="button"] svg {
+                    width: 1rem !important;
+                    height: 1rem !important;
+                    min-width: 1rem !important;
+                    min-height: 1rem !important;
+                    max-width: 1rem !important;
+                    max-height: 1rem !important;
+                    flex: 0 0 auto;
+                }
+
+                ${CHAT_SURFACE} button.ag-fallback-label,
+                ${CHAT_SURFACE} [role="button"].ag-fallback-label {
+                    display: inline-flex !important;
+                    align-items: center;
+                    justify-content: center;
+                    min-width: 30px;
+                    min-height: 26px;
+                    padding: 4px 8px;
+                    line-height: 1.1;
+                }
+
+                ${CHAT_SURFACE} .ag-fallback-label > * {
+                    display: none !important;
+                }
+
+                ${CHAT_SURFACE} .ag-fallback-label::after {
+                    content: attr(data-ag-fallback-label);
+                    font-size: 0.7rem;
+                    font-weight: 600;
+                    opacity: 0.95;
+                }
+
+                ${CHAT_SURFACE} button[aria-label*="good" i] svg,
+                ${CHAT_SURFACE} button[aria-label*="bad" i] svg,
+                ${CHAT_SURFACE} button[aria-label*="thumb" i] svg,
+                ${CHAT_SURFACE} [role="button"][aria-label*="good" i] svg,
+                ${CHAT_SURFACE} [role="button"][aria-label*="bad" i] svg,
+                ${CHAT_SURFACE} [role="button"][aria-label*="thumb" i] svg {
+                    width: 18px !important;
+                    height: 18px !important;
+                    min-width: 18px !important;
+                    min-height: 18px !important;
+                    max-width: 18px !important;
+                    max-height: 18px !important;
+                }
+
+                /* ── Thumb / reaction button containers ──────────────────────────────────
+                   Source CSS sometimes gives thumb buttons explicit large dimensions after
+                   a context switch.  Force them to wrap tightly around their icon so the
+                   button itself never balloons. */
+                ${CHAT_SURFACE} button[aria-label*="good" i],
+                ${CHAT_SURFACE} button[aria-label*="bad" i],
+                ${CHAT_SURFACE} button[aria-label*="thumb" i],
+                ${CHAT_SURFACE} [role="button"][aria-label*="good" i],
+                ${CHAT_SURFACE} [role="button"][aria-label*="bad" i],
+                ${CHAT_SURFACE} [role="button"][aria-label*="thumb" i] {
+                    width: auto !important;
+                    height: auto !important;
+                    min-width: 0 !important;
+                    min-height: 0 !important;
+                    padding: 4px !important;
+                    display: inline-flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    flex: 0 0 auto !important;
+                }
+
+                @media (max-width: 900px) {
+                    ${CHAT_SURFACE} {
+                        font-size: 14px;
+                        line-height: 1.45;
+                    }
+
+                    ${CHAT_SURFACE} button,
+                    ${CHAT_SURFACE} [role="button"] {
+                        font-size: 12px;
+                        min-height: 28px;
+                    }
+                }
+            `;
+}
+
+function buildRescueStyles(data, bodyColor) {
+    const scheme = String(data.colorScheme || 'dark');
+    const fg = bodyColor || '#e0e0e0';
+    return `
+                :host {
+                    display: block;
+                    width: 100%;
+                    color: ${fg};
+                    background: transparent;
+                    color-scheme: ${scheme};
+                }
+
+                :host, :host *, :host *::before, :host *::after {
+                    box-sizing: border-box;
+                }
+
+                ${CHAT_SURFACE},
+                ${CHAT_SURFACE} * {
+                    color: ${fg} !important;
+                }
+
+                ${CHAT_SURFACE} {
+                    background: transparent !important;
+                    position: static !important;
+                    inset: auto !important;
+                    transform: none !important;
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    display: block !important;
+                }
+
+                ${CHAT_SURFACE} img, ${CHAT_SURFACE} svg {
+                    max-width: 100%;
+                }
+
+                ${CHAT_SURFACE} pre, ${CHAT_SURFACE} code {
+                    background-color: #1e1e1e !important;
+                    color: #d4d4d4 !important;
+                }
+
+                ${CHAT_SURFACE} button svg,
+                ${CHAT_SURFACE} [role="button"] svg {
+                    width: 1rem;
+                    height: 1rem;
+                }
+            `;
+}
+
+function syncMirrorThemeVars() {
+    if (!mirrorHost) return;
+    try {
+        const src = getComputedStyle(document.documentElement);
+        for (let i = 0; i < src.length; i += 1) {
+            const name = src[i];
+            if (name && name.startsWith('--vscode-')) {
+                mirrorHost.style.setProperty(name, src.getPropertyValue(name));
+            }
+        }
+    } catch { }
+}
+
+function hasVisibleChatSurface(root) {
+    if (!root) return false;
+    const surface = root.querySelector(CHAT_SURFACE_SELECTOR);
+    if (!surface) return false;
+    const textLen = normalizeInlineText(surface.textContent || '').length;
+    const hasContentNodes = !!surface.querySelector('[data-message-id], [data-testid*="message" i], article, p, pre, code, button');
+    return textLen > 0 || hasContentNodes;
+}
+
+function ensureMirrorRoot() {
+    if (!mirrorHost || !mirrorHost.isConnected) {
+        mirrorHost = document.getElementById('snapshotHost');
+        if (!mirrorHost) {
+            chatContent.innerHTML = '';
+            mirrorHost = document.createElement('div');
+            mirrorHost.id = 'snapshotHost';
+            mirrorHost.style.width = '100%';
+            mirrorHost.style.minHeight = '1px';
+            chatContent.appendChild(mirrorHost);
+        }
+    }
+
+    if (!mirrorHost.shadowRoot) {
+        mirrorHost.attachShadow({ mode: 'open' });
+    }
+
+    mirrorRoot = mirrorHost.shadowRoot;
+    if (!boundClickRoots.has(mirrorRoot)) {
+        mirrorRoot.addEventListener('click', forwardSnapshotClick);
+        boundClickRoots.add(mirrorRoot);
+    }
+
+    if (!mirrorRoot.getElementById('mirrorStyle')) {
+        const styleEl = document.createElement('style');
+        styleEl.id = 'mirrorStyle';
+        mirrorRoot.appendChild(styleEl);
+    }
+
+    if (!mirrorRoot.getElementById('mirrorContent')) {
+        const contentEl = document.createElement('div');
+        contentEl.id = 'mirrorContent';
+        mirrorRoot.appendChild(contentEl);
+    }
+
+    return mirrorRoot;
+}
+
+// Check URL for token immediately (QR code login)
+const urlParams = new URLSearchParams(window.location.search);
+const urlToken = urlParams.get('token');
+
+if (urlToken) {
+    authToken = urlToken;
+    localStorage.setItem('ag_auth_token', urlToken);
+    // Clean URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+// Show login if needed
+function checkAuth() {
+    if (!authToken) {
+        showLogin();
+        return false;
+    }
+    return true;
+}
+
+function showLogin() {
+    loginModal.classList.add('show');
+    tokenInput.focus();
+}
+
+function handleLogin() {
+    const token = tokenInput.value.trim();
+    if (token) {
+        authToken = token;
+        localStorage.setItem('ag_auth_token', token);
+        loginModal.classList.remove('show');
+        // Reconnect
+        if (ws && ws.readyState !== WebSocket.CLOSED) {
+            suppressReconnectOnce = true;
+            ws.close(1000, 'manual_reauth');
+        }
+        connectWebSocket();
+    }
+}
+
+loginBtn.addEventListener('click', handleLogin);
+tokenInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleLogin();
+});
+
+// Render snapshot
+function renderSnapshot(data) {
+    const scrollPos = chatContainer.scrollTop;
+    const isNearBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 100;
+
+    // Check if pending message appeared in snapshot (visual confirmation)
+    if (pendingMessage && data.html && data.html.includes(pendingMessage.slice(0, 50))) {
+        messageInput.value = '';
+        autoResizeInput();
+        pendingMessage = null;
+    }
+
+    // Apply Antigravity's theme class to our html element
+    if (data.themeClass) {
+        document.documentElement.className = data.themeClass;
+    }
+    if (data.themeAttr) {
+        document.documentElement.setAttribute('data-theme', data.themeAttr);
+    }
+
+    // Apply body background and color from Antigravity
+    const rawBodyBg = String(data.bodyBg || '').trim();
+    const transparentBg = !rawBodyBg ||
+        rawBodyBg.toLowerCase() === 'transparent' ||
+        /rgba?\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)/i.test(rawBodyBg);
+    const bodyBg = transparentBg ? '#1a1a1a' : rawBodyBg;
+    let bodyColor = String(data.bodyColor || '').trim() || '#e0e0e0';
+    if (transparentBg && /^rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)$/i.test(bodyColor)) {
+        bodyColor = '#e0e0e0';
+    }
+    document.body.style.backgroundColor = bodyBg;
+    document.body.style.color = bodyColor;
+
+    const root = ensureMirrorRoot();
+    const styleEl = root.getElementById('mirrorStyle');
+    const contentEl = root.getElementById('mirrorContent');
+
+    const safeCss = sanitizeSnapshotCss(String(data.css || ''));
+    const safeHtml = sanitizeSnapshotHtml(String(data.html || ''));
+
+    const cssSig = [
+        String(data.themeClass || ''),
+        String(data.themeAttr || ''),
+        String(data.colorScheme || ''),
+        String(safeCss).length
+    ].join('|');
+
+    if (cssSig !== mirrorStyleSignature) {
+        styleEl.textContent = buildMirrorStyles({ ...data, css: safeCss }, bodyColor);
+        mirrorStyleSignature = cssSig;
+        syncMirrorThemeVars();
+    }
+
+    const themeClass = String(data.themeClass || '').trim();
+    contentEl.className = themeClass;
+    const themeAttr = String(data.themeAttr || '').trim();
+    if (themeAttr) contentEl.setAttribute('data-theme', themeAttr);
+    else contentEl.removeAttribute('data-theme');
+    contentEl.innerHTML = safeHtml;
+    applyIconFallbacks(root);
+    if (!hasVisibleChatSurface(root)) {
+        styleEl.textContent = buildRescueStyles({ ...data, css: safeCss }, bodyColor);
+        mirrorStyleSignature = `rescue|${cssSig}`;
+        applyIconFallbacks(root);
+        if (typeof logToScreen === 'function') {
+            logToScreen('UI rescue mode enabled (source CSS hid chat surface).', '#fbbf24');
+        }
+    }
+
+    const doScrollToBottom = () => {
+        // Scroll to mirrorHost bottom rather than chatContainer.scrollHeight
+        // to avoid landing in blank space created by flex layout artifacts.
+        const target = mirrorHost
+            ? mirrorHost.offsetTop + mirrorHost.offsetHeight + 16
+            : chatContainer.scrollHeight;
+        chatContainer.scrollTop = Math.min(target, chatContainer.scrollHeight);
+    };
+
+    if (!initialScrollDone) {
+        initialScrollDone = true;
+        // Two-stage: first RAF lets shadow DOM mount, second measures, setTimeout
+        // handles any reflow triggered by style recalculation.
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                doScrollToBottom();
+                setTimeout(doScrollToBottom, 80);
+            });
+        });
+    } else if (isNearBottom || scrollPos === 0) {
+        requestAnimationFrame(doScrollToBottom);
+    } else {
+        chatContainer.scrollTop = scrollPos;
+    }
+}
+
+const connectivityBadge = document.getElementById('connectivityBadge');
+const statusDot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
+const debugLog = document.getElementById('debugLog');
+
+function logToScreen(msg, color = '#aaa') {
+    console.log(`[LOG] ${msg}`);
+    const line = document.createElement('div');
+    line.style.color = color;
+    line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    debugLog.insertBefore(line, debugLog.firstChild);
+}
+
+connectivityBadge.addEventListener('click', () => {
+    debugLog.style.display = debugLog.style.display === 'none' ? 'block' : 'none';
+});
+
+function updateConnectionUI(mode) {
+    statusText.textContent = mode.toUpperCase();
+    if (mode === 'ws') {
+        statusDot.style.background = '#4ade80'; // Green
+        statusText.style.color = '#4ade80';
+    } else if (mode === 'http') {
+        statusDot.style.background = '#fbbf24'; // Amber
+        statusText.style.color = '#fbbf24';
+    } else if (mode === 'offline') {
+        statusDot.style.background = '#f87171'; // Red
+        statusText.style.color = '#f87171';
+    } else {
+        statusDot.style.background = '#aaa';
+        statusText.style.color = '#aaa';
+    }
+}
+
+let pollingInterval = null;
+function startHttpPolling() {
+    if (pollingInterval) return;
+    logToScreen('Switching to HTTP Polling Mode', '#fbbf24');
+    updateConnectionUI('http');
+
+    const poll = async () => {
+        try {
+            const res = await fetch('/snapshot', {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (res.status === 401) {
+                authToken = '';
+                localStorage.removeItem('ag_auth_token');
+                showLogin();
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+                return;
+            }
+            if (res.ok) {
+                const data = await res.json();
+                lastSnapshotData = data;
+                renderSnapshot(data);
+                updateControls(data);
+            }
+        } catch (e) {
+            logToScreen(`HTTP Poll Fail: ${e.message}`, '#f87171');
+        }
+    };
+
+    poll();
+    pollingInterval = setInterval(poll, 3000);
+}
+
+// WebSocket connection
+function connectWebSocket() {
+    if (pollingInterval) return; // Already in polling mode
+
+    // Dynamic protocol based on page load
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}?token=${encodeURIComponent(authToken)}`;
+
+    logToScreen(`Connecting via ${protocol}...`);
+    updateConnectionUI('connecting');
+
+    ws = new WebSocket(wsUrl);
+
+    async function recoverIfStalled() {
+        try {
+            const loader = document.querySelector('.loading span');
+            const isStalled = !!loader && /authenticating|waiting for chat surface/i.test(loader.textContent || '');
+            if (!isStalled) return;
+
+            const snapshotRes = await fetch('/snapshot', {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (snapshotRes.ok) {
+                const data = await snapshotRes.json();
+                lastSnapshotData = data;
+                renderSnapshot(data);
+                updateControls(data);
+                return;
+            }
+
+            const instancesRes = await fetch('/instances', {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (!instancesRes.ok) return;
+            const data = await instancesRes.json();
+            const fallbackTargetId = data.activeTargetId || (Array.isArray(data.instances) && data.instances[0] ? data.instances[0].id : '');
+            if (fallbackTargetId) {
+                await switchInstance(fallbackTargetId);
+            }
+        } catch (e) {
+            logToScreen(`Recover check failed: ${e.message}`, '#f87171');
+        }
+    }
+
+    // Watchdog: If no snapshot or WS open in 5s, fall back to HTTP
+    const watchdog = setTimeout(() => {
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            logToScreen('WS Connection Timed Out. Falling back to HTTP.', '#fbbf24');
+            if (ws) ws.close();
+            startHttpPolling();
+        }
+    }, 5000);
+
+    ws.onopen = async () => {
+        clearTimeout(watchdog);
+        logToScreen('WebSocket Connected', '#4ade80');
+        updateConnectionUI('ws');
+
+        const loader = document.querySelector('.loading span');
+        if (loader) loader.textContent = 'Authenticating...';
+
+        // Auto-connect / Wake-up Logic
+        try {
+            const res = await fetch('/instances', { headers: { 'Authorization': `Bearer ${authToken}` } });
+            if (res.ok) {
+                const data = await res.json();
+                if (!data.activePort && data.instances.length > 0) {
+                    if (loader) loader.textContent = 'Auto-connecting...';
+                    await switchInstance(data.instances[0].id);
+                    return;
+                }
+            }
+        } catch (e) {
+            logToScreen(`Auto-connect check failed: ${e.message}`);
+        }
+
+        ws.send(JSON.stringify({ type: 'request_snapshot' }));
+
+        // If no snapshot arrives quickly, surface actionable state instead of hanging on "Authenticating..."
+        setTimeout(() => {
+            const loadingEl = document.querySelector('.loading span');
+            if (loadingEl && /authenticating/i.test(loadingEl.textContent || '')) {
+                loadingEl.textContent = 'Connected. Waiting for chat surface...';
+            }
+        }, 5000);
+
+        // Recovery path: try pulling snapshot/instances if UI still stalled.
+        setTimeout(recoverIfStalled, 6500);
+    };
+
+    ws.onmessage = (event) => {
+        try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'snapshot' && msg.data) {
+                lastSnapshotData = msg.data;
+                if (!userIsScrolling) {
+                    renderSnapshot(msg.data);
+                }
+                // updateControls must always run (updates chips + menu detection)
+                // even while the user is scrolling — it does not touch the mirror DOM.
+                updateControls(msg.data);
+            }
+        } catch (e) {
+            logToScreen(`Message Parse Error: ${e.message}`, '#f87171');
+        }
+    };
+
+    ws.onclose = (event) => {
+        clearTimeout(watchdog);
+        const reason = event.code === 1008 ? 'Auth Failed' : (event.code === 1006 ? 'Abnormal Closure' : `Closed (${event.code})`);
+        logToScreen(`WS Disconnected: ${reason}`);
+
+        if (suppressReconnectOnce) {
+            suppressReconnectOnce = false;
+            return;
+        }
+
+        if (event.code === 1008) {
+            authToken = '';
+            localStorage.removeItem('ag_auth_token');
+            showLogin();
+        } else if (event.code === 1006) {
+            // Critical Abnormal Closure (often SSL/Network relates) - fallback immediately
+            startHttpPolling();
+        } else {
+            updateConnectionUI('offline');
+            setTimeout(connectWebSocket, 2000);
+        }
+    };
+
+    ws.onerror = (e) => {
+        logToScreen('WS Network Error', '#f87171');
+        ws.close();
+    };
+}
+
+// Send message
+async function sendMessage() {
+    if (!checkAuth()) return;
+
+    const message = messageInput.value.trim();
+    if (!message) return;
+
+    sendBtn.disabled = true;
+    sendBtn.textContent = '...';
+
+    try {
+        const res = await fetch('/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ message })
+        });
+
+        if (res.status === 401) {
+            authToken = '';
+            localStorage.removeItem('ag_auth_token');
+            showLogin();
+            throw new Error('Unauthorized');
+        }
+
+        if (!res.ok) {
+            const errBody = await res.text();
+            throw new Error(`Send failed (${res.status}): ${errBody}`);
+        }
+
+    } catch (e) {
+        console.error('SendMessage Error:', e);
+        alert(`Message send failed: ${e.message}`);
+    } finally {
+        // Always clear textarea after send attempt
+        messageInput.value = '';
+        autoResizeInput(); // Reset to min-height
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = sendBtnOriginalIcon;
+    }
+}
+
+// Scroll handling
+let scrollTimeout;
+chatContainer.addEventListener('scroll', () => {
+    userIsScrolling = true;
+    clearTimeout(scrollTimeout);
+
+    const isNearBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 100;
+    scrollToBottomBtn.classList.toggle('show', !isNearBottom);
+
+    scrollTimeout = setTimeout(() => {
+        userIsScrolling = false;
+    }, 500);
+});
+
+scrollToBottomBtn.addEventListener('click', () => {
+    chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+});
+
+// Input handlers
+sendBtn.addEventListener('click', sendMessage);
+messageInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// File Upload Logic
+uploadBtn.addEventListener('click', () => {
+    fileInput.click();
+});
+
+fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    // Preflight size check (50MB hard limit to match server)
+    const MAX_SIZE_MB = 50;
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        alert(`File is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max limit is ${MAX_SIZE_MB}MB.`);
+        fileInput.value = '';
+        return;
+    }
+    logToScreen(`Using upload target selector: ${uploadTargetSelector || 'auto-detect'}`, '#999');
+
+    // Visual feedback
+    const originalIcon = uploadBtn.innerHTML;
+    uploadBtn.innerHTML = '⏳';
+    uploadBtn.disabled = true;
+    logToScreen(`Uploading: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)...`, '#3b82f6');
+
+    try {
+        const base64Content = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const dataUrl = String(e.target.result || '');
+                    resolve(dataUrl.split(',')[1] || '');
+                } catch (readErr) {
+                    reject(readErr);
+                }
+            };
+            reader.onerror = () => reject(new Error('Error reading file'));
+            reader.readAsDataURL(file);
+        });
+
+        const response = await fetch('/upload', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                name: file.name,
+                content: base64Content,
+                targetSelector: uploadTargetSelector || undefined
+            })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            logToScreen(`Upload success: ${file.name}`, '#4ade80');
+            if (result.injected) {
+                alert(`Uploaded and injected: ${result.path}`);
+            } else {
+                const reason = result.reason || 'could_not_locate_file_input';
+                const msg = `File saved but not injected (${reason}). If you know the file input selector, enter it to retry next time.`;
+                alert(msg);
+                const userSelector = prompt('Optional CSS selector for the file input (e.g., input[type="file"])', uploadTargetSelector);
+                if (userSelector) {
+                    uploadTargetSelector = userSelector.trim();
+                    localStorage.setItem('ag_upload_target', uploadTargetSelector);
+                }
+            }
+        } else {
+            const error = await response.json().catch(() => ({ error: response.statusText }));
+            const msg = response.status === 413 ? 'File too large for server.' : error.error;
+            logToScreen(`Upload failed: ${msg}`, '#f87171');
+            alert(`Upload failed: ${msg}`);
+        }
+    } catch (err) {
+        console.error('Upload error:', err);
+        alert('Upload error');
+    } finally {
+        uploadBtn.innerHTML = originalIcon;
+        uploadBtn.disabled = false;
+        fileInput.value = ''; // Reset for next upload
+    }
+});
+
+// Instance Handling
+const instancesBtn = document.getElementById('instancesBtn');
+const instancesModal = document.getElementById('instancesModal');
+const instancesList = document.getElementById('instancesList');
+const closeInstancesBtn = document.getElementById('closeInstancesBtn');
+let activeTargetId = null;
+
+instancesBtn.addEventListener('click', () => {
+    instancesModal.classList.add('show');
+    fetchInstances();
+});
+
+closeInstancesBtn.addEventListener('click', () => {
+    instancesModal.classList.remove('show');
+});
+
+async function fetchInstances() {
+    instancesList.innerHTML = `
+                <div class="loading" style="padding:20px;">
+                     <div class="spinner"></div>
+                </div>
+            `;
+
+    try {
+        const res = await fetch('/instances', {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (res.status === 401) {
+            instancesModal.classList.remove('show');
+            showLogin();
+            return;
+        }
+
+        const data = await res.json();
+        activeTargetId = data.activeTargetId || null;
+        renderInstances(data.instances || []);
+    } catch (e) {
+        instancesList.innerHTML = `<div style="color:#ff6b6b;text-align:center;">Failed to load instances</div>`;
+    }
+}
+
+function renderInstances(instances) {
+    if (instances.length === 0) {
+        instancesList.innerHTML = `<div style="text-align:center;color:#666;">No instances found</div>`;
+        return;
+    }
+
+    instancesList.innerHTML = '';
+    instances.forEach(inst => {
+        const isItemActive = inst.id && inst.id === activeTargetId;
+        const el = document.createElement('div');
+        el.style.cssText = `
+                    padding: 12px;
+                    background: ${isItemActive ? '#3b82f6' : '#1a1a1a'};
+                    border: 1px solid #3a3a3a;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                `;
+        const displayTitle = inst.title && inst.title.trim().length > 0 ? inst.title : 'Target';
+        el.innerHTML = `
+                    <div style="font-weight:600; margin-bottom:4px;">${displayTitle}</div>
+                    <div style="font-size:12px;opacity:0.7;">${isItemActive ? 'Active' : 'Switch'}</div>
+                `;
+
+        if (!isItemActive && inst.id) {
+            el.addEventListener('click', () => switchInstance(inst.id));
+            el.addEventListener('mouseover', () => el.style.borderColor = '#3b82f6');
+            el.addEventListener('mouseout', () => el.style.borderColor = '#3a3a3a');
+        }
+
+        instancesList.appendChild(el);
+    });
+}
+
+async function switchInstance(targetId) {
+    // Show loading state
+    instancesList.innerHTML = `
+                <div class="loading" style="padding:20px;">
+                     <div class="spinner"></div>
+                     <span>Switching...</span>
+                </div>
+            `;
+
+    try {
+        const res = await fetch('/instance', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ targetId })
+        });
+
+        if (res.ok) {
+            // Success! Close modal and show loading state
+            instancesModal.classList.remove('show');
+            chatContent.innerHTML = `
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <span>Loading...</span>
+                        </div>
+                    `;
+
+            // Request snapshot with retry mechanism
+            let retries = 0;
+            const maxRetries = 3;
+            const retryDelay = 500;
+
+            const requestSnapshot = () => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    console.log(`Requesting snapshot (attempt ${retries + 1}/${maxRetries})`);
+                    ws.send(JSON.stringify({ type: 'request_snapshot' }));
+                }
+            };
+
+            // Immediate request
+            requestSnapshot();
+
+            // Retry if still showing loading after delay
+            const retryInterval = setInterval(() => {
+                retries++;
+                if (retries >= maxRetries || !document.querySelector('.loading')) {
+                    clearInterval(retryInterval);
+                    return;
+                }
+                requestSnapshot();
+            }, retryDelay);
+
+        } else {
+            throw new Error('Failed to switch');
+        }
+    } catch (e) {
+        fetchInstances(); // Reload list to show error state eventually, or just refresh
+    }
+}
+
+// --- Microphone / Speech to Text Logic ---
+let recognition = null;
+let isRecording = false;
+
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+        isRecording = true;
+        micBtn.style.background = '#ef4444'; // Red when recording
+        micBtn.style.color = '#fff';
+        logToScreen('Recording...', '#ef4444');
+    };
+
+    recognition.onresult = (event) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                finalTranscript += event.results[i][0].transcript;
+            } else {
+                interimTranscript += event.results[i][0].transcript;
+            }
+        }
+
+        if (finalTranscript) {
+            messageInput.value += (messageInput.value ? ' ' : '') + finalTranscript;
+            autoResizeInput();
+        }
+    };
+
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        logToScreen(`Mic Error: ${event.error}`, '#f87171');
+        stopRecording();
+    };
+
+    recognition.onend = () => {
+        isRecording = false;
+        micBtn.style.background = '';
+        micBtn.style.color = '';
+    };
+} else {
+    micBtn.style.opacity = '0.3';
+    micBtn.title = 'Speech Recognition not supported';
+}
+
+function stopRecording() {
+    const wasRecording = isRecording;
+    isRecording = false;
+    micBtn.style.background = '';
+    micBtn.style.color = '';
+    if (recognition && wasRecording) recognition.stop();
+}
+
+micBtn.addEventListener('click', () => {
+    if (!recognition) return;
+    if (isRecording) {
+        stopRecording();
+    } else {
+        try {
+            recognition.start();
+        } catch (e) {
+            console.error('Recognition start error:', e);
+        }
+    }
+});
+
+// --- Native Audio Recording (MediaRecorder) ---
+let mediaRecorder = null;
+let audioChunks = [];
+let isAudioRecording = false;
+
+audioBtn.addEventListener('click', async () => {
+    if (!isAudioRecording) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+            mediaRecorder = new MediaRecorder(stream, { mimeType });
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) audioChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                const originalIcon = audioBtn.innerHTML;
+                try {
+                    const audioBlob = new Blob(audioChunks, { type: mimeType });
+                    audioChunks = []; // clear for next time
+
+                    if (audioBlob.size < 500) return; // Too short
+
+                    audioBtn.innerHTML = '⏳';
+                    audioBtn.disabled = true;
+                    logToScreen('Uploading audio note...', '#3b82f6');
+
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = async () => {
+                        const base64data = reader.result.split(',')[1];
+                        const ext = mimeType === 'audio/webm' ? 'webm' : 'mp4';
+
+                        try {
+                            const response = await fetch('/upload', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${authToken}`
+                                },
+                                body: JSON.stringify({
+                                    name: `audio_note_${Date.now()}.${ext}`,
+                                    content: base64data,
+                                    targetSelector: uploadTargetSelector || undefined
+                                })
+                            });
+
+                            if (response.ok) {
+                                logToScreen('Audio sent successfully.', '#4ade80');
+                            } else {
+                                const errBody = await response.text();
+                                logToScreen(`Failed to send audio: ${response.status}`, '#f87171');
+                                console.error('Audio upload failed response:', errBody);
+                            }
+                        } catch (fetchErr) {
+                            console.error('Audio fetch connection failed:', fetchErr);
+                            logToScreen('Audio connection error.', '#f87171');
+                        }
+
+                        audioBtn.innerHTML = originalIcon;
+                        audioBtn.disabled = false;
+                    };
+                } catch (err) {
+                    console.error('Audio upload error:', err);
+                    logToScreen('Audio upload error', '#f87171');
+                    audioBtn.innerHTML = originalIcon;
+                    audioBtn.disabled = false;
+                }
+            };
+
+            mediaRecorder.start();
+            isAudioRecording = true;
+            audioBtn.style.background = '#ef4444';
+            audioBtn.style.color = '#fff';
+            logToScreen('Recording audio note...', '#ef4444');
+
+        } catch (err) {
+            console.error('Mic access denied:', err);
+            alert('Microphone access is required to record audio notes.');
+        }
+    } else {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        }
+        isAudioRecording = false;
+        audioBtn.style.background = '';
+        audioBtn.style.color = '';
+    }
+});
+
+function autoResizeInput() {
+    // Min-height for mobile design is 24px (text) inside the bubble
+    messageInput.style.height = '24px';
+    const newHeight = Math.min(messageInput.scrollHeight, 160);
+    messageInput.style.height = newHeight + 'px';
+
+    // Scroll textarea to bottom of its own content
+    messageInput.scrollTop = messageInput.scrollHeight;
+}
+
+messageInput.addEventListener('input', autoResizeInput);
+// Helper to generate unique CSS selector
+function getUniqueSelector(el) {
+    if (!el) return '';
+    if (el.id) return '#' + CSS.escape(el.id);
+    // path fallback
+    const path = [];
+    while (el && el.nodeType === Node.ELEMENT_NODE) {
+        let selector = el.nodeName.toLowerCase();
+        if (el.id) {
+            selector = '#' + CSS.escape(el.id);
+            path.unshift(selector);
+            break;
+        } else {
+            let sib = el, nth = 1;
+            while (sib = sib.previousElementSibling) {
+                if (sib.nodeName.toLowerCase() === selector) nth++;
+            }
+            if (nth != 1) selector += ":nth-of-type(" + nth + ")";
+        }
+        path.unshift(selector);
+        el = el.parentNode;
+        if (el instanceof ShadowRoot) {
+            break;
+        }
+    }
+    return path.join(' > ');
+}
+
+// Click Forwarding Logic
+async function forwardSnapshotClick(e) {
+    if (!authToken) return;
+
+    let target = e.target;
+    if (!target || !(target instanceof Element)) return;
+    if (target.id === 'snapshotHost') return;
+
+    let interactive = target;
+    while (interactive && interactive !== chatContent && interactive.id !== 'snapshotHost') {
+        const tag = interactive.tagName.toLowerCase();
+        if (tag === 'button' || tag === 'a' || interactive.getAttribute('role') === 'button') {
+            target = interactive;
+            break;
+        }
+
+        if (interactive.parentElement) {
+            interactive = interactive.parentElement;
+        } else {
+            const rootNode = interactive.getRootNode ? interactive.getRootNode() : null;
+            interactive = rootNode instanceof ShadowRoot ? rootNode.host : null;
+        }
+    }
+
+    const text = target.getAttribute('data-ag-original-text') || target.innerText || target.textContent || '';
+    const tag = target.tagName.toLowerCase();
+    const selector = getUniqueSelector(target);
+
+    // Ignore container clicks
+    if (tag === 'div' && target.id === 'chatContent') return;
+    if (target.id === 'snapshotHost') return;
+
+    console.log(`Click: "${text}" <${tag}> [${selector}]`);
+
+    // 2. Visual Feedback (Ripple effect)
+    const rect = target.getBoundingClientRect();
+    const ripple = document.createElement('div');
+    ripple.className = 'click-ripple';
+    ripple.style.left = `${e.clientX}px`;
+    ripple.style.top = `${e.clientY}px`;
+    document.body.appendChild(ripple);
+
+    setTimeout(() => ripple.remove(), 1000);
+
+    // 3. Send to server
+    try {
+        const res = await fetch('/click', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                text: text.substring(0, 50),
+                tag: tag,
+                selector: selector,
+                x: Math.round(e.clientX),
+                y: Math.round(e.clientY)
+            })
+        });
+
+        if (res.ok) {
+            console.log('Click sent successfully');
+        } else {
+            console.warn('Click failed on server');
+        }
+    } catch (err) {
+        console.error('Network error sending click:', err);
+    }
+}
+
+chatContent.addEventListener('click', forwardSnapshotClick);
+
+// --- Native Controls Logic ---
+const nativeStatusBar = document.getElementById('nativeStatusBar');
+const modeVal = document.getElementById('modeVal');
+const modelVal = document.getElementById('modelVal');
+const modeChip = document.getElementById('modeChip');
+const modelChip = document.getElementById('modelChip');
+const stopChip = document.getElementById('stopChip');
+const taskChip = document.getElementById('taskChip');
+const taskVal = document.getElementById('taskVal');
+const walkthroughChip = document.getElementById('walkthroughChip');
+const walkthroughVal = document.getElementById('walkthroughVal');
+const planChip = document.getElementById('planChip');
+const sheetOverlay = document.getElementById('sheetOverlay');
+const optionsSheet = document.getElementById('optionsSheet');
+const sheetList = document.getElementById('sheetList');
+const sheetTitle = document.getElementById('sheetTitle');
+const sheetClose = document.getElementById('sheetClose');
+const contentSheet = document.getElementById('contentSheet');
+const contentSheetTitle = document.getElementById('contentSheetTitle');
+const contentSheetBody = document.getElementById('contentSheetBody');
+const contentSheetClose = document.getElementById('contentSheetClose');
+
+let lastControlsSignature = '';
+let currentModeSelector = '';
+let currentModelSelector = '';
+let currentStopSelector = '';
+let currentTaskSelector = '';
+let currentWalkthroughSelector = '';
+let currentModeText = '';
+let currentModelText = '';
+let pendingMenuClick = false;
+let pendingMenuAttempts = 0;
+let lastClickedType = ''; // 'mode' or 'model'
+let pendingContentType = ''; // 'task', 'walkthrough', or 'plan'
+let pendingContentAttempts = 0;
+let cachedPlanText = ''; // last detected plan content from cascade
+
+function normalizeControlText(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function isCommandPaletteOption(text) {
+    const t = normalizeControlText(text).toLowerCase();
+    if (!t) return false;
+    if (/^[a-z][a-z0-9 ._-]{1,40}:\s/.test(t) && !/^(gpt|claude|gemini|llama|deepseek)\b/.test(t)) return true;
+    return (
+        t.startsWith('developer:') ||
+        t.includes('reload window') ||
+        t.includes('recently used') ||
+        t.includes('other commands') ||
+        t.includes('command palette') ||
+        t.includes('type a command') ||
+        t.includes('antigravity link: start server') ||
+        t.includes('antigravity link: stop server') ||
+        t.includes('antigravity link: show qr code') ||
+        t.includes('end demo mode')
+    );
+}
+
+function isModeLikeLabel(text) {
+    const t = normalizeControlText(text).toLowerCase();
+    if (!t || t.length > 48 || isCommandPaletteOption(t) || t.includes(':')) return false;
+    return (
+        t === 'fast' || t === 'planning' || t === 'agent' || t === 'ask' ||
+        t === 'chat' || t === 'code' || t === 'edit' || t === 'execution' ||
+        t === 'execute' || t === 'writing' ||
+        t === 'fast mode' || t === 'planning mode' || t === 'agent mode' ||
+        t === 'ask mode' || t === 'chat mode' || t === 'code mode' ||
+        t === 'edit mode' || t === 'execution mode' || t === 'execute mode' ||
+        t === 'writing mode'
+    );
+}
+
+function isModelLikeLabel(text) {
+    const t = normalizeControlText(text);
+    if (!t || t.length > 90 || isCommandPaletteOption(t)) return false;
+    return /\b(gemini|claude|gpt(?:-[\w.]+)?|sonnet|haiku|flash|pro|opus|llama|deepseek|model)\b/i.test(t);
+}
+
+function toSnapshotControl(ctrl) {
+    if (!ctrl || !ctrl.text) return null;
+    return {
+        text: normalizeControlText(ctrl.text),
+        selector: String(ctrl.selector || '')
+    };
+}
+
+function syncLegacyHider(selectors) {
+    let hiderStyle = document.getElementById('legacy-hider-style');
+    if (!hiderStyle) {
+        hiderStyle = document.createElement('style');
+        hiderStyle.id = 'legacy-hider-style';
+        document.head.appendChild(hiderStyle);
+    }
+    const safeRules = selectors
+        .filter((sel) => typeof sel === 'string' && sel.length > 0 && sel.length < 320 && !/[{}]/.test(sel))
+        .map((sel) => `#chatContent ${sel} { opacity: 0 !important; pointer-events: none !important; }`);
+    hiderStyle.textContent = safeRules.join('\n');
+}
+
+// Reusable click sender
+async function sendClickToServer(selector, text, type, expectMenu = false) {
+    if (!authToken) return;
+    const safeSelector = typeof selector === 'string' ? selector : '';
+    const safeText = normalizeControlText(text || '');
+    if (!safeSelector && !safeText) return;
+
+    if (expectMenu) {
+        pendingMenuClick = true;
+        pendingMenuAttempts = 0;
+        lastClickedType = type || '';
+        // The mode/model dialogs are always present in the DOM (even when visually
+        // closed), so we can detect their items immediately from the current snapshot
+        // without waiting up to 3 s for the next server poll.
+        if (lastSnapshotData) {
+            lastControlsSignature = ''; // force re-evaluation
+            updateControls(lastSnapshotData);
+        }
+    }
+
+    try {
+        await fetch('/click', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+            body: JSON.stringify({ selector: safeSelector || undefined, text: safeText || undefined })
+        });
+    } catch (err) { console.error('Error forwarding click:', err); }
+}
+
+// --- IDE Controls Logic ---
+const IDE_COMMANDS = [
+    { label: '💾 Save All', cmd: 'workbench.action.files.saveAll' },
+    { label: '🔍 Search Workspace', cmd: 'workbench.view.search' },
+    { label: '🗂️ Explorer', cmd: 'workbench.view.explorer' },
+    { label: '⏹️ Terminal', cmd: 'workbench.action.terminal.toggleTerminal' },
+    { label: '⚙️ Settings', cmd: 'workbench.action.openSettings2' },
+    { label: '🪄 Antigravity Fast', cmd: 'antigravity.agentMode.fast' },
+    { label: '✨ Antigravity Agent', cmd: 'antigravity.agentMode.agent' },
+    { label: '✂️ Clear chat', cmd: 'antigravity.clearChat' },
+];
+
+ideCmdBtn.addEventListener('click', () => {
+    sheetTitle.textContent = 'IDE Commands';
+    sheetList.innerHTML = '';
+    IDE_COMMANDS.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'option-item';
+        div.innerHTML = `<span class="icon">💻</span> ${item.label}`;
+        div.addEventListener('click', async () => {
+            hideSheet();
+            try {
+                const res = await fetch('/command', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ command: item.cmd })
+                });
+                if (res.ok) {
+                    logToScreen(`Executed: ${item.label}`, '#4ade80');
+                } else {
+                    logToScreen(`Failed: ${item.label}`, '#f87171');
+                }
+            } catch (err) {
+                console.error('Command failed:', err);
+            }
+        });
+        sheetList.appendChild(div);
+    });
+
+    sheetOverlay.style.display = 'block';
+    setTimeout(() => {
+        sheetOverlay.classList.add('show');
+        optionsSheet.classList.add('show');
+    }, 10);
+});
+
+function showSheet(title, options) {
+    const displayTitle = lastClickedType === 'mode' ? 'Select Mode' :
+        (lastClickedType === 'model' ? 'Select Model' : title);
+    sheetTitle.textContent = displayTitle;
+    sheetList.innerHTML = '';
+
+    const seen = new Set();
+    const uniqueOptions = options.filter(opt => {
+        const key = normalizeControlText(opt.text).toLowerCase();
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+
+    uniqueOptions.forEach(opt => {
+        const div = document.createElement('div');
+        div.className = 'option-item';
+        div.innerHTML = `<span class="icon">●</span> ${opt.text}`;
+        div.addEventListener('click', async () => {
+            if (lastClickedType === 'mode') {
+                modeVal.textContent = opt.text;
+                currentModeText = opt.text;
+            } else if (lastClickedType === 'model') {
+                modelVal.textContent = opt.text;
+                currentModelText = opt.text;
+            }
+
+            await sendClickToServer(opt.selector, opt.text, lastClickedType, false);
+            hideSheet();
+            setTimeout(() => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'request_snapshot' }));
+                }
+            }, 500);
+        });
+        sheetList.appendChild(div);
+    });
+    sheetOverlay.style.display = 'block';
+    setTimeout(() => {
+        sheetOverlay.classList.add('show');
+        optionsSheet.classList.add('show');
+    }, 10);
+}
+
+function hideSheet() {
+    sheetOverlay.classList.remove('show');
+    optionsSheet.classList.remove('show');
+    if (!contentSheet.classList.contains('show')) {
+        setTimeout(() => { sheetOverlay.style.display = 'none'; }, 300);
+    }
+    pendingMenuClick = false;
+    pendingMenuAttempts = 0;
+}
+
+function showContentSheet(title, html) {
+    contentSheetTitle.textContent = title;
+    contentSheetBody.innerHTML = html;
+    sheetOverlay.style.display = 'block';
+    setTimeout(() => {
+        sheetOverlay.classList.add('show');
+        contentSheet.classList.add('show');
+    }, 10);
+}
+
+function hideContentSheet() {
+    sheetOverlay.classList.remove('show');
+    contentSheet.classList.remove('show');
+    if (!optionsSheet.classList.contains('show')) {
+        setTimeout(() => { sheetOverlay.style.display = 'none'; }, 300);
+    }
+    pendingContentType = '';
+}
+
+// Returns prose-like text from an element, or null if it looks like CSS/code noise.
+function extractProse(el) {
+    const raw = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    if (raw.length < 60) return null;
+    // Filter: require >55% alphabetic + space characters (CSS class lists fail this)
+    const alpha = (raw.match(/[a-zA-Z ]/g) || []).length;
+    if (alpha / raw.length < 0.55) return null;
+    return raw;
+}
+
+function renderContentText(text) {
+    const esc = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    // Split on blank lines, give each paragraph its own <p>; bold leading numbers
+    const paras = esc.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+    const html = paras.map(p => {
+        const lined = p.split(/\n/).map(l => l.trim()).filter(Boolean)
+            .map(l => l.replace(/^(\d+\.\s+)/, '<strong>$1</strong>'))
+            .join('<br>');
+        return `<p style="margin:0 0 10px">${lined}</p>`;
+    }).join('');
+    return `<div style="line-height:1.7;word-break:break-word">${html}</div>`;
+}
+
+function renderMarkdown(text) {
+    if (!text) return '';
+    const lines = text.split('\n');
+    let html = '';
+    let listType = '';
+    const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const inline = (s) => esc(s)
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.1);padding:1px 4px;border-radius:3px;font-size:12px">$1</code>');
+    const closeList = () => { if (listType) { html += listType === 'ul' ? '</ul>' : '</ol>'; listType = ''; } };
+    for (const rawLine of lines) {
+        const line = rawLine.trimEnd();
+        if (!line.trim()) { closeList(); html += '<br>'; continue; }
+        if (/^#{1,6}\s/.test(line)) {
+            closeList();
+            const level = line.match(/^(#+)/)[1].length;
+            const sz = Math.max(13, 18 - level * 2);
+            html += `<h${Math.min(level + 2, 6)} style="margin:12px 0 4px;font-size:${sz}px;line-height:1.3">${inline(line.replace(/^#+\s/, ''))}</h${Math.min(level + 2, 6)}>`;
+        } else if (/^\s*[-*+]\s/.test(line)) {
+            if (listType !== 'ul') { closeList(); html += '<ul style="margin:4px 0;padding-left:20px;list-style:disc">'; listType = 'ul'; }
+            html += `<li style="margin:2px 0">${inline(line.replace(/^\s*[-*+]\s/, ''))}</li>`;
+        } else if (/^\s*\d+\.\s/.test(line)) {
+            if (listType !== 'ol') { closeList(); html += '<ol style="margin:4px 0;padding-left:20px">'; listType = 'ol'; }
+            html += `<li style="margin:2px 0">${inline(line.replace(/^\s*\d+\.\s/, ''))}</li>`;
+        } else if (/^---+$/.test(line.trim())) {
+            closeList(); html += '<hr style="border:none;border-top:1px solid rgba(255,255,255,0.15);margin:8px 0">';
+        } else {
+            closeList();
+            html += `<p style="margin:0 0 6px">${inline(line)}</p>`;
+        }
+    }
+    closeList();
+    return `<div style="line-height:1.65;word-break:break-word;font-size:13px">${html}</div>`;
+}
+
+function extractContentFromSnapshot(snapshot, type) {
+    // Use full body HTML — task/walkthrough panels often open outside the cascade
+    const html = String(snapshot.controlsHtml || snapshot.html || '');
+    if (!html) return null;
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+
+    // Strip noise elements that never hold readable prose
+    ['script', 'style', 'noscript', 'svg', 'canvas', 'template'].forEach(tag => {
+        temp.querySelectorAll(tag).forEach(el => el.remove());
+    });
+
+    const typePat = type === 'task' ? /\btask\b/i
+        : type === 'walkthrough' ? /\bwalkthrough\b/i
+            : /\b(?:plan|implementation)\b/i;
+
+    // Priority 1: dialogs/modals/regions with the type word in their label or content
+    for (const el of Array.from(temp.querySelectorAll(
+        '[role="dialog"],[aria-modal="true"],[role="alertdialog"],[role="region"][aria-label]'
+    ))) {
+        const label = (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || '').toLowerCase();
+        const t = extractProse(el);
+        if (t && (typePat.test(label) || typePat.test(t.substring(0, 500)))) {
+            return renderContentText(t);
+        }
+    }
+
+    // Priority 2: headings that name the type → grab their containing section
+    for (const h of Array.from(temp.querySelectorAll('h1,h2,h3,h4,h5,h6'))) {
+        if (typePat.test(h.textContent || '')) {
+            const section = h.closest('section,article,[role="article"]') || h.parentElement;
+            if (section) {
+                const t = extractProse(section);
+                if (t) return renderContentText(t);
+            }
+        }
+    }
+
+    // Priority 3: large prose blocks mentioning the type anywhere in first 300 chars
+    const seen = new WeakSet();
+    const blocks = [];
+    for (const el of Array.from(temp.querySelectorAll('p,li,article,section'))) {
+        if (seen.has(el)) continue;
+        const t = extractProse(el);
+        if (t && typePat.test(t.substring(0, 300)) && t.length > 100) {
+            // Include ancestors to avoid duplicate smaller fragments
+            let cur = el;
+            while (cur) { seen.add(cur); cur = cur.parentElement; }
+            blocks.push(t);
+        }
+    }
+    if (blocks.length === 0) return null;
+    blocks.sort((a, b) => b.length - a.length);
+    return renderContentText(blocks[0]);
+}
+
+// Detect implementation-plan content from cascade snapshot HTML (client-side).
+// Returns the plan text if found, or empty string.
+function detectPlanContent(snapshot) {
+    const html = String(snapshot.html || '');
+    if (!html) return '';
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    ['script', 'style', 'noscript', 'svg'].forEach(tag => {
+        temp.querySelectorAll(tag).forEach(el => el.remove());
+    });
+    const planPat = /\b(?:implementation\s+plan|impl(?:ementation)?\s+plan)\b/i;
+
+    // Priority 1: headings/strong/b with "implementation plan"
+    for (const h of Array.from(temp.querySelectorAll('h1,h2,h3,h4,h5,h6,strong,b'))) {
+        if (planPat.test(h.textContent || '')) {
+            const section = h.closest(
+                'section,article,[role="article"],[class*="message"],[class*="block"],[class*="card"]'
+            ) || h.parentElement;
+            if (section) {
+                const t = extractProse(section);
+                if (t && t.length > 80) return t;
+            }
+        }
+    }
+
+    // Priority 2: links whose text mentions "plan"
+    for (const a of Array.from(temp.querySelectorAll('a'))) {
+        if (planPat.test(a.textContent || '')) {
+            const article = a.closest('[role="article"],[class*="message"],article,section') || a.parentElement;
+            if (article) {
+                const t = extractProse(article);
+                if (t && t.length > 40) return t;
+            }
+        }
+    }
+
+    // Priority 3: any paragraph/div mentioning "implementation plan" in first 300 chars
+    for (const el of Array.from(temp.querySelectorAll('p,li,div'))) {
+        const txt = el.textContent || '';
+        if (planPat.test(txt.substring(0, 300)) && txt.length > 60) {
+            const article = el.closest('[role="article"],[class*="message"],article,section') || el.parentElement;
+            const t = article ? extractProse(article) : extractProse(el);
+            if (t && t.length > 40) return t;
+        }
+    }
+
+    return '';
+}
+
+if (sheetClose) sheetClose.addEventListener('click', hideSheet);
+if (contentSheetClose) contentSheetClose.addEventListener('click', hideContentSheet);
+if (sheetOverlay) sheetOverlay.addEventListener('click', () => { hideSheet(); hideContentSheet(); });
+
+if (modeChip) modeChip.addEventListener('click', () => { if (currentModeSelector) sendClickToServer(currentModeSelector, currentModeText, 'mode', true); });
+if (modelChip) modelChip.addEventListener('click', () => { if (currentModelSelector) sendClickToServer(currentModelSelector, currentModelText, 'model', true); });
+
+if (stopChip) stopChip.addEventListener('click', () => {
+    if (currentStopSelector) sendClickToServer(currentStopSelector, '', 'stop', false);
+});
+
+if (taskChip) taskChip.addEventListener('click', async () => {
+    showContentSheet('Task', '<p style="color:#999;font-style:italic">Loading task\u2026</p>');
+    try {
+        const res = await fetch(`/task?token=${encodeURIComponent(authToken)}`);
+        if (res.ok) {
+            const data = await res.json();
+            showContentSheet('Task', renderMarkdown(data.content));
+        } else {
+            const err = await res.json().catch(() => ({}));
+            const hint = err.searched ? `<br><small style="opacity:0.5">Searched: ${err.searched}</small>` : '';
+            showContentSheet('Task', `<p style="color:#f87171">Task file not found on server.${hint}</p>`);
+        }
+    } catch (err) {
+        showContentSheet('Task', `<p style="color:#f87171">Error: ${String(err)}</p>`);
+    }
+});
+
+if (walkthroughChip) walkthroughChip.addEventListener('click', async () => {
+    showContentSheet('Walkthrough', '<p style="color:#999;font-style:italic">Loading walkthrough\u2026</p>');
+    try {
+        const res = await fetch(`/walkthrough?token=${encodeURIComponent(authToken)}`);
+        if (res.ok) {
+            const data = await res.json();
+            showContentSheet('Walkthrough', renderMarkdown(data.content));
+        } else {
+            const err = await res.json().catch(() => ({}));
+            const hint = err.searched ? `<br><small style="opacity:0.5">Searched: ${err.searched}</small>` : '';
+            showContentSheet('Walkthrough', `<p style="color:#f87171">Walkthrough file not found on server.${hint}</p>`);
+        }
+    } catch (err) {
+        showContentSheet('Walkthrough', `<p style="color:#f87171">Error: ${String(err)}</p>`);
+    }
+});
+
+if (planChip) planChip.addEventListener('click', async () => {
+    showContentSheet('Implementation Plan', '<p style="color:#999;font-style:italic">Loading plan\u2026</p>');
+    try {
+        const res = await fetch(`/plan?token=${encodeURIComponent(authToken)}`);
+        if (res.ok) {
+            const data = await res.json();
+            showContentSheet('Implementation Plan', renderMarkdown(data.content));
+            return;
+        }
+    } catch { }
+    // Fall back to in-page detection
+    const inPage = cachedPlanText ? renderContentText(cachedPlanText) : '';
+    showContentSheet('Implementation Plan',
+        inPage || '<p style="color:#f87171">No implementation plan found — the AI may not have generated one yet.</p>');
+});
+
+function updateControls(snapshot) {
+    if (!snapshot) return;
+    const controlsHtml = String(snapshot.controlsHtml || snapshot.html || '');
+    const controlsMeta = snapshot.controlsMeta || null;
+    const surfaceSignals = snapshot.surfaceSignals || null;
+
+    const signature = JSON.stringify({
+        modeText: controlsMeta && controlsMeta.mode ? normalizeControlText(controlsMeta.mode.text) : '',
+        modeSelector: controlsMeta && controlsMeta.mode ? String(controlsMeta.mode.selector || '') : '',
+        modelText: controlsMeta && controlsMeta.model ? normalizeControlText(controlsMeta.model.text) : '',
+        modelSelector: controlsMeta && controlsMeta.model ? String(controlsMeta.model.selector || '') : '',
+        scope: controlsMeta ? String(controlsMeta.scope || '') : '',
+        hasCommandPalette: !!(surfaceSignals && surfaceSignals.hasCommandPalette),
+        hasComposer: !!(surfaceSignals && surfaceSignals.hasComposer),
+        hasMessages: !!(surfaceSignals && surfaceSignals.hasMessages),
+        controlsLen: controlsHtml.length,
+        hasStop: !!(controlsMeta && controlsMeta.stop),
+        hasTask: !!(controlsMeta && controlsMeta.task),
+        hasWalkthrough: !!(controlsMeta && controlsMeta.walkthrough)
+    });
+
+    if (signature === lastControlsSignature && !pendingMenuClick) return;
+    lastControlsSignature = signature;
+
+    const temp = document.createElement('div');
+    temp.innerHTML = controlsHtml;
+
+    let modeControl = null;
+    let modelControl = null;
+    const hideSelectors = [];
+
+    const modeFromMeta = toSnapshotControl(controlsMeta && controlsMeta.mode);
+    const modelFromMeta = toSnapshotControl(controlsMeta && controlsMeta.model);
+    const surfaceHasCascade = !!(surfaceSignals && surfaceSignals.hasCascade);
+    const surfaceHasMessages = !!(surfaceSignals && surfaceSignals.hasMessages);
+    const surfaceHasCommandPalette = !!(surfaceSignals && surfaceSignals.hasCommandPalette);
+
+    if (!modeFromMeta && !modelFromMeta && surfaceHasCommandPalette && !surfaceHasCascade && !surfaceHasMessages) {
+        modeVal.textContent = '...';
+        modeVal.style.color = '#999';
+        currentModeSelector = '';
+        currentModeText = '';
+        modelVal.textContent = '...';
+        modelVal.style.color = '#999';
+        currentModelSelector = '';
+        currentModelText = '';
+        syncLegacyHider([]);
+        pendingMenuClick = false;
+        pendingMenuAttempts = 0;
+        return;
+    }
+
+    if (modeFromMeta && isModeLikeLabel(modeFromMeta.text)) {
+        modeControl = modeFromMeta;
+        if (modeFromMeta.selector) hideSelectors.push(modeFromMeta.selector);
+    }
+    if (modelFromMeta && isModelLikeLabel(modelFromMeta.text)) {
+        modelControl = modelFromMeta;
+        if (modelFromMeta.selector) hideSelectors.push(modelFromMeta.selector);
+    }
+
+    if (!modeControl || !modelControl) {
+        const scopeRoot = temp.querySelector('#cascade, #conversation, #chat, [data-testid="cascade-root"], [data-testid="conversation-root"], [data-testid="chat-root"]') || temp;
+        const allBtns = Array.from(scopeRoot.querySelectorAll('button, [role="button"], [class*="button"]'));
+        const candidates = allBtns
+            .map((btn) => ({
+                text: normalizeControlText(btn.innerText || btn.textContent || '')
+            }))
+            .filter((entry) => entry.text && entry.text.length <= 96 && !isCommandPaletteOption(entry.text));
+
+        if (!modeControl) {
+            const foundMode = candidates.find((entry) => isModeLikeLabel(entry.text) && !isModelLikeLabel(entry.text));
+            if (foundMode) modeControl = { text: foundMode.text, selector: '' };
+        }
+
+        if (!modelControl) {
+            const foundModel = candidates.find((entry) => (!modeControl || entry.text !== modeControl.text) && isModelLikeLabel(entry.text));
+            if (foundModel) modelControl = { text: foundModel.text, selector: '' };
+        }
+    }
+
+    nativeStatusBar.style.display = 'flex';
+    if (modeControl) {
+        modeVal.textContent = modeControl.text;
+        modeVal.style.color = '#3b82f6';
+        currentModeSelector = modeControl.selector || '';
+        currentModeText = modeControl.text;
+    } else {
+        modeVal.textContent = '...';
+        modeVal.style.color = '#999';
+        currentModeSelector = '';
+        currentModeText = '';
+    }
+
+    if (modelControl) {
+        modelVal.textContent = modelControl.text;
+        modelVal.style.color = '#e0e0e0';
+        currentModelSelector = modelControl.selector || '';
+        currentModelText = modelControl.text;
+    } else {
+        modelVal.textContent = '...';
+        modelVal.style.color = '#999';
+        currentModelSelector = '';
+        currentModelText = '';
+    }
+    syncLegacyHider([]);
+
+    // ── Stop chip ─────────────────────────────────────────────────────────────
+    const stopData = controlsMeta && controlsMeta.stop ? controlsMeta.stop : null;
+    currentStopSelector = stopData ? String(stopData.selector || '') : '';
+    if (stopChip) stopChip.style.display = currentStopSelector ? '' : 'none';
+
+    // Task / Walkthrough chips are always visible — content comes from server files,
+    // not from the IDE DOM (see /task and /walkthrough endpoints).
+
+    // ── Update content sheet if waiting for task/walkthrough content ──────────
+    if (pendingContentType && contentSheet && contentSheet.classList.contains('show')) {
+        pendingContentAttempts += 1;
+        const extracted = extractContentFromSnapshot(snapshot, pendingContentType);
+        if (extracted && extracted.length > 40) {
+            contentSheetBody.innerHTML = extracted;
+            pendingContentType = '';
+            pendingContentAttempts = 0;
+        } else if (pendingContentAttempts >= 6) {
+            // Give up after ~18 s (6 × 3 s poll) rather than hanging forever
+            contentSheetBody.innerHTML = '<p style="color:#f87171;font-style:italic">Content not found in snapshot \u2014 it may have opened in a different view in the IDE.</p>';
+            pendingContentType = '';
+            pendingContentAttempts = 0;
+        }
+    }
+
+    // ── Implementation plan chip — cache in-page content for click handler ───
+    cachedPlanText = detectPlanContent(snapshot);
+
+    if (!pendingMenuClick) return;
+    pendingMenuAttempts += 1;
+
+    const panelSelectors = [
+        '[id^="headlessui-popover-panel"]',
+        '[id^="headlessui-menu-items"]',
+        '[id^="headlessui-listbox-options"]',
+        '[role="menu"]',
+        '[role="listbox"]',
+        '[role="dialog"]',
+        '[aria-modal="true"]',
+        '[data-headlessui-state]',
+        '[id*="radix"]',
+        '[class*="popover"]',
+        '[class*="menu"]',
+        '[class*="listbox"]',
+        '[class*="dropdown"]'
+    ];
+    let bestItems = [];
+    let bestIsTyped = false; // true when bestItems came from isModeLikeLabel/isModelLikeLabel filter
+    const normalizeItemText = (item) => {
+        let text = normalizeControlText(item.innerText || item.textContent || '');
+        const medium = item.querySelector('.font-medium');
+        if (medium) text = normalizeControlText(medium.textContent || text);
+        return text;
+    };
+    const collectItems = (rootEl) => {
+        const itemSels = ['button', '[role="menuitem"]', '[role="option"]', 'li', '.cursor-pointer', 'a', 'div.cursor-pointer', '[class*="menu-item"]', '[class*="option"]'];
+        const seen = new Set();
+        return Array.from(rootEl.querySelectorAll(itemSels.join(', ')))
+            .map((item) => ({ text: normalizeItemText(item), selector: '' }))
+            .filter((it) => {
+                if (!it.text || it.text.length > 110 || isCommandPaletteOption(it.text)) return false;
+                const key = it.text.toLowerCase();
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+    };
+
+    for (const panel of Array.from(temp.querySelectorAll(panelSelectors.join(', ')))) {
+        const panelText = normalizeControlText(panel.textContent || '');
+        const panelHints = normalizeControlText([
+            panel.id || '',
+            panel.getAttribute('aria-label') || '',
+            String(panel.className || '')
+        ].join(' ')).toLowerCase();
+        if (panelText.length < 2) continue;
+        if (panelHints.includes('quick-input') || panelHints.includes('quickpick') || panelHints.includes('command palette')) continue;
+        if (isCommandPaletteOption(panelText)) continue;
+
+        const foundItems = collectItems(panel);
+
+        let typedItems = foundItems;
+        let panelIsTyped = false;
+        if (lastClickedType === 'mode') {
+            const strict = foundItems.filter((it) => isModeLikeLabel(it.text));
+            if (strict.length > 0) { typedItems = strict; panelIsTyped = true; }
+            else if (foundItems.length >= 2) typedItems = foundItems.slice(0, 12);
+        } else if (lastClickedType === 'model') {
+            const strict = foundItems.filter((it) => isModelLikeLabel(it.text));
+            if (strict.length > 0) { typedItems = strict; panelIsTyped = true; }
+            else if (foundItems.length >= 2) typedItems = foundItems.slice(0, 12);
+        }
+        // A semantically-typed match always beats an untyped fallback match,
+        // regardless of item count.  Within the same tier, prefer more items.
+        const beats = (panelIsTyped && !bestIsTyped) ||
+            (panelIsTyped === bestIsTyped && typedItems.length > bestItems.length);
+        if (beats) { bestItems = typedItems; bestIsTyped = panelIsTyped; }
+    }
+
+    if (bestItems.length === 0) {
+        const globalItems = collectItems(temp);
+        let typedItems = globalItems;
+        if (lastClickedType === 'mode') {
+            typedItems = globalItems.filter((it) => isModeLikeLabel(it.text) || /\b(fast|planning|agent|ask|chat|code|edit|execution|execute|writing)\b/i.test(it.text));
+        } else if (lastClickedType === 'model') {
+            typedItems = globalItems.filter((it) => isModelLikeLabel(it.text) || /\b(gemini|claude|gpt|sonnet|haiku|flash|pro|opus|llama|deepseek)\b/i.test(it.text));
+        }
+        if ((lastClickedType === 'mode' || lastClickedType === 'model') && typedItems.length === 0 && globalItems.length >= 2) {
+            typedItems = globalItems.slice(0, 12);
+        }
+        bestItems = typedItems;
+    }
+
+    if (bestItems.length > 0) {
+        if (!optionsSheet.classList.contains('show')) {
+            showSheet('Select Option', bestItems);
+            pendingMenuClick = false;
+            pendingMenuAttempts = 0;
+        }
+    } else if (pendingMenuAttempts >= 3) {
+        if (typeof logToScreen === 'function') {
+            logToScreen(`No options found for ${lastClickedType || 'menu'} after ${pendingMenuAttempts} snapshots`, '#fbbf24');
+        }
+        pendingMenuClick = false;
+        pendingMenuAttempts = 0;
+    }
+}
+
+// Initial Start
+if (authToken) {
+    connectWebSocket();
+} else {
+    showLogin();
+}
+
+// UI Helpers
+function showToast(msg, isError = false) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.className = isError ? 'toast-error show' : 'show';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Master Orchestrator Phase 3 additions
+const broadcastBtn = document.getElementById('broadcastBtn');
+if (broadcastBtn) {
+    broadcastBtn.addEventListener('click', async () => {
+        if (!checkAuth()) return;
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        broadcastBtn.disabled = true;
+        broadcastBtn.style.opacity = '0.5';
+
+        try {
+            const res = await fetch('/orchestrate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ targetWorkspace: 'ALL', message })
+            });
+
+            if (res.status === 401) {
+                authToken = '';
+                localStorage.removeItem('ag_auth_token');
+                showLogin();
+                throw new Error('Unauthorized');
+            }
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            
+            messageInput.value = '';
+            if (typeof autoResizeInput === 'function') autoResizeInput();
+            showToast('Broadcast sent to all agents!');
+        } catch (e) {
+            if (typeof logToScreen === 'function') logToScreen(`Broadcast Error: ${e.message}`, '#f87171');
+            showToast(`Broadcast Error: ${e.message}`, true);
+        } finally {
+            broadcastBtn.disabled = false;
+            broadcastBtn.style.opacity = '1';
+        }
+    });
+}
+
+const conversationsChip = document.getElementById('conversationsChip');
+const conversationsModal = document.getElementById('conversationsModal');
+const closeConversationsBtn = document.getElementById('closeConversationsBtn');
+const conversationsList = document.getElementById('conversationsList');
+
+if (conversationsChip) {
+    conversationsChip.addEventListener('click', async () => {
+        if (!checkAuth()) return;
+        conversationsModal.classList.add('show');
+        conversationsList.innerHTML = '<div style="padding:16px;text-align:center;">Loading conversations...</div>';
+        try {
+            const res = await fetch('/conversations', {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                conversationsList.innerHTML = '';
+                if (data.conversations && data.conversations.length > 0) {
+                    data.conversations.forEach(conv => {
+                        const item = document.createElement('div');
+                        item.className = 'md-outlined-field';
+                        item.style.cursor = 'pointer';
+                        item.style.marginBottom = '8px';
+                        item.innerHTML = `<strong>${conv.title}</strong><br><small style="color:var(--md-outline);">${conv.id}</small>`;
+                        item.addEventListener('click', () => {
+                            switchConversation(conv.id);
+                        });
+                        item.addEventListener('mouseover', () => item.style.borderColor = 'var(--md-primary)');
+                        item.addEventListener('mouseout', () => item.style.borderColor = 'var(--md-outline)');
+                        conversationsList.appendChild(item);
+                    });
+                } else {
+                    conversationsList.innerHTML = '<div style="padding:16px;text-align:center;">No conversations found.</div>';
+                }
+            }
+        } catch (e) {
+            conversationsList.innerHTML = `<div style="padding:16px;color:var(--md-error);">Failed to load: ${e.message}</div>`;
+        }
+    });
+}
+
+if (closeConversationsBtn) {
+    closeConversationsBtn.addEventListener('click', () => {
+        conversationsModal.classList.remove('show');
+    });
+}
+
+async function switchConversation(conversationId) {
+    if (!checkAuth()) return;
+    try {
+        const res = await fetch('/orchestrate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ targetWorkspace: activeTargetId || 'ALL', type: 'open_conversation', conversationId, message: '' })
+        });
+        if (res.ok) {
+            showToast('Conversation switch initiated...');
+            conversationsModal.classList.remove('show');
+        } else {
+            throw new Error(`HTTP ${res.status}`);
+        }
+    } catch (e) {
+        showToast(`Switch Error: ${e.message}`, true);
+    }
+}

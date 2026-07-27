@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # Shlink backend
+  shlink:
+    image: shlinkio/shlink:stable
+    container_name: qr-shlink-backend
+    restart: always
+    environment:
+      - DB_DRIVER=postgres
+      - DB_USER=${DB_USER:-shlink}
+      - DB_PASSWORD=${DB_PASSWORD:-shlink_super_secret}
+      - DB_NAME=${DB_NAME:-shlink}
+      - DB_HOST=db
+      - REDIS_SERVERS=tcp://redis:6379
+      # Sustituye localhost por el dominio final en producción (ej. qr.tudominio.com)
+      - DEFAULT_DOMAIN=${DEFAULT_DOMAIN:-localhost:8080}
+      - IS_HTTPS_ENABLED=false
+      - GEOLITE_LICENSE_KEY=${GEOLITE_LICENSE_KEY:-} # Opcional: Para seguimiento geolocalizado preciso
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - redis
+
+  # Base de datos para Shlink
+  db:
+    image: postgres:15-alpine
+    container_name: qr-shlink-db
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USER:-shlink}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-shlink_super_secret}
+      - POSTGRES_DB=${DB_NAME:-shlink}
+    volumes:
+      - shlink_db_data:/var/lib/postgresql/data
+
+  # Redis para Caché (acelera redirecciones)
+  redis:
+    image: redis:7-alpine
+    container_name: qr-shlink-redis
+    restart: always
+
+volumes:
+  shlink_db_data:
+
+# --- INSTRUCCIONES DE USO ---
+# 1. En VPS o Local, ejecuta: docker-compose up -d
+# 2. Tu API de Shlink estará disponible en http://localhost:8080
+# 3. Para crear tu clave de API (necesaria para el frontend):
+#    docker exec -it qr-shlink-backend shlink api-key:generate

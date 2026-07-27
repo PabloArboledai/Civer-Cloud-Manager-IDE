@@ -1,0 +1,2598 @@
+{
+  "ts": "2026-07-27T09:59:56.011Z",
+  "source": "auto-on-generation-start",
+  "contexts": [
+    {
+      "ctxId": "main",
+      "frameUrl": "https://127.0.0.1:62642/c/e776d353-12a4-4740-92d9-9dbe1a8a1956?section=701920fa-d249-44e4-9a86-0308759b8637",
+      "totalBtns": 196,
+      "inputBoxFound": true,
+      "inputBoxBtns": [
+        {
+          "aria": "",
+          "title": "",
+          "cls": "flex items-center justify-between cursor-pointer h-6 shrink-0 text-secondary-foreground hover:text-f",
+          "text": "2 tasks running",
+          "innerHTML": "<span class=\"text-sm\">2 tasks running</span><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"shrink-0 transition-transform duration-15",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 441,
+            "y": 471,
+            "w": 742,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "flex items-center gap-1.5 flex-1 min-w-0 text-left border-none bg-transparent outline-none cursor-po",
+          "text": "python Ejecutables\\Omni-Hotkeys.py",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"shrink-0 animate-spin opacity-50\"><path d=\"M332.55-129.9q-69.29-29.9-121.02-81.63T129",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 441,
+            "y": 501,
+            "w": 742,
+            "h": 20
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"text-secondary-foreground hover:text-foreground transition-colors\"><path d=\"M330-330H",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "stop-task-1095",
+            "data-tooltip-place": "left"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1157,
+            "y": 499,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "flex items-center gap-1.5 flex-1 min-w-0 text-left border-none bg-transparent outline-none cursor-po",
+          "text": "Stop-Process -Name \"python\" -Force -ErrorAction SilentlyCont",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"shrink-0 animate-spin opacity-50\"><path d=\"M332.55-129.9q-69.29-29.9-121.02-81.63T129",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 441,
+            "y": 527,
+            "w": 742,
+            "h": 20
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"text-secondary-foreground hover:text-foreground transition-colors\"><path d=\"M330-330H",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "stop-task-1092",
+            "data-tooltip-place": "left"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1157,
+            "y": 525,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "Add context",
+          "title": "",
+          "cls": "p-1.5 rounded-full text-secondary-foreground hover:bg-secondary cursor-pointer",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"w-4 h-4\"><path d=\"M450-450H220v-60H450V-740h60v230H740v60H510v230H450V-450Z\"></path><",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":r82:",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 435,
+            "y": 677,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "aria": "Select model, current: Gemini 3.1 Pro (High)",
+          "title": "",
+          "cls": "flex min-w-0 max-w-full cursor-pointer items-center h-7 gap-1 rounded-lg pr-1 pl-2 text-xs outline-n",
+          "text": "Gemini 3.1 Pro (High)",
+          "innerHTML": "<span class=\"min-w-0 select-none overflow-hidden text-ellipsis whitespace-nowrap text-xs text-secondary-foreground\">Gemini 3.1 Pro (High)</span><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" heigh",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":r8b:",
+            "data-base-ui-click-trigger": "",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 464,
+            "y": 677,
+            "w": 143,
+            "h": 28
+          }
+        },
+        {
+          "aria": "Send message",
+          "title": "",
+          "cls": "flex items-center justify-center w-7 h-7 p-1.5 rounded-full transition-all duration-150 bg-primary t",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"w-4 h-4 text-primary-foreground\"><path d=\"M665.08-450H180v-60H665.08L437.23-737.85L48",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-testid": "send-button",
+            "data-tooltip-id": "input-send-button-send-tooltip"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1161,
+            "y": 677,
+            "w": 28,
+            "h": 28
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "Antigravity",
+          "innerHTML": "Antigravity",
+          "hasSvg": false,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 4,
+            "w": 90,
+            "h": 28
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "File",
+          "innerHTML": "File",
+          "hasSvg": false,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 102,
+            "y": 4,
+            "w": 42,
+            "h": 28
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "View",
+          "innerHTML": "View",
+          "hasSvg": false,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 148,
+            "y": 4,
+            "w": 51,
+            "h": 28
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "Window",
+          "innerHTML": "Window",
+          "hasSvg": false,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 203,
+            "y": 4,
+            "w": 73,
+            "h": 28
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer disab",
+          "text": "New Conversation",
+          "innerHTML": "<span class=\"shrink-0 flex items-center\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M450-450H220v-60H450V-740h60v230H740v60H51",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":rc:",
+            "data-tooltip-place": "right",
+            "data-tooltip-delay-show": "300"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 87,
+            "w": 240,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer disab",
+          "text": "Conversation History",
+          "innerHTML": "<span class=\"shrink-0 flex items-center\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M479.23-140q-129.92,0-226.46-85.54T141.62-",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":rd:",
+            "data-testid": "history-button",
+            "data-tooltip-place": "right",
+            "data-tooltip-delay-show": "300"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 125,
+            "w": 240,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer disab",
+          "text": "Scheduled Tasks",
+          "innerHTML": "<span class=\"shrink-0 flex items-center\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M618.92-298.92l42.15-42.15L510-492.16V-680",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":re:",
+            "data-tooltip-place": "right",
+            "data-tooltip-delay-show": "300"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 163,
+            "w": 240,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-start justify-be",
+          "text": "Búsqueda De Antigravity Managerc:\\Users\\Administrator\\Deskto",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 248,
+            "w": 225,
+            "h": 50
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 252,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M660-820v60H620v307l-60-60V-760H400v87l-64.31-64.31l-20.31-43H300V-820H660ZM480-90l",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "88de0da3-3d6f-4489-8c28-34e096d25d46",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 252,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "2216bae8-06b3-401f-a0ad-fcfc0b2d4ca8",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 252,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-start justify-be",
+          "text": "Análisis y Sincronización Técnicac:\\Users\\Administrator\\Desk",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 299,
+            "w": 225,
+            "h": 50
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 303,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M660-820v60H620v307l-60-60V-760H400v87l-64.31-64.31l-20.31-43H300V-820H660ZM480-90l",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "18897d8d-4110-4bca-9fc1-c6ed1a1eac7e",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 303,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "48480cf7-db15-4a62-bf6c-7545f6d043d7",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 303,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-start justify-be",
+          "text": "Recuperación Y Soporte Antigravityc:\\Users\\Administrator\\Des",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 350,
+            "w": 225,
+            "h": 50
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 354,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M660-820v60H620v307l-60-60V-760H400v87l-64.31-64.31l-20.31-43H300V-820H660ZM480-90l",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "5f239258-ccc3-4681-83da-93bbce7646f3",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 354,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "2572c43c-b2d4-4659-a7b9-c629f211d452",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 354,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "Display Options",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M411.15-260v-60H548.46v60H411.15Zm-155-190v-60H703.46v60H256.16ZM140-640v-60H820v60",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "e1b06715-a6dd-4757-8bca-e6bca2ebdf90",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 185,
+            "y": 428,
+            "w": 20,
+            "h": 20
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\"><mask id=\"mask0_1267_594\" maskUnits=\"userSpaceOnUse\" x=\"0\" y=\"0\" width=\"24\" height=\"24\" style=\"mask-type:",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "d72db7e5-058a-4135-8e50-5cc2c4d75cb7",
+            "data-base-ui-click-trigger": "",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 428,
+            "w": 20,
+            "h": 20
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "flex items-center gap-0 pl-1 pr-0.5 h-8 shrink-0 rounded-lg select-none hover:bg-muted text-muted-fo",
+          "text": "c:\\Users\\Administrator\\Desktop\\omniverso-git",
+          "innerHTML": "<div class=\"flex-1 min-w-0 flex justify-start h-full\"><div class=\"flex items-center gap-0.5 h-full min-w-0\"><div class=\"w-6 h-6 shrink-0 flex items-center justify-center\"><svg xmlns=\"http://www.w3.org",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-project-card": "true"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 460,
+            "w": 225,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M387.69-100L372.46-221.85q-16.08-5.38-32.96-15.08t-30.19-20.77L196.46-210L104.16-37",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "70ca8c68-402a-4ec8-b940-26230aa347a4",
+            "data-tooltip-place": "top"
+          },
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "aria": "New Conversation in Project",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M450-450H220v-60H450V-740h60v230H740v60H510v230H450V-450Z\"></path></svg>",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "f748ede6-c9f4-480c-bfbc-523662ddd2d6",
+            "data-tooltip-place": "top"
+          },
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-center justify-b",
+          "text": "Recuperación De Planes Antigravity",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity\" data-testid=\"convo-pill-e776d353-12a4-474",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 30,
+            "y": 493,
+            "w": 203,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 497,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M620-471.54L691.54-400v60H510v220L480-90l-30-30V-340H268.46v-60L340-471.54V-760H300",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "3c7dc106-1ac8-44d6-9291-2d70a6ccf739",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 497,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M330-330H630V-630H330v300ZM480.07-100q-78.84,0-148.2-29.92T211.18-211.13T129.93-331",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "d317ad1b-f0a1-4f29-94ab-ef3fd2768d1e",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 497,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-center justify-b",
+          "text": "Recuperación Y Soporte Antigravity 13h",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 30,
+            "y": 526,
+            "w": 203,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 530,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M620-471.54L691.54-400v60H510v220L480-90l-30-30V-340H268.46v-60L340-471.54V-760H300",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "18fe42e9-3b22-4512-8c05-a39408704e6a",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 530,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "8a55644b-7564-4bde-b45d-d80c68658c91",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 530,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-center justify-b",
+          "text": "Desarrollo Sistema QR Personalizado4d",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 30,
+            "y": 559,
+            "w": 203,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 563,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M620-471.54L691.54-400v60H510v220L480-90l-30-30V-340H268.46v-60L340-471.54V-760H300",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "b722be68-28c0-45a4-a03d-54359fee2b03",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 563,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "e23f9031-4adc-4f5a-aa4f-1d4578df917f",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 563,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-center justify-b",
+          "text": "Recuperar Conversaciones Archivadas4d",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 30,
+            "y": 592,
+            "w": 203,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 596,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M620-471.54L691.54-400v60H510v220L480-90l-30-30V-340H268.46v-60L340-471.54V-760H300",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "f0c641a3-dbb2-49e5-9a70-97129c84cfc1",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 596,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "b8e4852a-97b2-44f3-b3a3-f6af66b4dbf6",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 596,
+            "w": 24,
+            "h": 24
+          }
+        }
+      ]
+    },
+    {
+      "ctxId": 2,
+      "frameUrl": "https://127.0.0.1:62642/c/e776d353-12a4-4740-92d9-9dbe1a8a1956?section=701920fa-d249-44e4-9a86-0308759b8637",
+      "totalBtns": 196,
+      "inputBoxFound": true,
+      "inputBoxBtns": [
+        {
+          "aria": "",
+          "title": "",
+          "cls": "flex items-center justify-between cursor-pointer h-6 shrink-0 text-secondary-foreground hover:text-f",
+          "text": "2 tasks running",
+          "innerHTML": "<span class=\"text-sm\">2 tasks running</span><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"shrink-0 transition-transform duration-15",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 441,
+            "y": 471,
+            "w": 742,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "flex items-center gap-1.5 flex-1 min-w-0 text-left border-none bg-transparent outline-none cursor-po",
+          "text": "python Ejecutables\\Omni-Hotkeys.py",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"shrink-0 animate-spin opacity-50\"><path d=\"M332.55-129.9q-69.29-29.9-121.02-81.63T129",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 441,
+            "y": 501,
+            "w": 742,
+            "h": 20
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"text-secondary-foreground hover:text-foreground transition-colors\"><path d=\"M330-330H",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "stop-task-1095",
+            "data-tooltip-place": "left"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1157,
+            "y": 499,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "flex items-center gap-1.5 flex-1 min-w-0 text-left border-none bg-transparent outline-none cursor-po",
+          "text": "Stop-Process -Name \"python\" -Force -ErrorAction SilentlyCont",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"shrink-0 animate-spin opacity-50\"><path d=\"M332.55-129.9q-69.29-29.9-121.02-81.63T129",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 441,
+            "y": 527,
+            "w": 742,
+            "h": 20
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"text-secondary-foreground hover:text-foreground transition-colors\"><path d=\"M330-330H",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "stop-task-1092",
+            "data-tooltip-place": "left"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1157,
+            "y": 525,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "Add context",
+          "title": "",
+          "cls": "p-1.5 rounded-full text-secondary-foreground hover:bg-secondary cursor-pointer",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"w-4 h-4\"><path d=\"M450-450H220v-60H450V-740h60v230H740v60H510v230H450V-450Z\"></path><",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":r82:",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 435,
+            "y": 677,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "aria": "Select model, current: Gemini 3.1 Pro (High)",
+          "title": "",
+          "cls": "flex min-w-0 max-w-full cursor-pointer items-center h-7 gap-1 rounded-lg pr-1 pl-2 text-xs outline-n",
+          "text": "Gemini 3.1 Pro (High)",
+          "innerHTML": "<span class=\"min-w-0 select-none overflow-hidden text-ellipsis whitespace-nowrap text-xs text-secondary-foreground\">Gemini 3.1 Pro (High)</span><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" heigh",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":r8b:",
+            "data-base-ui-click-trigger": "",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 464,
+            "y": 677,
+            "w": 143,
+            "h": 28
+          }
+        },
+        {
+          "aria": "Send message",
+          "title": "",
+          "cls": "flex items-center justify-center w-7 h-7 p-1.5 rounded-full transition-all duration-150 bg-primary t",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"w-4 h-4 text-primary-foreground\"><path d=\"M665.08-450H180v-60H665.08L437.23-737.85L48",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-testid": "send-button",
+            "data-tooltip-id": "input-send-button-send-tooltip"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1161,
+            "y": 677,
+            "w": 28,
+            "h": 28
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "Antigravity",
+          "innerHTML": "Antigravity",
+          "hasSvg": false,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 4,
+            "w": 90,
+            "h": 28
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "File",
+          "innerHTML": "File",
+          "hasSvg": false,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 102,
+            "y": 4,
+            "w": 42,
+            "h": 28
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "View",
+          "innerHTML": "View",
+          "hasSvg": false,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 148,
+            "y": 4,
+            "w": 51,
+            "h": 28
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "Window",
+          "innerHTML": "Window",
+          "hasSvg": false,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 203,
+            "y": 4,
+            "w": 73,
+            "h": 28
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer disab",
+          "text": "New Conversation",
+          "innerHTML": "<span class=\"shrink-0 flex items-center\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M450-450H220v-60H450V-740h60v230H740v60H51",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":rc:",
+            "data-tooltip-place": "right",
+            "data-tooltip-delay-show": "300"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 87,
+            "w": 240,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer disab",
+          "text": "Conversation History",
+          "innerHTML": "<span class=\"shrink-0 flex items-center\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M479.23-140q-129.92,0-226.46-85.54T141.62-",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":rd:",
+            "data-testid": "history-button",
+            "data-tooltip-place": "right",
+            "data-tooltip-delay-show": "300"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 125,
+            "w": 240,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer disab",
+          "text": "Scheduled Tasks",
+          "innerHTML": "<span class=\"shrink-0 flex items-center\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M618.92-298.92l42.15-42.15L510-492.16V-680",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":re:",
+            "data-tooltip-place": "right",
+            "data-tooltip-delay-show": "300"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 163,
+            "w": 240,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-start justify-be",
+          "text": "Búsqueda De Antigravity Managerc:\\Users\\Administrator\\Deskto",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 248,
+            "w": 225,
+            "h": 50
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 252,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M660-820v60H620v307l-60-60V-760H400v87l-64.31-64.31l-20.31-43H300V-820H660ZM480-90l",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "88de0da3-3d6f-4489-8c28-34e096d25d46",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 252,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "2216bae8-06b3-401f-a0ad-fcfc0b2d4ca8",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 252,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-start justify-be",
+          "text": "Análisis y Sincronización Técnicac:\\Users\\Administrator\\Desk",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 299,
+            "w": 225,
+            "h": 50
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 303,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M660-820v60H620v307l-60-60V-760H400v87l-64.31-64.31l-20.31-43H300V-820H660ZM480-90l",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "18897d8d-4110-4bca-9fc1-c6ed1a1eac7e",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 303,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "48480cf7-db15-4a62-bf6c-7545f6d043d7",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 303,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-start justify-be",
+          "text": "Recuperación Y Soporte Antigravityc:\\Users\\Administrator\\Des",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 350,
+            "w": 225,
+            "h": 50
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 354,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M660-820v60H620v307l-60-60V-760H400v87l-64.31-64.31l-20.31-43H300V-820H660ZM480-90l",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "5f239258-ccc3-4681-83da-93bbce7646f3",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 354,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "2572c43c-b2d4-4659-a7b9-c629f211d452",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 354,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "Display Options",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M411.15-260v-60H548.46v60H411.15Zm-155-190v-60H703.46v60H256.16ZM140-640v-60H820v60",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "e1b06715-a6dd-4757-8bca-e6bca2ebdf90",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 185,
+            "y": 428,
+            "w": 20,
+            "h": 20
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\"><mask id=\"mask0_1267_594\" maskUnits=\"userSpaceOnUse\" x=\"0\" y=\"0\" width=\"24\" height=\"24\" style=\"mask-type:",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "d72db7e5-058a-4135-8e50-5cc2c4d75cb7",
+            "data-base-ui-click-trigger": "",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 428,
+            "w": 20,
+            "h": 20
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "flex items-center gap-0 pl-1 pr-0.5 h-8 shrink-0 rounded-lg select-none hover:bg-muted text-muted-fo",
+          "text": "c:\\Users\\Administrator\\Desktop\\omniverso-git",
+          "innerHTML": "<div class=\"flex-1 min-w-0 flex justify-start h-full\"><div class=\"flex items-center gap-0.5 h-full min-w-0\"><div class=\"w-6 h-6 shrink-0 flex items-center justify-center\"><svg xmlns=\"http://www.w3.org",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-project-card": "true"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 460,
+            "w": 225,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M387.69-100L372.46-221.85q-16.08-5.38-32.96-15.08t-30.19-20.77L196.46-210L104.16-37",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "70ca8c68-402a-4ec8-b940-26230aa347a4",
+            "data-tooltip-place": "top"
+          },
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "aria": "New Conversation in Project",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M450-450H220v-60H450V-740h60v230H740v60H510v230H450V-450Z\"></path></svg>",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "f748ede6-c9f4-480c-bfbc-523662ddd2d6",
+            "data-tooltip-place": "top"
+          },
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-center justify-b",
+          "text": "Recuperación De Planes Antigravity",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity\" data-testid=\"convo-pill-e776d353-12a4-474",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 30,
+            "y": 493,
+            "w": 203,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 497,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M620-471.54L691.54-400v60H510v220L480-90l-30-30V-340H268.46v-60L340-471.54V-760H300",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "3c7dc106-1ac8-44d6-9291-2d70a6ccf739",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 497,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M330-330H630V-630H330v300ZM480.07-100q-78.84,0-148.2-29.92T211.18-211.13T129.93-331",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "d317ad1b-f0a1-4f29-94ab-ef3fd2768d1e",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 497,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-center justify-b",
+          "text": "Recuperación Y Soporte Antigravity 13h",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 30,
+            "y": 526,
+            "w": 203,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 530,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M620-471.54L691.54-400v60H510v220L480-90l-30-30V-340H268.46v-60L340-471.54V-760H300",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "18fe42e9-3b22-4512-8c05-a39408704e6a",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 530,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "8a55644b-7564-4bde-b45d-d80c68658c91",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 530,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-center justify-b",
+          "text": "Desarrollo Sistema QR Personalizado4d",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 30,
+            "y": 559,
+            "w": 203,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 563,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M620-471.54L691.54-400v60H510v220L480-90l-30-30V-340H268.46v-60L340-471.54V-760H300",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "b722be68-28c0-45a4-a03d-54359fee2b03",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 563,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "e23f9031-4adc-4f5a-aa4f-1d4578df917f",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 563,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-center justify-b",
+          "text": "Recuperar Conversaciones Archivadas4d",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 30,
+            "y": 592,
+            "w": 203,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 596,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M620-471.54L691.54-400v60H510v220L480-90l-30-30V-340H268.46v-60L340-471.54V-760H300",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "f0c641a3-dbb2-49e5-9a70-97129c84cfc1",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 596,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "b8e4852a-97b2-44f3-b3a3-f6af66b4dbf6",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 596,
+            "w": 24,
+            "h": 24
+          }
+        }
+      ]
+    },
+    {
+      "ctxId": 1,
+      "frameUrl": "https://127.0.0.1:62642/c/e776d353-12a4-4740-92d9-9dbe1a8a1956?section=701920fa-d249-44e4-9a86-0308759b8637",
+      "totalBtns": 196,
+      "inputBoxFound": true,
+      "inputBoxBtns": [
+        {
+          "aria": "",
+          "title": "",
+          "cls": "flex items-center justify-between cursor-pointer h-6 shrink-0 text-secondary-foreground hover:text-f",
+          "text": "2 tasks running",
+          "innerHTML": "<span class=\"text-sm\">2 tasks running</span><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"shrink-0 transition-transform duration-15",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 441,
+            "y": 471,
+            "w": 742,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "flex items-center gap-1.5 flex-1 min-w-0 text-left border-none bg-transparent outline-none cursor-po",
+          "text": "python Ejecutables\\Omni-Hotkeys.py",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"shrink-0 animate-spin opacity-50\"><path d=\"M332.55-129.9q-69.29-29.9-121.02-81.63T129",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 441,
+            "y": 501,
+            "w": 742,
+            "h": 20
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"text-secondary-foreground hover:text-foreground transition-colors\"><path d=\"M330-330H",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "stop-task-1095",
+            "data-tooltip-place": "left"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1157,
+            "y": 499,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "flex items-center gap-1.5 flex-1 min-w-0 text-left border-none bg-transparent outline-none cursor-po",
+          "text": "Stop-Process -Name \"python\" -Force -ErrorAction SilentlyCont",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"shrink-0 animate-spin opacity-50\"><path d=\"M332.55-129.9q-69.29-29.9-121.02-81.63T129",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 441,
+            "y": 527,
+            "w": 742,
+            "h": 20
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"text-secondary-foreground hover:text-foreground transition-colors\"><path d=\"M330-330H",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "stop-task-1092",
+            "data-tooltip-place": "left"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1157,
+            "y": 525,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "Add context",
+          "title": "",
+          "cls": "p-1.5 rounded-full text-secondary-foreground hover:bg-secondary cursor-pointer",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"w-4 h-4\"><path d=\"M450-450H220v-60H450V-740h60v230H740v60H510v230H450V-450Z\"></path><",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":r82:",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 435,
+            "y": 677,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "aria": "Select model, current: Gemini 3.1 Pro (High)",
+          "title": "",
+          "cls": "flex min-w-0 max-w-full cursor-pointer items-center h-7 gap-1 rounded-lg pr-1 pl-2 text-xs outline-n",
+          "text": "Gemini 3.1 Pro (High)",
+          "innerHTML": "<span class=\"min-w-0 select-none overflow-hidden text-ellipsis whitespace-nowrap text-xs text-secondary-foreground\">Gemini 3.1 Pro (High)</span><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" heigh",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":r8b:",
+            "data-base-ui-click-trigger": "",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 464,
+            "y": 677,
+            "w": 143,
+            "h": 28
+          }
+        },
+        {
+          "aria": "Send message",
+          "title": "",
+          "cls": "flex items-center justify-center w-7 h-7 p-1.5 rounded-full transition-all duration-150 bg-primary t",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\" class=\"w-4 h-4 text-primary-foreground\"><path d=\"M665.08-450H180v-60H665.08L437.23-737.85L48",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-testid": "send-button",
+            "data-tooltip-id": "input-send-button-send-tooltip"
+          },
+          "visible": true,
+          "rect": {
+            "x": 1161,
+            "y": 677,
+            "w": 28,
+            "h": 28
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "Antigravity",
+          "innerHTML": "Antigravity",
+          "hasSvg": false,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 4,
+            "w": 90,
+            "h": 28
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "File",
+          "innerHTML": "File",
+          "hasSvg": false,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 102,
+            "y": 4,
+            "w": 42,
+            "h": 28
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "View",
+          "innerHTML": "View",
+          "hasSvg": false,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 148,
+            "y": 4,
+            "w": 51,
+            "h": 28
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "Window",
+          "innerHTML": "Window",
+          "hasSvg": false,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 203,
+            "y": 4,
+            "w": 73,
+            "h": 28
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer disab",
+          "text": "New Conversation",
+          "innerHTML": "<span class=\"shrink-0 flex items-center\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M450-450H220v-60H450V-740h60v230H740v60H51",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":rc:",
+            "data-tooltip-place": "right",
+            "data-tooltip-delay-show": "300"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 87,
+            "w": 240,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer disab",
+          "text": "Conversation History",
+          "innerHTML": "<span class=\"shrink-0 flex items-center\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M479.23-140q-129.92,0-226.46-85.54T141.62-",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":rd:",
+            "data-testid": "history-button",
+            "data-tooltip-place": "right",
+            "data-tooltip-delay-show": "300"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 125,
+            "w": 240,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer disab",
+          "text": "Scheduled Tasks",
+          "innerHTML": "<span class=\"shrink-0 flex items-center\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M618.92-298.92l42.15-42.15L510-492.16V-680",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": ":re:",
+            "data-tooltip-place": "right",
+            "data-tooltip-delay-show": "300"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 163,
+            "w": 240,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-start justify-be",
+          "text": "Búsqueda De Antigravity Managerc:\\Users\\Administrator\\Deskto",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 248,
+            "w": 225,
+            "h": 50
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 252,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M660-820v60H620v307l-60-60V-760H400v87l-64.31-64.31l-20.31-43H300V-820H660ZM480-90l",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "88de0da3-3d6f-4489-8c28-34e096d25d46",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 252,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "2216bae8-06b3-401f-a0ad-fcfc0b2d4ca8",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 252,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-start justify-be",
+          "text": "Análisis y Sincronización Técnicac:\\Users\\Administrator\\Desk",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 299,
+            "w": 225,
+            "h": 50
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 303,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M660-820v60H620v307l-60-60V-760H400v87l-64.31-64.31l-20.31-43H300V-820H660ZM480-90l",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "18897d8d-4110-4bca-9fc1-c6ed1a1eac7e",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 303,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "48480cf7-db15-4a62-bf6c-7545f6d043d7",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 303,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-start justify-be",
+          "text": "Recuperación Y Soporte Antigravityc:\\Users\\Administrator\\Des",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 350,
+            "w": 225,
+            "h": 50
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 354,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M660-820v60H620v307l-60-60V-760H400v87l-64.31-64.31l-20.31-43H300V-820H660ZM480-90l",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "5f239258-ccc3-4681-83da-93bbce7646f3",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 354,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "2572c43c-b2d4-4659-a7b9-c629f211d452",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 354,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "Display Options",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M411.15-260v-60H548.46v60H411.15Zm-155-190v-60H703.46v60H256.16ZM140-640v-60H820v60",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "e1b06715-a6dd-4757-8bca-e6bca2ebdf90",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 185,
+            "y": 428,
+            "w": 20,
+            "h": 20
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\"><mask id=\"mask0_1267_594\" maskUnits=\"userSpaceOnUse\" x=\"0\" y=\"0\" width=\"24\" height=\"24\" style=\"mask-type:",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "d72db7e5-058a-4135-8e50-5cc2c4d75cb7",
+            "data-base-ui-click-trigger": "",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 428,
+            "w": 20,
+            "h": 20
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "flex items-center gap-0 pl-1 pr-0.5 h-8 shrink-0 rounded-lg select-none hover:bg-muted text-muted-fo",
+          "text": "c:\\Users\\Administrator\\Desktop\\omniverso-git",
+          "innerHTML": "<div class=\"flex-1 min-w-0 flex justify-start h-full\"><div class=\"flex items-center gap-0.5 h-full min-w-0\"><div class=\"w-6 h-6 shrink-0 flex items-center justify-center\"><svg xmlns=\"http://www.w3.org",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-project-card": "true"
+          },
+          "visible": true,
+          "rect": {
+            "x": 8,
+            "y": 460,
+            "w": 225,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M387.69-100L372.46-221.85q-16.08-5.38-32.96-15.08t-30.19-20.77L196.46-210L104.16-37",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "70ca8c68-402a-4ec8-b940-26230aa347a4",
+            "data-tooltip-place": "top"
+          },
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "aria": "New Conversation in Project",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M450-450H220v-60H450V-740h60v230H740v60H510v230H450V-450Z\"></path></svg>",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "f748ede6-c9f4-480c-bfbc-523662ddd2d6",
+            "data-tooltip-place": "top"
+          },
+          "visible": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-center justify-b",
+          "text": "Recuperación De Planes Antigravity",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity\" data-testid=\"convo-pill-e776d353-12a4-474",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 30,
+            "y": 493,
+            "w": 203,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 497,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M620-471.54L691.54-400v60H510v220L480-90l-30-30V-340H268.46v-60L340-471.54V-760H300",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "3c7dc106-1ac8-44d6-9291-2d70a6ccf739",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 497,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M330-330H630V-630H330v300ZM480.07-100q-78.84,0-148.2-29.92T211.18-211.13T129.93-331",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "d317ad1b-f0a1-4f29-94ab-ef3fd2768d1e",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 497,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-center justify-b",
+          "text": "Recuperación Y Soporte Antigravity 13h",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 30,
+            "y": 526,
+            "w": 203,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 530,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M620-471.54L691.54-400v60H510v220L480-90l-30-30V-340H268.46v-60L340-471.54V-760H300",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "18fe42e9-3b22-4512-8c05-a39408704e6a",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 530,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "8a55644b-7564-4bde-b45d-d80c68658c91",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 530,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-center justify-b",
+          "text": "Desarrollo Sistema QR Personalizado4d",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 30,
+            "y": 559,
+            "w": 203,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 563,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M620-471.54L691.54-400v60H510v220L480-90l-30-30V-340H268.46v-60L340-471.54V-760H300",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "b722be68-28c0-45a4-a03d-54359fee2b03",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 563,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "e23f9031-4adc-4f5a-aa4f-1d4578df917f",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 563,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "select-none cursor-pointer rounded-lg min-h-[32px] py-1.5 flex flex-row gap-1 items-center justify-b",
+          "text": "Recuperar Conversaciones Archivadas4d",
+          "innerHTML": "<div class=\"flex flex-col grow min-w-0\"><div class=\"flex items-center gap-1.5 w-full\"><span class=\"truncate inline-block text-sm text-left transition-opacity text-secondary-foreground group-hover:text",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 30,
+            "y": 592,
+            "w": 203,
+            "h": 32
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-189.23q-24.75,0-42.37-17.62T420-249.23t17.62-42.37T480-309.23t42.37,17.62T540-",
+          "hasSvg": true,
+          "dataAttrs": {},
+          "visible": true,
+          "rect": {
+            "x": 159,
+            "y": 596,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M620-471.54L691.54-400v60H510v220L480-90l-30-30V-340H268.46v-60L340-471.54V-760H300",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "f0c641a3-dbb2-49e5-9a70-97129c84cfc1",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 184,
+            "y": 596,
+            "w": 24,
+            "h": 24
+          }
+        },
+        {
+          "aria": "",
+          "title": "",
+          "cls": "inline-flex items-center font-medium transition-colors select-none outline-none cursor-pointer justi",
+          "text": "",
+          "innerHTML": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 -960 960 960\" fill=\"currentColor\"><path d=\"M480-256.16L626.15-402.31L584-444.46l-74,74v-178H450v178l-74-74l-42.15,42.15L480-25",
+          "hasSvg": true,
+          "dataAttrs": {
+            "data-tooltip-id": "b8e4852a-97b2-44f3-b3a3-f6af66b4dbf6",
+            "data-tooltip-place": "top"
+          },
+          "visible": true,
+          "rect": {
+            "x": 209,
+            "y": 596,
+            "w": 24,
+            "h": 24
+          }
+        }
+      ]
+    }
+  ]
+}

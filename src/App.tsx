@@ -13,6 +13,9 @@ import UserToken from './pages/UserToken';
 import Downloads from './pages/Downloads';
 import OrchestratorDashboard from './routes/orchestrator';
 import ChatCiver from './pages/ChatCiver';
+import Md5Viewer from './pages/Md5Viewer';
+import Vault from './pages/Vault';
+import ApiSystem from './pages/ApiSystem';
 import { UpdateNotification } from './components/UpdateNotification';
 import DebugConsole from './components/debug/DebugConsole';
 import { useEffect, useState } from 'react';
@@ -74,6 +77,18 @@ const router = createBrowserRouter([
       {
         path: 'orchestrator',
         element: <OrchestratorDashboard />,
+      },
+      {
+        path: 'md5-viewer',
+        element: <Md5Viewer />,
+      },
+      {
+        path: 'vault',
+        element: <Vault />,
+      },
+      {
+        path: 'api-system',
+        element: <ApiSystem />,
       },
     ],
   },

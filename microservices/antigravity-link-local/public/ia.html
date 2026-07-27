@@ -1,0 +1,239 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Civer Cloud · Agencia de Desarrollo de Software con IA</title>
+  <meta name="description" content="Civer Cloud es la agencia que hace la programación accesible para todos. Herramientas IA potentes, disponibles desde tu celular o navegador, sin conocimientos previos."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#04060f;--bg2:#080c1a;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--primary:#6366f1;--primary2:#8b5cf6;--accent:#06b6d4;--green:#10b981;--text:#f1f5f9;--muted:#94a3b8;--card-glow:rgba(99,102,241,0.15)}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.6}
+    .orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
+    .orb1{width:500px;height:500px;background:rgba(99,102,241,.12);top:-100px;right:-100px}
+    .orb2{width:400px;height:400px;background:rgba(6,182,212,.08);bottom:200px;left:-150px}
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:64px;background:rgba(4,6,15,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .nav-logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary2));display:grid;place-items:center;font-size:18px}
+    .nav-logo-text{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;color:var(--text)}
+    .nav-links{display:flex;gap:8px;align-items:center}
+    .nav-link{padding:7px 14px;border-radius:8px;font-size:.875rem;font-weight:500;text-decoration:none;color:var(--muted);transition:all .2s}
+    .nav-link:hover{color:var(--text);background:var(--surface)}
+    .nav-cta{padding:8px 20px;border-radius:8px;font-size:.875rem;font-weight:600;text-decoration:none;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary2));transition:opacity .2s,transform .2s;box-shadow:0 4px 20px rgba(99,102,241,0.4)}
+    .nav-cta:hover{opacity:.9;transform:translateY(-1px)}
+    .hero{position:relative;z-index:1;min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem 4rem}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:999px;border:1px solid rgba(99,102,241,0.4);background:rgba(99,102,241,0.1);font-size:.8rem;font-weight:600;letter-spacing:.05em;color:#a5b4fc;margin-bottom:2rem;animation:fadeUp .6s ease both}
+    .hero-badge::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--primary);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+    .hero-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(2.4rem,6vw,5.5rem);font-weight:800;line-height:1.08;margin-bottom:1.5rem;animation:fadeUp .6s .1s ease both}
+    .grad{background:linear-gradient(135deg,var(--primary),var(--accent),var(--primary2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero-sub{font-size:clamp(1rem,2vw,1.25rem);color:var(--muted);max-width:640px;margin:0 auto 3rem;animation:fadeUp .6s .2s ease both}
+    .hero-actions{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;animation:fadeUp .6s .3s ease both}
+    .btn-primary{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:12px;font-size:1rem;font-weight:700;text-decoration:none;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary2));box-shadow:0 8px 32px rgba(99,102,241,0.45);transition:transform .2s,box-shadow .2s}
+    .btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(99,102,241,0.6)}
+    .btn-secondary{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:12px;font-size:1rem;font-weight:600;text-decoration:none;color:var(--text);border:1px solid var(--border);background:var(--surface);backdrop-filter:blur(10px);transition:all .2s}
+    .btn-secondary:hover{border-color:var(--primary);background:rgba(99,102,241,0.1)}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+    .platforms{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:3rem;animation:fadeUp .6s .4s ease both}
+    .platform-badge{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:.82rem;font-weight:500;color:var(--muted)}
+    section{position:relative;z-index:1;padding:5rem 2rem}
+    .section-label{text-align:center;font-size:.75rem;font-weight:700;letter-spacing:.15em;color:var(--primary);margin-bottom:1rem;text-transform:uppercase}
+    .section-title{text-align:center;font-family:'Space Grotesk',sans-serif;font-size:clamp(1.8rem,4vw,3rem);font-weight:800;margin-bottom:1rem}
+    .section-sub{text-align:center;color:var(--muted);font-size:1.05rem;max-width:580px;margin:0 auto 3.5rem}
+    .container{max-width:1100px;margin:0 auto}
+    .products-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
+    .product-card{border-radius:20px;padding:2rem;background:var(--surface);border:1px solid var(--border);transition:all .3s;position:relative;overflow:hidden}
+    .product-card:hover{border-color:rgba(99,102,241,0.4);transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+    .product-icon{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:1.6rem;margin-bottom:1.25rem}
+    .product-title{font-family:'Space Grotesk',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:.5rem}
+    .product-desc{color:var(--muted);font-size:.92rem;line-height:1.65;margin-bottom:1.25rem}
+    .product-link{display:inline-flex;align-items:center;gap:6px;font-size:.875rem;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);transition:all .2s}
+    .product-link:hover{background:var(--primary);border-color:var(--primary);color:#fff}
+    .tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:600;margin:3px 2px}
+    .tag-blue{background:rgba(99,102,241,.2);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
+    .tag-cyan{background:rgba(6,182,212,.15);color:#67e8f9;border:1px solid rgba(6,182,212,.3)}
+    .tag-green{background:rgba(16,185,129,.15);color:#6ee7b7;border:1px solid rgba(16,185,129,.3)}
+    .tag-violet{background:rgba(139,92,246,.2);color:#c4b5fd;border:1px solid rgba(139,92,246,.3)}
+    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem}
+    .feature-item{padding:1.5rem;border-radius:16px;background:var(--surface);border:1px solid var(--border);transition:border-color .2s}
+    .feature-item:hover{border-color:rgba(99,102,241,0.35)}
+    .feature-icon{font-size:1.8rem;margin-bottom:.75rem}
+    .feature-title{font-weight:700;margin-bottom:.4rem}
+    .feature-desc{color:var(--muted);font-size:.875rem}
+    .hub-strip{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;padding:2rem;border-radius:24px;background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.08));border:1px solid rgba(99,102,241,0.2)}
+    .hub-item{display:flex;align-items:center;gap:10px;padding:12px 20px;border-radius:12px;background:rgba(0,0,0,.3);border:1px solid var(--border);text-decoration:none;color:var(--text);font-weight:600;font-size:.9rem;transition:all .2s}
+    .hub-item:hover{border-color:var(--primary);background:rgba(99,102,241,.15);transform:translateY(-2px)}
+    .hi{font-size:1.4rem}
+    .hl{font-size:.7rem;color:var(--muted);margin-top:1px;font-weight:400}
+    .divider{border:none;border-top:1px solid var(--border);margin:0 2rem}
+    footer{position:relative;z-index:1;text-align:center;padding:3rem 2rem;color:var(--muted);font-size:.875rem;border-top:1px solid var(--border)}
+    footer a{color:var(--primary);text-decoration:none}
+    @media(max-width:640px){nav{padding:0 1rem}.nav-links .nav-link{display:none}.hero{padding:5rem 1.25rem 3rem}section{padding:3rem 1.25rem}}
+  </style>
+</head>
+<body>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+
+  <nav>
+    <a href="/" class="nav-logo">
+      <div class="nav-logo-icon">🌐</div>
+      <span class="nav-logo-text">Civer Cloud</span>
+    </a>
+    <div class="nav-links">
+      <a href="#herramientas" class="nav-link">Herramientas</a>
+      <a href="#nosotros" class="nav-link">Nosotros</a>
+      <a href="#ecosistema" class="nav-link">Ecosistema</a>
+      <a href="https://chat.civer.cloud" target="_blank" class="nav-cta">&#129302; Chat IA &rarr;</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-badge">&#10022; AGENCIA DE DESARROLLO &middot; CIVER CLOUD</div>
+    <h1 class="hero-title">
+      Programa desde<br/>
+      <span class="grad">cualquier dispositivo</span><br/>
+      sin experiencia previa
+    </h1>
+    <p class="hero-sub">
+      Civer Cloud pone en tus manos herramientas de desarrollo de software de nivel profesional &mdash;
+      accesibles desde tu celular, tablet o navegador, sin instalar nada. Desde cero hasta producci&oacute;n.
+    </p>
+    <div class="hero-actions">
+      <a href="https://chat.civer.cloud" target="_blank" class="btn-primary">&#128172; Abrir Chat IA</a>
+      <a href="https://antigravity.civer.cloud" target="_blank" class="btn-secondary">&#9889; Antigravity IDE</a>
+    </div>
+    <div class="platforms">
+      <div class="platform-badge"><span>&#127760;</span> Web / Navegador</div>
+      <div class="platform-badge"><span>&#128241;</span> Android</div>
+      <div class="platform-badge"><span>&#129695;</span> Windows</div>
+      <div class="platform-badge"><span>&#128039;</span> Linux</div>
+      <div class="platform-badge"><span>&#9729;&#65039;</span> Cloud</div>
+    </div>
+  </div>
+
+  <section id="herramientas">
+    <div class="container">
+      <p class="section-label">&#9729;&#65039; Hub de Herramientas</p>
+      <h2 class="section-title">Todo tu ecosistema en un clic</h2>
+      <p class="section-sub">Accede a todas nuestras herramientas. Cada una dise&ntilde;ada para hacer tu trabajo m&aacute;s f&aacute;cil y poderoso.</p>
+      <div class="hub-strip">
+        <a href="https://chat.civer.cloud" target="_blank" class="hub-item">
+          <span class="hi">&#128172;</span><div><div>Chat IA &middot; Panel</div><div class="hl">chat.civer.cloud</div></div>
+        </a>
+        <a href="https://antigravity.civer.cloud" target="_blank" class="hub-item">
+          <span class="hi">&#9889;</span><div><div>Antigravity IDE</div><div class="hl">antigravity.civer.cloud</div></div>
+        </a>
+        <a href="https://panel.civer.cloud" target="_blank" class="hub-item">
+          <span class="hi">&#128187;</span><div><div>Panel Control</div><div class="hl">panel.civer.cloud</div></div>
+        </a>
+        <a href="https://media.civer.cloud" target="_blank" class="hub-item">
+          <span class="hi">&#127909;</span><div><div>Civer Media</div><div class="hl">media.civer.cloud</div></div>
+        </a>
+        <a href="https://memories.civer.cloud" target="_blank" class="hub-item">
+          <span class="hi">&#129504;</span><div><div>Memories</div><div class="hl">memories.civer.cloud</div></div>
+        </a>
+        <a href="https://ops.civer.cloud" target="_blank" class="hub-item">
+          <span class="hi">&#9881;&#65039;</span><div><div>Ops Center</div><div class="hl">ops.civer.cloud</div></div>
+        </a>
+        <a href="https://status.civer.cloud" target="_blank" class="hub-item">
+          <span class="hi">&#128202;</span><div><div>Estado</div><div class="hl">status.civer.cloud</div></div>
+        </a>
+        <a href="https://gitea.civer.cloud" target="_blank" class="hub-item">
+          <span class="hi">&#128048;</span><div><div>Repositorios</div><div class="hl">gitea.civer.cloud</div></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider"/>
+
+  <section>
+    <div class="container">
+      <p class="section-label">&#128640; Productos</p>
+      <h2 class="section-title">Todo lo que necesitas para programar</h2>
+      <p class="section-sub">Soluciones completas para cada etapa de tu aprendizaje y producci&oacute;n.</p>
+      <div class="products-grid">
+        <div class="product-card">
+          <div class="product-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">&#9889;</div>
+          <div class="product-title">Antigravity IDE</div>
+          <p class="product-desc">El entorno de desarrollo definitivo potenciado con IA. Escribe, depura y despliega proyectos completos desde tu navegador sin instalar nada.</p>
+          <div><span class="tag tag-blue">Web</span><span class="tag tag-violet">IA integrada</span><span class="tag tag-cyan">Multiplataforma</span></div>
+          <br/><a href="https://antigravity.civer.cloud" target="_blank" class="product-link">Abrir IDE &rarr;</a>
+        </div>
+        <div class="product-card">
+          <div class="product-icon" style="background:linear-gradient(135deg,#059669,#10b981);">&#128172;</div>
+          <div class="product-title">Chat IA &middot; Panel de Control</div>
+          <p class="product-desc">Centro de mando para tus conversaciones con IA. Gestiona sesiones, configura voces con ElevenLabs, personaliza el dise&ntilde;o y controla todo desde un panel unificado.</p>
+          <div><span class="tag tag-green">Chat</span><span class="tag tag-blue">ElevenLabs TTS</span><span class="tag tag-violet">Temas</span></div>
+          <br/><a href="https://chat.civer.cloud" target="_blank" class="product-link">Abrir Panel &rarr;</a>
+        </div>
+        <div class="product-card">
+          <div class="product-icon" style="background:linear-gradient(135deg,#0891b2,#06b6d4);">&#128241;</div>
+          <div class="product-title">App Android</div>
+          <p class="product-desc">Toda la potencia del ecosistema Civer en tu bolsillo. Programa, chatea con IA, gestiona proyectos y accede a tus herramientas desde cualquier lugar.</p>
+          <div><span class="tag tag-cyan">Android</span><span class="tag tag-green">Sin PC necesaria</span></div>
+          <br/><a href="https://antigravity.civer.cloud" target="_blank" class="product-link">Ver m&aacute;s &rarr;</a>
+        </div>
+        <div class="product-card">
+          <div class="product-icon" style="background:linear-gradient(135deg,#d97706,#f59e0b);">&#129695;</div>
+          <div class="product-title">App de Escritorio</div>
+          <p class="product-desc">Instaladores nativos para Windows y Linux. Rendimiento m&aacute;ximo, acceso offline y sincronizaci&oacute;n autom&aacute;tica con tu ecosistema cloud cuando hay conexi&oacute;n.</p>
+          <div><span class="tag tag-blue">Windows</span><span class="tag tag-green">Linux</span><span class="tag tag-violet">Sync Cloud</span></div>
+          <br/><a href="https://antigravity.civer.cloud" target="_blank" class="product-link">Descargar &rarr;</a>
+        </div>
+        <div class="product-card">
+          <div class="product-icon" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">&#129504;</div>
+          <div class="product-title">Civer Memories</div>
+          <p class="product-desc">Tu base de conocimiento personal potenciada con IA. Almacena, conecta y recupera informaci&oacute;n en segundos con b&uacute;squeda sem&aacute;ntica inteligente.</p>
+          <div><span class="tag tag-violet">Sem&aacute;ntica</span><span class="tag tag-blue">IA</span><span class="tag tag-cyan">Cloud</span></div>
+          <br/><a href="https://memories.civer.cloud" target="_blank" class="product-link">Explorar &rarr;</a>
+        </div>
+        <div class="product-card">
+          <div class="product-icon" style="background:linear-gradient(135deg,#be185d,#ec4899);">&#127909;</div>
+          <div class="product-title">Civer Media</div>
+          <p class="product-desc">Plataforma de medios privada. Tus pel&iacute;culas, series y m&uacute;sica &mdash; sin l&iacute;mites, sin suscripciones externas, completamente bajo tu control.</p>
+          <div><span class="tag tag-blue">Jellyfin</span><span class="tag tag-violet">Privado</span><span class="tag tag-green">Streaming</span></div>
+          <br/><a href="https://media.civer.cloud" target="_blank" class="product-link">Ver media &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider"/>
+
+  <section id="nosotros" style="background:linear-gradient(180deg,transparent,rgba(99,102,241,0.04),transparent)">
+    <div class="container">
+      <p class="section-label">&#128101; Qui&eacute;nes somos</p>
+      <h2 class="section-title">Una agencia construida para<br/><span style="color:var(--primary)">la nueva generaci&oacute;n de devs</span></h2>
+      <p class="section-sub">Creemos que programar no debe ser dif&iacute;cil ni caro. Por eso creamos herramientas que hacen el camino m&aacute;s corto.</p>
+      <div class="features-grid">
+        <div class="feature-item"><div class="feature-icon">&#127919;</div><div class="feature-title">Sin conocimientos previos</div><p class="feature-desc">Nuestras herramientas gu&iacute;an a los principiantes desde el primer d&iacute;a. La IA hace el trabajo pesado mientras t&uacute; aprendes haciendo.</p></div>
+        <div class="feature-item"><div class="feature-icon">&#128241;</div><div class="feature-title">Solo necesitas tu celular</div><p class="feature-desc">No se necesita una PC potente. Con un navegador y conexi&oacute;n a internet puedes desarrollar proyectos reales desde cualquier lugar.</p></div>
+        <div class="feature-item"><div class="feature-icon">&#9889;</div><div class="feature-title">Herramientas de nivel profesional</div><p class="feature-desc">Las mismas herramientas que usan los equipos m&aacute;s avanzados del mundo &mdash; simplificadas para que puedas usarlas desde el d&iacute;a uno.</p></div>
+        <div class="feature-item"><div class="feature-icon">&#128274;</div><div class="feature-title">Tu infraestructura, tu control</div><p class="feature-desc">Todo corre en tu propia nube. Sin depender de terceros, sin perder datos, sin costos ocultos de suscripci&oacute;n por herramienta.</p></div>
+        <div class="feature-item"><div class="feature-icon">&#127760;</div><div class="feature-title">Acceso desde cualquier red</div><p class="feature-desc">Cloudflare, Tailscale y nuestra red malla garantizan que siempre puedas acceder a tus herramientas desde cualquier parte del mundo.</p></div>
+        <div class="feature-item"><div class="feature-icon">&#129309;</div><div class="feature-title">Soporte IA 24/7</div><p class="feature-desc">Un asistente IA siempre disponible para ayudarte a entender c&oacute;digo, depurar problemas y avanzar m&aacute;s r&aacute;pido en tus proyectos.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div style="margin-bottom:1rem;font-size:1.5rem">&#127760;</div>
+    <div style="font-weight:700;font-size:1rem;margin-bottom:.5rem">Civer Cloud</div>
+    <div>Agencia de Desarrollo de Software &middot; Hecho con &#10084;&#65039; para quienes quieren programar sin l&iacute;mites</div>
+    <div style="margin-top:1rem;display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap">
+      <a href="https://chat.civer.cloud">Chat IA</a>
+      <a href="https://antigravity.civer.cloud">Antigravity IDE</a>
+      <a href="https://panel.civer.cloud">Panel</a>
+      <a href="https://status.civer.cloud">Estado</a>
+      <a href="https://gitea.civer.cloud">Repositorios</a>
+    </div>
+    <div style="margin-top:1.5rem;opacity:.4">&copy; 2026 Civer Cloud &middot; ia.civer.cloud</div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity Manager — Civer Cloud IDE</title>
+  <meta name="description" content="Descarga Antigravity Manager, el centro de control definitivo para tu ecosistema Civer Cloud. Ultra-rápido, seguro y sin restricciones de acceso.">
+  <meta property="og:title" content="Antigravity Manager — Civer Cloud">
+  <meta property="og:description" content="El IDE definitivo para el ecosistema Civer Cloud.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #060913;
+      --surface:   #0d1526;
+      --border:    rgba(99,179,255,0.12);
+      --accent:    #3b82f6;
+      --accent2:   #8b5cf6;
+      --accent3:   #06b6d4;
+      --text:      #f0f4ff;
+      --muted:     #6b7a9e;
+      --glow-blue: rgba(59,130,246,0.35);
+      --glow-purple: rgba(139,92,246,0.25);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── Background animated grid ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── Glowing orbs ─── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 {
+      width: 600px; height: 600px;
+      background: var(--glow-blue);
+      top: -200px; left: -150px;
+      animation: floatOrb 12s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: var(--glow-purple);
+      bottom: -150px; right: -100px;
+      animation: floatOrb 15s ease-in-out infinite reverse;
+    }
+    @keyframes floatOrb {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50%       { transform: translateY(-40px) scale(1.05); }
+    }
+
+    /* ─── Layout ─── */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ─── Header / Nav ─── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 0 2.5rem;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+    .badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: rgba(59,130,246,0.15);
+      border: 1px solid rgba(59,130,246,0.3);
+      color: #93c5fd;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ─── Hero ─── */
+    .hero {
+      text-align: center;
+      padding: 2rem 0 3rem;
+    }
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #60a5fa;
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 20px;
+      padding: 5px 14px;
+      margin-bottom: 1.75rem;
+      animation: fadeInDown 0.5s ease;
+    }
+    .hero-label::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: #34d399;
+      border-radius: 50%;
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.25rem;
+      animation: fadeInDown 0.6s ease 0.1s both;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.65;
+      animation: fadeInDown 0.6s ease 0.2s both;
+    }
+
+    /* ─── Download cards ─── */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      animation: fadeInUp 0.6s ease 0.3s both;
+    }
+    @media (max-width: 600px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(59,130,246,0.05), transparent);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(99,179,255,0.3);
+      box-shadow: 0 12px 40px rgba(59,130,246,0.15);
+    }
+    .card:hover::before { opacity: 1; }
+
+    .card-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+    .card-icon.blue   { background: rgba(59,130,246,0.15); }
+    .card-icon.green  { background: rgba(52,211,153,0.15); }
+    .card-icon.purple { background: rgba(139,92,246,0.15); }
+    .card-icon.gray   { background: rgba(107,114,158,0.15); }
+
+    .card-content { flex: 1; }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    .card-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .card-arrow {
+      align-self: flex-end;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .card:hover .card-arrow {
+      background: rgba(59,130,246,0.2);
+      transform: translate(2px, -2px);
+    }
+
+    /* ─── Secondary row ─── */
+    .secondary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      animation: fadeInUp 0.6s ease 0.4s both;
+    }
+    @media (max-width: 600px) {
+      .secondary { grid-template-columns: 1fr; }
+    }
+    .card.sm { padding: 1.1rem 1.25rem; }
+    .card.sm .card-title { font-size: 0.9rem; }
+
+    /* ─── Version / info strip ─── */
+    .info-strip {
+      margin-top: 2.5rem;
+      padding: 1rem 1.5rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.6s ease 0.5s both;
+    }
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .info-item .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #34d399;
+    }
+
+    /* ─── Footer ─── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* ─── Animations ─── */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="container">
+
+      <!-- Nav -->
+      <nav>
+        <div class="logo">
+          <div class="logo-icon">&#128640;</div>
+          <span>Antigravity</span>
+        </div>
+        <div style="display:flex; gap:16px; align-items:center;">
+          <a href="https://ia.civer.cloud" style="color:var(--text); text-decoration:none; font-size:0.9rem; font-weight:600; transition:color 0.2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text)'">Civer IA Hub</a>
+          <a href="https://chat.civer.cloud" style="color:var(--text); text-decoration:none; font-size:0.9rem; font-weight:600; transition:color 0.2s;" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text)'">Chat Panel</a>
+          <span class="badge">v4.4.7</span>
+        </div>
+      </nav>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-label">Sistema Activo &amp; Operativo</div>
+      <h1>
+        El IDE definitivo para<br>
+        <span class="gradient-text">Civer Cloud</span>
+      </h1>
+      <p>
+        Centro de control unificado para tu ecosistema cloud.
+        Ultra-rápido, seguro, sin restricciones. 
+        Controla todo desde una sola interfaz.
+      </p>
+    </div>
+
+    <!-- Main download cards -->
+    <div class="cards">
+      <a href="antigravity.civer.cloud.exe" download class="card" id="btn-windows">
+        <div class="card-icon blue">🪟</div>
+        <div class="card-content">
+          <div class="card-title">Windows Installer</div>
+          <div class="card-desc">Para Windows 10 / 11 (64-bit)<br>Instalador completo con todas las herramientas</div>
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+      <a href="ControlDroid_final.apk" download class="card" id="btn-android">
+        <div class="card-icon green">🤖</div>
+        <div class="card-content">
+          <div class="card-title">Android APK</div>
+          <div class="card-desc">ControlDroid — App de control remoto<br>Android 8.0+ requerido</div>
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+    </div>
+
+    <!-- Secondary links -->
+    <div class="secondary">
+      <a href="https://github.com/PabloArboledai/mesh-shared-vault/archive/refs/heads/master.zip" 
+         class="card sm" id="btn-source">
+        <div class="card-icon purple">📦</div>
+        <div class="card-content">
+          <div class="card-title">Código fuente (ZIP)</div>
+          <div class="card-desc">mesh-shared-vault — GitHub</div>
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+      <a href="https://github.com/PabloArboledai" target="_blank" rel="noopener"
+         class="card sm" id="btn-github">
+        <div class="card-icon gray">🐙</div>
+        <div class="card-content">
+          <div class="card-title">GitHub</div>
+          <div class="card-desc">Repositorios del ecosistema Civer</div>
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+    </div>
+
+    <!-- Info strip -->
+    <div class="info-strip">
+      <div class="info-item">
+        <span class="dot"></span>
+        Versión 4.4.7
+      </div>
+      <div class="info-item">
+        <span class="dot"></span>
+        Windows 10/11 (64-bit)
+      </div>
+      <div class="info-item">
+        <span class="dot"></span>
+        Verificado — libre de virus
+      </div>
+      <div class="info-item">
+        <span class="dot"></span>
+        Multi-origen con CDN global
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    &copy; 2026 Civer Cloud · Todos los derechos reservados ·
+    <a href="https://antigravity.civer.cloud" style="color:inherit; text-decoration:none;">antigravity.civer.cloud</a>
+  </footer>
+
+</body>
+</html>

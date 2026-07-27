@@ -1,0 +1,16 @@
+.git/**
+.github/**
+.vscode/**
+.claude/**
+node_modules/**
+src/**
+test/**
+out/**
+!out/extension.js
+!out/extension.js.map
+uploads/**
+*.vsix
+ag-generating-debug.json
+ag-state.json
+ag-stop-probe.json
+.snapshot-live.json

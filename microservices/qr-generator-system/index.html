@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generador QR Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/node_modules/photoswipe/dist/photoswipe.css">
+    <link rel="stylesheet" href="/src/style.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="glass-header">
+        <h1>QR Generator Pro</h1>
+        <p>Crea códigos QR dinámicos e impactantes</p>
+        
+        <div class="tab-controls">
+          <button id="tab-generator" class="tab-btn active">Generador</button>
+          <button id="tab-gallery" class="tab-btn">Galería de QRs</button>
+        </div>
+      </header>
+
+      <main id="view-generator" class="main-content">
+        <section class="controls-panel glass-panel">
+          
+          <div class="control-group full-width">
+            <label for="qr-url">URL / Texto de Destino</label>
+            <input type="text" id="qr-url" placeholder="https://ejemplo.com" value="https://ejemplo.com" />
+          </div>
+
+          <div class="settings-grid">
+            <!-- Colors -->
+            <div class="control-group">
+              <label for="color-dots">Color del Código</label>
+              <div class="color-picker-wrapper">
+                <input type="color" id="color-dots" value="#6a11cb" />
+                <span class="color-value" id="color-dots-val">#6a11cb</span>
+              </div>
+            </div>
+            
+            <div class="control-group">
+              <label for="color-bg">Color de Fondo</label>
+              <div class="color-picker-wrapper">
+                <input type="color" id="color-bg" value="#ffffff" />
+                <span class="color-value" id="color-bg-val">#ffffff</span>
+              </div>
+            </div>
+
+            <!-- Shapes -->
+            <div class="control-group">
+              <label for="dot-style">Estilo de Puntos</label>
+              <select id="dot-style">
+                <option value="square">Cuadrado</option>
+                <option value="dots">Puntos redondos</option>
+                <option value="rounded" selected>Redondeado</option>
+                <option value="extra-rounded">Extra Redondeado</option>
+                <option value="classy">Clásico elegante</option>
+                <option value="classy-rounded">Clásico Redondeado</option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <label for="corner-square-style">Estilo de Marco de Ojos</label>
+              <select id="corner-square-style">
+                <option value="square">Cuadrado</option>
+                <option value="dot">Punto</option>
+                <option value="extra-rounded" selected>Extra Redondeado</option>
+              </select>
+            </div>
+            
+            <!-- Logo Avanzado -->
+            <div class="control-group full-width logo-editor-section">
+              <label>Logotipo del Código</label>
+              
+              <div class="logo-presets">
+                <div class="logo-preset" data-logo="">
+                  <span>Sin Logo</span>
+                </div>
+                <div class="logo-preset" data-logo="/tiger-logo.png">
+                  <img src="/tiger-logo.png" alt="Tigre Normal" />
+                </div>
+                <div class="logo-preset" data-logo="/tiger-logo-white.png" style="background:#333;">
+                  <img src="/tiger-logo-white.png" alt="Tigre Blanco" />
+                </div>
+              </div>
+
+              <div class="control-group">
+                <label for="logo-upload">Subir Logo Propio</label>
+                <input type="file" id="logo-upload" accept="image/*" />
+              </div>
+
+              <div class="control-group">
+                <label for="logo-size">Tamaño del Logo: <span id="logo-size-val">40%</span></label>
+                <input type="range" id="logo-size" min="0.1" max="0.7" step="0.05" value="0.4" />
+              </div>
+
+              <div class="control-group">
+                <label for="logo-filter">Filtro de Imagen (IA Básica)</label>
+                <select id="logo-filter">
+                  <option value="none" selected>Sin Filtro</option>
+                  <option value="grayscale(100%)">Escala de Grises</option>
+                  <option value="sepia(100%)">Sepia</option>
+                  <option value="invert(100%)">Invertir Colores</option>
+                  <option value="hue-rotate(90deg)">Rotar Color Mágico</option>
+                  <option value="hue-rotate(180deg)">Rotar Color Extremo</option>
+                  <option value="contrast(200%)">Alto Contraste</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="control-group full-width ai-generator-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <label style="color: #ff9a9e; font-weight: bold; font-size: 1.1rem;">✨ Generación Artística con IA</label>
+            <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px; margin-bottom: 15px;">
+              Crea QRs integrados en imágenes espectaculares usando Modal GPU. (Reemplaza los ajustes de estilo básicos).
+            </p>
+            <div class="control-group">
+              <label for="ai-prompt">Prompt de la imagen</label>
+              <input type="text" id="ai-prompt" placeholder="Ej: A lush forest in studio ghibli style, highly detailed" />
+            </div>
+            <button id="btn-generate-ai" class="btn primary-btn" style="margin-top: 10px; width: 100%; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); color: #333;">Generar con Inteligencia Artificial</button>
+          </div>
+          
+        </section>
+
+        <section class="preview-panel glass-panel">
+          <div class="preview-header">
+            <h2>Vista Previa</h2>
+          </div>
+          <div class="qr-wrapper" id="canvas-container">
+            <!-- QR code will be generated here -->
+          </div>
+          
+          <div class="download-actions">
+            <button id="download-png" class="btn primary-btn">Descargar PNG</button>
+            <button id="download-svg" class="btn secondary-btn">Descargar SVG</button>
+          </div>
+        </section>
+      </main>
+
+      <main id="view-gallery" class="main-content hidden" style="display: block;">
+        <section class="gallery-panel glass-panel full-width">
+          <div class="preview-header">
+            <h2>QRs Generados en el Servidor</h2>
+            <p>Visualiza y descarga los códigos QR creados automáticamente por agentes y webhooks.</p>
+          </div>
+          <div class="gallery-grid" id="my-gallery">
+            <!-- Images will be injected here by JS -->
+            <div class="loading-state">Cargando galería...</div>
+          </div>
+        </section>
+      </main>
+
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

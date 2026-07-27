@@ -11,7 +11,7 @@ param (
 )
 
 $ErrorActionPreference = "Stop"
-$ProjectPath = "C:\ProyectoCiverCloudUnificado\Otros\Antigravity-Ecosystem"
+$ProjectPath = "C:\ProyectoCiverCloudUnificado\Desktop-y-Extensiones\Antigravity-Ecosystem"
 $TargetDir = Join-Path $ProjectPath "src-tauri\target"
 
 Write-Host "=============================================" -ForegroundColor Cyan

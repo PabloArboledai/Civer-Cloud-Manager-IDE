@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Network, Activity, BarChart3, Settings, Download, Radar, Rocket, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Users, Network, Activity, BarChart3, Settings, Download, Radar, Rocket, MessageSquare, Database, Lock, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useConfigStore } from '../../stores/useConfigStore';
 import { isTauri, isLinux } from '../../utils/env';
@@ -29,6 +29,9 @@ function Navbar() {
         { path: '/user-token', label: t('nav.user_token', 'Tokens de Usuario'), icon: Users, priority: 'low' },
         { path: '/downloads', label: t('nav.downloads', 'Descargas'), icon: Download, priority: 'high' },
         { path: '/orchestrator', label: t('nav.orchestrator', 'Plataformas'), icon: Rocket, priority: 'high' },
+        { path: '/md5-viewer', label: t('nav.md5_viewer', 'Visor MD5'), icon: Globe, priority: 'high' },
+        { path: '/vault', label: t('nav.vault', 'Bóveda'), icon: Lock, priority: 'high' },
+        { path: '/api-system', label: t('nav.api_system', 'APIs'), icon: Database, priority: 'high' },
         { path: '/settings', label: t('nav.settings'), icon: Settings, priority: 'high' },
     ];
 

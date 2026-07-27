@@ -1,0 +1,22 @@
+X [ERROR] No loader is configured for ".node" files: node_modules/@ngrok/ngrok-win32-x64-msvc/ngrok.win32-x64-msvc.node
+
+    node_modules/@ngrok/ngrok/index.js:72:36:
+      72 Γöé             nativeBinding = require('@ngrok/ngrok-win32-x64-msvc')
+         Γò╡                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1 error
+Error: Build failed with 1 error:
+node_modules/@ngrok/ngrok/index.js:72:36: ERROR: No loader is configured for ".node" files: node_modules/@ngrok/ngrok-win32-x64-msvc/ngrok.win32-x64-msvc.node
+    at failureErrorWithLog (C:\Users\allisoneverest09\Desktop\Extensiones\antigravity-link-extension\node_modules\esbuild\lib\main.js:1651:15)
+    at C:\Users\allisoneverest09\Desktop\Extensiones\antigravity-link-extension\node_modules\esbuild\lib\main.js:1059:25
+    at C:\Users\allisoneverest09\Desktop\Extensiones\antigravity-link-extension\node_modules\esbuild\lib\main.js:1004:52
+    at buildResponseToResult (C:\Users\allisoneverest09\Desktop\Extensiones\antigravity-link-extension\node_modules\esbuild\lib\main.js:1057:7)
+    at C:\Users\allisoneverest09\Desktop\Extensiones\antigravity-link-extension\node_modules\esbuild\lib\main.js:1086:16
+    at responseCallbacks.<computed> (C:\Users\allisoneverest09\Desktop\Extensiones\antigravity-link-extension\node_modules\esbuild\lib\main.js:704:9)
+    at handleIncomingPacket (C:\Users\allisoneverest09\Desktop\Extensiones\antigravity-link-extension\node_modules\esbuild\lib\main.js:764:9)
+    at Socket.readFromStdout (C:\Users\allisoneverest09\Desktop\Extensiones\antigravity-link-extension\node_modules\esbuild\lib\main.js:680:7)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:561:12) {
+  errors: [Getter/Setter],
+  warnings: [Getter/Setter]
+}
