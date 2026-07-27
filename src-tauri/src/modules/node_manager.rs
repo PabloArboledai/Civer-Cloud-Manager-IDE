@@ -7,8 +7,9 @@ use tauri::{AppHandle, Emitter};
 
 // A list of known peer nodes in our Mesh Network
 const KNOWN_PEERS: &[(&str, &str, &str)] = &[
-    ("192.168.1.93", "hp-one-ubuntu", "SSH/HTTP"),
+    ("100.104.166.73", "hp-one-ubuntu", "SSH/HTTP"),
     ("100.96.218.12", "laptop-thinkpad", "WinRM/HTTP"),
+    ("167.71.180.226", "digital-ocean-master", "SSH/HTTP"),
 ];
 
 #[derive(Clone, serde::Serialize)]
@@ -147,17 +148,33 @@ async fn check_ssh_connection(ip: &str, name: &str) -> bool {
 async fn process_pending_commands(ip: &str, name: &str) -> Result<(), String> {
     let pending = command_runner_db::get_commands_by_status("PENDING")?;
     
+    // Determine ssh user based on node name/ip
+    let ssh_user = if name.to_lowercase().contains("digital") || name.to_lowercase().contains("master") || ip == "167.71.180.226" {
+        "root"
+    } else if name.to_lowercase().contains("windows") || name.to_lowercase().contains("laptop") || name.to_lowercase().contains("thinkpad") {
+        "Administrator"
+    } else {
+        "miguel"
+    };
+
+    // Use embedded key for automated remote execution
+    let key_content = include_str!("../../assets/id_rsa_antigravity");
+    let temp_dir = std::env::temp_dir();
+    let key_path = temp_dir.join(format!("id_rsa_antigravity_auto_{}.tmp", ssh_user));
+    let _ = std::fs::write(&key_path, key_content);
+    
     for cmd in pending {
         if cmd.node_ip == ip {
             logger::log_info(&format!("Running pending command [{}] on node {}", cmd.id, name));
             
             command_runner_db::update_command_status(&cmd.id, "RUNNING", None, None)?;
             
-            // For simplicity, assuming SSH for all remote execution in this prototype
             let mut cmd_exec = Command::new("C:\\Windows\\System32\\OpenSSH\\ssh.exe");
-            cmd_exec.arg("-o")
+            cmd_exec.arg("-i")
+                .arg(key_path.to_string_lossy().to_string())
+                .arg("-o")
                 .arg("StrictHostKeyChecking=no")
-                .arg(&format!("miguel@{}", ip))
+                .arg(&format!("{}@{}", ssh_user, ip))
                 .arg(&cmd.command_text);
                 
             #[cfg(target_os = "windows")]

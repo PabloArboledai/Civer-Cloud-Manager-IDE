@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Network, Activity, BarChart3, Settings, Download, Radar } from 'lucide-react';
+import { LayoutDashboard, Users, Network, Activity, BarChart3, Settings, Download, Radar, Rocket } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useConfigStore } from '../../stores/useConfigStore';
 import { isTauri, isLinux } from '../../utils/env';
@@ -27,6 +27,7 @@ function Navbar() {
         { path: '/token-stats', label: t('nav.token_stats', 'Estadísticas de Tokens'), icon: BarChart3, priority: 'low' },
         { path: '/user-token', label: t('nav.user_token', 'Tokens de Usuario'), icon: Users, priority: 'low' },
         { path: '/downloads', label: t('nav.downloads', 'Descargas'), icon: Download, priority: 'high' },
+        { path: '/orchestrator', label: t('nav.orchestrator', 'Plataformas'), icon: Rocket, priority: 'high' },
         { path: '/settings', label: t('nav.settings'), icon: Settings, priority: 'high' },
     ];
 

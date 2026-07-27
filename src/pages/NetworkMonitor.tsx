@@ -159,14 +159,8 @@ export default function NetworkMonitor() {
 
     const newGraphData = { nodes, links };
     
-    // Check if graph already exists and mutate it directly to avoid complete re-renders (anti-lag)
-    if (graphRef.current) {
-        // Just update graphData on the imperative instance
-        graphRef.current.graphData(newGraphData);
-    } else {
-        // Initial set if the graph component hasn't mounted yet
-        setGraphData(newGraphData);
-    }
+    // Update graph data via state
+    setGraphData(newGraphData);
 
     setMetrics({
       activeNodes: onlineCount,

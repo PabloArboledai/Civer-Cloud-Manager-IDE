@@ -20,6 +20,39 @@ pub mod user_token;
 pub mod patch;
 pub use patch::*;
 
+// 导出 telemetry 命令
+pub mod telemetry;
+
+#[tauri::command]
+pub async fn exec_command(command: String, args: Vec<String>, cwd: Option<String>) -> Result<String, String> {
+    use std::process::Command;
+    let mut cmd = Command::new(&command);
+    cmd.args(&args);
+    if let Some(dir) = cwd {
+        cmd.current_dir(dir);
+    }
+    
+    // Windows logic to prevent popups
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+    }
+    
+    match cmd.output() {
+        Ok(output) => {
+            let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+            let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+            if output.status.success() {
+                Ok(stdout)
+            } else {
+                Err(format!("Exit {}: {}\n{}", output.status, stderr, stdout))
+            }
+        },
+        Err(e) => Err(format!("Command execution failed: {}", e)),
+    }
+}
+
 /// 列出所有账号
 #[tauri::command]
 pub async fn list_accounts(

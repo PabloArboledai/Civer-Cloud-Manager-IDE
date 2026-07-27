@@ -793,6 +793,9 @@ pub fn run() {
             commands::mesh_execute_action,
             // Patch commands
             commands::patch_agy_binary,
+            commands::exec_command,
+            // Telemetry commands
+            commands::telemetry::log_frontend_event,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

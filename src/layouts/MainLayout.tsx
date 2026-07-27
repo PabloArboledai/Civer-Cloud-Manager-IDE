@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   RefreshCw,
+  Server,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -65,6 +66,11 @@ export const MainLayout: React.FC = () => {
       to: '/codex',
       icon: TerminalSquare,
       label: t('nav.codex', 'Codex'),
+    },
+    {
+      to: '/orchestrator',
+      icon: Server,
+      label: 'Orchestrator',
     },
     {
       to: '/settings',

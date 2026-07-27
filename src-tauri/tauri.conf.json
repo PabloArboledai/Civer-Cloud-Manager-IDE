@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Antigravity Civer Cloud IDE",
+  "productName": "Antigravity Manager Civer Cloud",
   "version": "4.4.7",
   "identifier": "cloud.civer.antigravity",
   "build": {
@@ -13,7 +13,7 @@
     "withGlobalTauri": false,
     "windows": [
       {
-        "title": "Antigravity Civer Cloud IDE",
+        "title": "Antigravity Manager Civer Cloud",
         "width": 1024,
         "height": 700,
         "decorations": true,

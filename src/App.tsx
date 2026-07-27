@@ -11,6 +11,7 @@ import TokenStats from './pages/TokenStats';
 import ThemeManager from './components/common/ThemeManager';
 import UserToken from './pages/UserToken';
 import Downloads from './pages/Downloads';
+import OrchestratorDashboard from './routes/orchestrator';
 import { UpdateNotification } from './components/UpdateNotification';
 import DebugConsole from './components/debug/DebugConsole';
 import { useEffect, useState } from 'react';
@@ -22,6 +23,7 @@ import { listen } from '@tauri-apps/api/event';
 import { isTauri } from './utils/env';
 import { request as invoke } from './utils/request';
 import { AdminAuthGuard } from './components/common/AdminAuthGuard';
+import { setupGlobalTelemetry } from './utils/telemetry';
 
 const router = createBrowserRouter([
   {
@@ -64,6 +66,10 @@ const router = createBrowserRouter([
         path: 'settings',
         element: <Settings />,
       },
+      {
+        path: 'orchestrator',
+        element: <OrchestratorDashboard />,
+      },
     ],
   },
 ]);
@@ -75,6 +81,7 @@ function App() {
 
   useEffect(() => {
     loadConfig();
+    setupGlobalTelemetry();
   }, [loadConfig]);
 
   // Sync language from config
