@@ -12,6 +12,7 @@ import ThemeManager from './components/common/ThemeManager';
 import UserToken from './pages/UserToken';
 import Downloads from './pages/Downloads';
 import OrchestratorDashboard from './routes/orchestrator';
+import ChatCiver from './pages/ChatCiver';
 import { UpdateNotification } from './components/UpdateNotification';
 import DebugConsole from './components/debug/DebugConsole';
 import { useEffect, useState } from 'react';
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
       {
         path: 'downloads',
         element: <Downloads />,
+      },
+      {
+        path: 'chat',
+        element: <ChatCiver />,
       },
       {
         path: 'settings',
